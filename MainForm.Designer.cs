@@ -28,6 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.checkBox19 = new System.Windows.Forms.CheckBox();
@@ -60,8 +63,27 @@
             this.LocationLabel = new System.Windows.Forms.Label();
             this.CustomizeButton = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.StartErrorLabel = new System.Windows.Forms.Label();
+            this.AssigningPanel = new System.Windows.Forms.Panel();
+            this.FinishedEdtingButton = new System.Windows.Forms.Button();
+            this.assignedLabel = new System.Windows.Forms.Label();
+            this.StructLabel = new System.Windows.Forms.Label();
+            this.DicomComboBox = new System.Windows.Forms.ComboBox();
+            this.AddStructureButton = new System.Windows.Forms.Button();
+            this.removeAssignedButton = new System.Windows.Forms.Button();
+            this.AssigningLabel = new System.Windows.Forms.Label();
+            this.AssignStructGridView = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.conStructGridView = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.ConstraintGridView = new System.Windows.Forms.DataGridView();
+            this.Structure = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Type = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Subscript = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Relation = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Value = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Format = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.EditAssignedButton = new System.Windows.Forms.Button();
             this.AddLabel = new System.Windows.Forms.Label();
             this.OkButtonLabel = new System.Windows.Forms.Label();
             this.FormatLabel = new System.Windows.Forms.Label();
@@ -78,17 +100,14 @@
             this.ValueTB = new System.Windows.Forms.TextBox();
             this.button3 = new System.Windows.Forms.Button();
             this.DeleteButton = new System.Windows.Forms.Button();
-            this.ConstraintGridView = new System.Windows.Forms.DataGridView();
-            this.Structure = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Type = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Subscript = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Relation = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Value = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Format = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.OkButton = new System.Windows.Forms.Button();
+            this.StartErrorLabel = new System.Windows.Forms.Label();
             this.ErrorLabel = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.AssigningPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.AssignStructGridView)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.conStructGridView)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ConstraintGridView)).BeginInit();
             this.SuspendLayout();
@@ -377,10 +396,10 @@
             // 
             // textBox1
             // 
-            this.textBox1.Font = new System.Drawing.Font("Calibri", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox1.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox1.Location = new System.Drawing.Point(112, 423);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(174, 21);
+            this.textBox1.Size = new System.Drawing.Size(174, 22);
             this.textBox1.TabIndex = 4;
             this.textBox1.Text = "PatientReport";
             this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
@@ -465,8 +484,9 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.StartErrorLabel);
+            this.groupBox2.Controls.Add(this.AssigningPanel);
             this.groupBox2.Controls.Add(this.panel1);
+            this.groupBox2.Controls.Add(this.StartErrorLabel);
             this.groupBox2.Controls.Add(this.ErrorLabel);
             this.groupBox2.Controls.Add(this.CustomizeButton);
             this.groupBox2.Controls.Add(this.LocationLabel);
@@ -485,19 +505,140 @@
             this.groupBox2.TabIndex = 12;
             this.groupBox2.TabStop = false;
             // 
-            // StartErrorLabel
+            // AssigningPanel
             // 
-            this.StartErrorLabel.AutoSize = true;
-            this.StartErrorLabel.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.StartErrorLabel.Location = new System.Drawing.Point(443, 429);
-            this.StartErrorLabel.Name = "StartErrorLabel";
-            this.StartErrorLabel.Size = new System.Drawing.Size(174, 15);
-            this.StartErrorLabel.TabIndex = 14;
-            this.StartErrorLabel.Text = "Please specify a save location.";
-            this.StartErrorLabel.Visible = false;
+            this.AssigningPanel.Controls.Add(this.FinishedEdtingButton);
+            this.AssigningPanel.Controls.Add(this.assignedLabel);
+            this.AssigningPanel.Controls.Add(this.StructLabel);
+            this.AssigningPanel.Controls.Add(this.DicomComboBox);
+            this.AssigningPanel.Controls.Add(this.AddStructureButton);
+            this.AssigningPanel.Controls.Add(this.removeAssignedButton);
+            this.AssigningPanel.Controls.Add(this.AssigningLabel);
+            this.AssigningPanel.Controls.Add(this.AssignStructGridView);
+            this.AssigningPanel.Controls.Add(this.conStructGridView);
+            this.AssigningPanel.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AssigningPanel.Location = new System.Drawing.Point(0, 8);
+            this.AssigningPanel.Name = "AssigningPanel";
+            this.AssigningPanel.Size = new System.Drawing.Size(737, 398);
+            this.AssigningPanel.TabIndex = 18;
+            this.AssigningPanel.Visible = false;
+            // 
+            // FinishedEdtingButton
+            // 
+            this.FinishedEdtingButton.BackColor = System.Drawing.Color.Maroon;
+            this.FinishedEdtingButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FinishedEdtingButton.ForeColor = System.Drawing.Color.White;
+            this.FinishedEdtingButton.Location = new System.Drawing.Point(545, 362);
+            this.FinishedEdtingButton.Name = "FinishedEdtingButton";
+            this.FinishedEdtingButton.Size = new System.Drawing.Size(175, 26);
+            this.FinishedEdtingButton.TabIndex = 10;
+            this.FinishedEdtingButton.Text = "Finished Editing";
+            this.FinishedEdtingButton.UseVisualStyleBackColor = false;
+            this.FinishedEdtingButton.Click += new System.EventHandler(this.FinishedEdtingButton_Click);
+            // 
+            // assignedLabel
+            // 
+            this.assignedLabel.AutoSize = true;
+            this.assignedLabel.Location = new System.Drawing.Point(368, 192);
+            this.assignedLabel.Name = "assignedLabel";
+            this.assignedLabel.Size = new System.Drawing.Size(0, 15);
+            this.assignedLabel.TabIndex = 9;
+            this.assignedLabel.Visible = false;
+            // 
+            // StructLabel
+            // 
+            this.StructLabel.AutoSize = true;
+            this.StructLabel.Location = new System.Drawing.Point(371, 12);
+            this.StructLabel.Name = "StructLabel";
+            this.StructLabel.Size = new System.Drawing.Size(0, 15);
+            this.StructLabel.TabIndex = 8;
+            this.StructLabel.Visible = false;
+            // 
+            // DicomComboBox
+            // 
+            this.DicomComboBox.FormattingEnabled = true;
+            this.DicomComboBox.Location = new System.Drawing.Point(496, 290);
+            this.DicomComboBox.Name = "DicomComboBox";
+            this.DicomComboBox.Size = new System.Drawing.Size(184, 23);
+            this.DicomComboBox.TabIndex = 7;
+            // 
+            // AddStructureButton
+            // 
+            this.AddStructureButton.BackColor = System.Drawing.Color.Maroon;
+            this.AddStructureButton.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AddStructureButton.Location = new System.Drawing.Point(373, 289);
+            this.AddStructureButton.Name = "AddStructureButton";
+            this.AddStructureButton.Size = new System.Drawing.Size(112, 28);
+            this.AddStructureButton.TabIndex = 6;
+            this.AddStructureButton.Text = "Add Structure";
+            this.AddStructureButton.UseVisualStyleBackColor = false;
+            this.AddStructureButton.Click += new System.EventHandler(this.AddStructureButton_Click);
+            // 
+            // removeAssignedButton
+            // 
+            this.removeAssignedButton.BackColor = System.Drawing.Color.Maroon;
+            this.removeAssignedButton.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.removeAssignedButton.Location = new System.Drawing.Point(373, 244);
+            this.removeAssignedButton.Name = "removeAssignedButton";
+            this.removeAssignedButton.Size = new System.Drawing.Size(128, 30);
+            this.removeAssignedButton.TabIndex = 5;
+            this.removeAssignedButton.Text = "Remove Selected";
+            this.removeAssignedButton.UseVisualStyleBackColor = false;
+            // 
+            // AssigningLabel
+            // 
+            this.AssigningLabel.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AssigningLabel.Location = new System.Drawing.Point(306, 75);
+            this.AssigningLabel.Name = "AssigningLabel";
+            this.AssigningLabel.Size = new System.Drawing.Size(424, 51);
+            this.AssigningLabel.TabIndex = 4;
+            this.AssigningLabel.Text = "Click on a constrained structure to view / update assigned dicom structures.";
+            // 
+            // AssignStructGridView
+            // 
+            this.AssignStructGridView.BackgroundColor = System.Drawing.SystemColors.Control;
+            this.AssignStructGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.AssignStructGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn2});
+            this.AssignStructGridView.GridColor = System.Drawing.SystemColors.HotTrack;
+            this.AssignStructGridView.Location = new System.Drawing.Point(373, 132);
+            this.AssignStructGridView.Name = "AssignStructGridView";
+            this.AssignStructGridView.Size = new System.Drawing.Size(307, 106);
+            this.AssignStructGridView.TabIndex = 3;
+            // 
+            // dataGridViewTextBoxColumn2
+            // 
+            this.dataGridViewTextBoxColumn2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle1;
+            this.dataGridViewTextBoxColumn2.HeaderText = "Assigned Structure";
+            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+            // 
+            // conStructGridView
+            // 
+            this.conStructGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCellsExceptHeader;
+            this.conStructGridView.BackgroundColor = System.Drawing.SystemColors.Control;
+            this.conStructGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.conStructGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn1});
+            this.conStructGridView.GridColor = System.Drawing.SystemColors.HotTrack;
+            this.conStructGridView.Location = new System.Drawing.Point(35, 26);
+            this.conStructGridView.Name = "conStructGridView";
+            this.conStructGridView.Size = new System.Drawing.Size(266, 356);
+            this.conStructGridView.TabIndex = 2;
+            this.conStructGridView.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.conStructGridView_CellClick);
+            this.conStructGridView.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.conStructGridView_CellContentClick);
+            // 
+            // dataGridViewTextBoxColumn1
+            // 
+            this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn1.HeaderText = "Constrained Structure";
+            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.ConstraintGridView);
+            this.panel1.Controls.Add(this.EditAssignedButton);
             this.panel1.Controls.Add(this.AddLabel);
             this.panel1.Controls.Add(this.OkButtonLabel);
             this.panel1.Controls.Add(this.FormatLabel);
@@ -514,7 +655,6 @@
             this.panel1.Controls.Add(this.ValueTB);
             this.panel1.Controls.Add(this.button3);
             this.panel1.Controls.Add(this.DeleteButton);
-            this.panel1.Controls.Add(this.ConstraintGridView);
             this.panel1.Controls.Add(this.OkButton);
             this.panel1.Location = new System.Drawing.Point(2, 25);
             this.panel1.Name = "panel1";
@@ -522,6 +662,82 @@
             this.panel1.TabIndex = 12;
             this.panel1.Visible = false;
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
+            // 
+            // ConstraintGridView
+            // 
+            this.ConstraintGridView.BackgroundColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.ConstraintGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            this.ConstraintGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.ConstraintGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Structure,
+            this.Type,
+            this.Subscript,
+            this.Relation,
+            this.Value,
+            this.Format});
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlLight;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.ConstraintGridView.DefaultCellStyle = dataGridViewCellStyle3;
+            this.ConstraintGridView.GridColor = System.Drawing.SystemColors.HotTrack;
+            this.ConstraintGridView.Location = new System.Drawing.Point(24, 3);
+            this.ConstraintGridView.Name = "ConstraintGridView";
+            this.ConstraintGridView.Size = new System.Drawing.Size(688, 241);
+            this.ConstraintGridView.TabIndex = 1;
+            // 
+            // Structure
+            // 
+            this.Structure.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Structure.HeaderText = "Structure";
+            this.Structure.Name = "Structure";
+            // 
+            // Type
+            // 
+            this.Type.HeaderText = "Type";
+            this.Type.Name = "Type";
+            // 
+            // Subscript
+            // 
+            this.Subscript.HeaderText = "Subscript";
+            this.Subscript.Name = "Subscript";
+            // 
+            // Relation
+            // 
+            this.Relation.HeaderText = "Relation";
+            this.Relation.Name = "Relation";
+            // 
+            // Value
+            // 
+            this.Value.HeaderText = "Value";
+            this.Value.Name = "Value";
+            // 
+            // Format
+            // 
+            this.Format.HeaderText = "Format";
+            this.Format.Name = "Format";
+            // 
+            // EditAssignedButton
+            // 
+            this.EditAssignedButton.BackColor = System.Drawing.Color.Maroon;
+            this.EditAssignedButton.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.EditAssignedButton.Location = new System.Drawing.Point(6, 306);
+            this.EditAssignedButton.Name = "EditAssignedButton";
+            this.EditAssignedButton.Size = new System.Drawing.Size(193, 37);
+            this.EditAssignedButton.TabIndex = 18;
+            this.EditAssignedButton.Text = "View / Edit Assigned Structures";
+            this.EditAssignedButton.UseVisualStyleBackColor = false;
+            this.EditAssignedButton.Click += new System.EventHandler(this.EditAssignedButton_Click);
             // 
             // AddLabel
             // 
@@ -669,65 +885,28 @@
             this.DeleteButton.UseVisualStyleBackColor = false;
             this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
             // 
-            // ConstraintGridView
-            // 
-            this.ConstraintGridView.BackgroundColor = System.Drawing.SystemColors.Control;
-            this.ConstraintGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.ConstraintGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Structure,
-            this.Type,
-            this.Subscript,
-            this.Relation,
-            this.Value,
-            this.Format});
-            this.ConstraintGridView.GridColor = System.Drawing.SystemColors.HotTrack;
-            this.ConstraintGridView.Location = new System.Drawing.Point(24, 3);
-            this.ConstraintGridView.Name = "ConstraintGridView";
-            this.ConstraintGridView.Size = new System.Drawing.Size(688, 241);
-            this.ConstraintGridView.TabIndex = 1;
-            // 
-            // Structure
-            // 
-            this.Structure.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Structure.HeaderText = "Structure";
-            this.Structure.Name = "Structure";
-            // 
-            // Type
-            // 
-            this.Type.HeaderText = "Type";
-            this.Type.Name = "Type";
-            // 
-            // Subscript
-            // 
-            this.Subscript.HeaderText = "Subscript";
-            this.Subscript.Name = "Subscript";
-            // 
-            // Relation
-            // 
-            this.Relation.HeaderText = "Relation";
-            this.Relation.Name = "Relation";
-            // 
-            // Value
-            // 
-            this.Value.HeaderText = "Value";
-            this.Value.Name = "Value";
-            // 
-            // Format
-            // 
-            this.Format.HeaderText = "Format";
-            this.Format.Name = "Format";
-            // 
             // OkButton
             // 
             this.OkButton.BackColor = System.Drawing.Color.Maroon;
-            this.OkButton.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.OkButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.OkButton.Location = new System.Drawing.Point(6, 345);
             this.OkButton.Name = "OkButton";
-            this.OkButton.Size = new System.Drawing.Size(170, 37);
+            this.OkButton.Size = new System.Drawing.Size(194, 37);
             this.OkButton.TabIndex = 0;
             this.OkButton.Text = "Finish Customizing";
             this.OkButton.UseVisualStyleBackColor = false;
             this.OkButton.Click += new System.EventHandler(this.OKButton_Click);
+            // 
+            // StartErrorLabel
+            // 
+            this.StartErrorLabel.AutoSize = true;
+            this.StartErrorLabel.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.StartErrorLabel.Location = new System.Drawing.Point(443, 429);
+            this.StartErrorLabel.Name = "StartErrorLabel";
+            this.StartErrorLabel.Size = new System.Drawing.Size(174, 15);
+            this.StartErrorLabel.TabIndex = 14;
+            this.StartErrorLabel.Text = "Please specify a save location.";
+            this.StartErrorLabel.Visible = false;
             // 
             // ErrorLabel
             // 
@@ -753,12 +932,16 @@
             this.ForeColor = System.Drawing.SystemColors.ControlLight;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "MainForm";
-            this.Text = "Checker";
+            this.Text = "Plan N Check";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            this.AssigningPanel.ResumeLayout(false);
+            this.AssigningPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.AssignStructGridView)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.conStructGridView)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ConstraintGridView)).EndInit();
@@ -827,5 +1010,18 @@
         private System.Windows.Forms.Label ErrorLabel;
         private System.Windows.Forms.Label AddLabel;
         private System.Windows.Forms.Label StartErrorLabel;
+        private System.Windows.Forms.Panel AssigningPanel;
+        private System.Windows.Forms.ComboBox DicomComboBox;
+        private System.Windows.Forms.Button AddStructureButton;
+        private System.Windows.Forms.Button removeAssignedButton;
+        private System.Windows.Forms.Label AssigningLabel;
+        private System.Windows.Forms.DataGridView AssignStructGridView;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
+        private System.Windows.Forms.DataGridView conStructGridView;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
+        private System.Windows.Forms.Button EditAssignedButton;
+        private System.Windows.Forms.Label assignedLabel;
+        private System.Windows.Forms.Label StructLabel;
+        private System.Windows.Forms.Button FinishedEdtingButton;
     }
 }

@@ -30,16 +30,20 @@ namespace Plan_n_Check
 
         public string Format //Relative or Absolute
         { get; set; }
-        public string status  //is constraint on or off for checking
+        public string Status  //is constraint on or off for checking
         { get; set; }
-        public Constraint(string type, string subscript, string equalityType, double value, string format)
+        public int Priority
+        { get; set; }
+        public Constraint(string type, string subscript, string equalityType, double value, string format, int priority = 0, string status = "ON")
         {
             Type = type;
             Subscript = subscript;
             EqualityType = equalityType;
             Value = value;
             Format = format;
-            status = "ON";
+            Priority = priority;
+            Status = "ON";
+
         }
 
     }

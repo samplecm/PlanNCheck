@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using VMS.TPS.Common.Model.API;
 using VMS.TPS.Common.Model.Types;
 using Plan_n_Check;
+using Plan_n_Check.Plans;
 // TODO: Replace the following version attributes by creating AssemblyInfo.cs. You can do this in the properties of the Visual Studio project.
 [assembly: ESAPIScript(IsWriteable = true)]
 [assembly: AssemblyVersion("1.0.0.1")]
@@ -58,19 +59,19 @@ namespace VMS.TPS
             System.Windows.Forms.Application.Run(mainForm);
             //System.Windows.System.Windows.MessageBox.Show("Hello", "input", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information, System.Windows.MessageBoxResult.OK);
     }
-        public static void StartOptimizer(ScriptContext context)
+        public static List<List<Structure>> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures) //Returns list of matching structures
         {
             if (context.Patient == null)
             {
                System.Windows.MessageBox.Show("Please load a patient and try again");
-                return;
+                return new List<List<Structure>>();
             }
             // Check for patient plan loaded
             ExternalPlanSetup plan = context.ExternalPlanSetup;
             if (plan == null)
             {
                 System.Windows.MessageBox.Show("Please load a plan and try again.");
-                return;
+                return new List<List<Structure>>();
             }
             if (context.StructureSet == null)
             {
@@ -92,20 +93,13 @@ namespace VMS.TPS
             plan.SetPrescription(35, new DoseValue(200, "cGy"), 1);
             double presDose = plan.TotalDose.Dose;
 
-            HNPlan hnPlan = new HNPlan(presDose);    //Initialize a Head and Neck plan, housing appropriate constraints
-
-            //Now assign DICOM structures to all constrainted structures
-            List<List<Structure>> matchingStructures = new List<List<Structure>>();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = AssignStructure(ss, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                matchingStructures.Add(assignedStructures);
-            }
+            
             //matchingStructures is the same length as hnPlan.ROIs.count
             //Now set optimization constraints
             SetConstraints(ref plan, hnPlan, matchingStructures);
             ParotidChop(ref plan, hnPlan, matchingStructures, ss, context);
 
+            return matchingStructures;
 
         }
         public static void ParotidChop(ref ExternalPlanSetup plan, HNPlan hnPlan, List<List<Structure>> matchingStructures, StructureSet ss, ScriptContext context)
@@ -862,7 +856,7 @@ namespace VMS.TPS
             return contraPar;
         }
 
-        public static void SetConstraints(ref ExternalPlanSetup plan, Plan presetPlan, List<List<Structure>> matchingStructures)
+        public static void SetConstraints(ref ExternalPlanSetup plan, HNPlan presetPlan, List<List<Structure>> matchingStructures)
         {
             //Need to set all optimization constraints now. First clear all the current constraints
             foreach (var objective in plan.OptimizationSetup.Objectives.OfType<OptimizationPointObjective>())
@@ -1267,253 +1261,9 @@ namespace VMS.TPS
         }
 
 
-        public class ROI
-        {
-            string name = "";
-            List<Constraint> constraints = new List<Constraint>();
-            public ROI()
-            {
-                this.Name = name;
-                this.Constraints = constraints;
-            }
+        
 
-
-
-            public string Name { get; set; }
-            public List<Constraint> Constraints { get; set; }
-
-        }
-
-        public class Constraint
-        {
-
-            public string Type  // V or D 
-            { get; set; }
-            public string Subscript  //mean, max 95, 50... etc
-            { get; set; }
-
-            public string EqualityType  //geq, leq
-            { get; set; }
-
-            public double Value  //Dose amount or volume amount
-            { get; set; }
-
-            public string Format //Relative or Absolute
-            { get; set; }
-            public string Status  //is constraint on or off for checking
-            { get; set; }
-            public int Priority
-            { get; set; }
-            public Constraint(string type, string subscript, string equalityType, double value, string format, int priority = 0, string status = "ON")
-            {
-                Type = type;
-                Subscript = subscript;
-                EqualityType = equalityType;
-                Value = value;
-                Format = format;
-                Priority = priority;
-                Status = "ON";
-
-            }
-
-        }
-
-        public abstract class Plan
-        {
-            //Plans must have a name, and a list of structures, which will each have a list of constraints.
-            public abstract string Name
-            { get; set; }
-            public abstract List<ROI> ROIs
-            { get; set; }
-            public abstract double PrescriptionDose
-            { get; set; }
-        }
-
-
-        public class HNPlan : Plan
-        {
-
-            string name = "Head and Neck";
-            List<ROI> rois = new List<ROI>();
-            double prescriptionDose;
-            public HNPlan(double presDose)
-            {
-                this.prescriptionDose = presDose;
-
-
-                //Get all constraints set
-
-                //Brain stem constraint (0)
-                ROI Brainstem = new ROI();
-                Brainstem.Name = "Brain Stem";
-                Brainstem.Constraints.Add(new Constraint("D", "max", "<", 5400, "abs", 100));
-                Brainstem.Constraints.Add(new Constraint("V", "5000", "<", 0.1, "abs", 100));
-                this.rois.Add(Brainstem); //Add to ROI list
-
-                //Brainstem PRV: (1)
-                ROI BrainStemPRV = new ROI();
-                BrainStemPRV.Name = "Brain Stem PRV";
-                BrainStemPRV.Constraints.Add(new Constraint("V", "60", "<", 0.1, "abs", 100));
-                this.rois.Add(BrainStemPRV);
-
-                //Spinal Cord PRV: (2)
-                ROI SpinalCord = new ROI();
-                SpinalCord.Name = "Spinal Cord";
-                SpinalCord.Constraints.Add(new Constraint("D", "max", "<", 4800, "abs", 100));
-                SpinalCord.Constraints.Add(new Constraint("V", "4500", "<", 0.1, "abs", 100));
-                this.rois.Add(SpinalCord);
-
-                //Spinal Cord PRV: (3)
-                ROI SpinalCordPRV = new ROI();
-                SpinalCordPRV.Name = "Spinal Cord PRV";
-                SpinalCordPRV.Constraints.Add(new Constraint("V", "5200", "<", 0.1, "abs", 100));
-                this.rois.Add(SpinalCordPRV);
-
-                //PTV70: (4)
-                ROI PTV70 = new ROI();
-                PTV70.Name = "PTV 70";
-                PTV70.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 100));
-                PTV70.Constraints.Add(new Constraint("D", "max", "<", 1.1 * prescriptionDose, "abs", 100));
-                this.rois.Add(PTV70);
-
-                //PTV63 (5)
-                ROI PTV63 = new ROI();
-                PTV63.Name = "PTV 63";
-                PTV63.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 100));
-                this.rois.Add(PTV63);
-
-                //PTV56 (6)
-                ROI PTV56 = new ROI();
-                PTV56.Name = "PTV 56";
-                PTV56.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110));
-                this.rois.Add(PTV56);
-
-                //Brain (7)
-                ROI Brain = new ROI();
-                Brain.Name = "Brain";
-                Brain.Constraints.Add(new Constraint("V", "6000", "<", 0.1, "abs", 100));
-                this.rois.Add(Brain);
-
-                //Chiasm  (8)
-                ROI Chiasm = new ROI();
-                Chiasm.Name = "Chiasm";
-                Chiasm.Constraints.Add(new Constraint("D", "max", "<", 4500, "abs", 20));
-                this.rois.Add(Chiasm);
-
-                //Chiasm PRV (9)
-                ROI ChiasmPRV = new ROI();
-                ChiasmPRV.Name = "Chiasm PRV";
-                ChiasmPRV.Constraints.Add(new Constraint("D", "max", "<", 5000, "abs", 20));
-                this.rois.Add(ChiasmPRV);
-
-                //Right Optic Nerve (10)
-                ROI ROpticNerve = new ROI();
-                ROpticNerve.Name = "Right Optic Nerve";
-                ROpticNerve.Constraints.Add(new Constraint("D", "max", "<", 4500, "abs", 20));
-                this.rois.Add(ROpticNerve);
-
-                //Left Optic Nerve (11)
-                ROI LOpticNerve = new ROI();
-                LOpticNerve.Name = "Left Optic Nerve";
-                LOpticNerve.Constraints.Add(new Constraint("D", "max", "<", 4500, "abs", 20));
-                this.rois.Add(LOpticNerve);
-
-                //Optic Nerve PRV (12)
-                ROI OpticNervePRV = new ROI();
-                OpticNervePRV.Name = "Optic Nerve PRV";
-                OpticNervePRV.Constraints.Add(new Constraint("D", "max", "<", 5000, "abs", 20));
-                this.rois.Add(OpticNervePRV);
-
-                //Right Globe (14)
-                ROI RGlobe = new ROI();
-                RGlobe.Name = "Right Globe";
-                RGlobe.Constraints.Add(new Constraint("D", "max", "<", 4500, "abs", 20));
-                this.rois.Add(RGlobe);
-
-                //Left Globe (15)
-                ROI LGlobe = new ROI();
-                LGlobe.Name = "Left Globe";
-                LGlobe.Constraints.Add(new Constraint("D", "max", "<", 4500, "abs", 20));
-                this.rois.Add(LGlobe);
-
-                //Right Parotid (16)
-                ROI RParotid = new ROI();
-                RParotid.Name = "Right Parotid";
-                RParotid.Constraints.Add(new Constraint("D", "mean", "<", 2000, "abs", 40));
-                this.rois.Add(RParotid);
-
-                //Left Parotid (17)
-                ROI LParotid = new ROI();
-                LParotid.Name = "Left Parotid";
-                LParotid.Constraints.Add(new Constraint("D", "mean", "<", 2000, "abs", 40));
-                this.rois.Add(LParotid);
-
-                //Right Submandibular (18)
-                ROI RSubmandibular = new ROI();
-                RSubmandibular.Name = "Right Submandibular";
-                RSubmandibular.Constraints.Add(new Constraint("D", "mean", "<", 2000, "abs", 30));
-                this.rois.Add(RParotid);
-
-                //Left Submandibular (19)
-                ROI LSubmandibular = new ROI();
-                LSubmandibular.Name = "Left Submandibular";
-                LSubmandibular.Constraints.Add(new Constraint("D", "mean", "<", 2000, "abs", 30));
-                this.rois.Add(LSubmandibular);
-
-                //Right Lens (20)
-                ROI RLens = new ROI();
-                RLens.Name = "Right Lens";
-                RLens.Constraints.Add(new Constraint("D", "max", "<", 1000, "abs", 20));
-                this.rois.Add(RLens);
-
-                //Left Lens (21)
-                ROI LLens = new ROI();
-                LLens.Name = "Left Lens";
-                LLens.Constraints.Add(new Constraint("D", "max", "<", 1000, "abs", 20));
-                this.rois.Add(LLens);
-
-                //Oral Cavity (22)
-                ROI OralCavity = new ROI();
-                OralCavity.Name = "Oral Cavity";
-                OralCavity.Constraints.Add(new Constraint("D", "mean", "<", 5000, "abs", 40));
-                this.rois.Add(OralCavity);
-
-                //Laryngo-pharynx (23)
-                ROI LarPhar = new ROI();
-                LarPhar.Name = "Laryngo-pharynx";
-                LarPhar.Constraints.Add(new Constraint("D", "mean", "<", 4500, "abs", 40));
-                this.rois.Add(LarPhar);
-
-                //Lips (24)
-                ROI Lips = new ROI();
-                Lips.Name = "Lips";
-                Lips.Constraints.Add(new Constraint("D", "mean", "<", 2500, "abs", 10));
-                this.rois.Add(Lips);
-
-                //Mandible (25)
-                ROI Mandible = new ROI();
-                Mandible.Name = "Mandible";
-                Mandible.Constraints.Add(new Constraint("D", "max", "<", 7000, "abs", 10));
-                this.rois.Add(Mandible);
-            }
-
-            public override string Name
-            {
-                get { return name; }
-                set { name = value; }
-            }
-            public override List<ROI> ROIs
-            {
-                get { return rois; }
-                set { rois = value; }
-            }
-            public override double PrescriptionDose
-            {
-                get { return prescriptionDose; }
-                set { prescriptionDose = value; }
-            }
-
-        }
+       
         public static List<Structure> AssignStructure(StructureSet ss, ROI roi) //return a list containing a list of structures matching the ROI for each constrained ROI
         {
             string name = roi.Name;
