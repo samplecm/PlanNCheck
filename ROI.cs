@@ -14,12 +14,14 @@ namespace Plan_n_Check.Plans
         {
             this.Name = name;
             this.Constraints = constraints;
+            this.Type = "";
         } 
 
 
 
         public string Name { get; set; }
         public List<Constraint> Constraints { get; set;}
+        public string Type { get; set; }
 
     }
 }

@@ -52,14 +52,23 @@ namespace VMS.TPS
             {
                 throw new System.ArgumentException("Please check that a course has been selected for " + context.Patient.Name);
             }
-            StructureSet ss = context.StructureSet;
+            
             PlanSetup ps = context.PlanSetup;
             Patient p = context.Patient;
+            p.BeginModifications();
+            StructureSet ss = context.StructureSet;
+            foreach (Structure structure in ss.Structures.ToList())
+            {
+                if (structure.Name.ToLower().Contains("subsegment"))
+                {
+                    ss.RemoveStructure(structure);
+                }
+            }
             MainForm mainForm = new MainForm(ref context);
             System.Windows.Forms.Application.Run(mainForm);
             //System.Windows.System.Windows.MessageBox.Show("Hello", "input", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information, System.Windows.MessageBoxResult.OK);
     }
-        public static List<List<Structure>> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures) //Returns list of matching structures
+        public static List<List<Structure>> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, bool[] features) //Returns list of matching structures
         {
             if (context.Patient == null)
             {
@@ -83,8 +92,6 @@ namespace VMS.TPS
             Course course = context.Course;
             Image image3d = context.Image;
 
-            patient.BeginModifications();
-
 
             ExternalBeamMachineParameters ebmp = new ExternalBeamMachineParameters("VaUnit6TB", "6X", 600, "ARC", null);
             //Create two VMAT beams
@@ -97,12 +104,15 @@ namespace VMS.TPS
             //matchingStructures is the same length as hnPlan.ROIs.count
             //Now set optimization constraints
             SetConstraints(ref plan, hnPlan, matchingStructures);
-            ParotidChop(ref plan, hnPlan, matchingStructures, ss, context);
-
+            Tuple<List<List<double[,]>>, string, List<double[]>> choppedAndName = ParotidChop(ref plan, hnPlan, matchingStructures, ss, context);
+            List<List<double[,]>> choppedContours = choppedAndName.Item1;
+            string contraParName = choppedAndName.Item2;
+            List<double[]> planes = choppedAndName.Item3;
+            Optimize(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraParName, numIterations, features);
             return matchingStructures;
 
         }
-        public static void ParotidChop(ref ExternalPlanSetup plan, HNPlan hnPlan, List<List<Structure>> matchingStructures, StructureSet ss, ScriptContext context)
+        public static Tuple<List<List<double[,]>>, string, List<double[]>> ParotidChop(ref ExternalPlanSetup plan, HNPlan hnPlan, List<List<Structure>> matchingStructures, StructureSet ss, ScriptContext context)
         {
             /* 
              1. Find contralateral parotid (one with least overlap, largest sum of distance from PTVs), get contours
@@ -126,17 +136,21 @@ namespace VMS.TPS
             int numCutsY = 1;
             List<List<double[,]>> choppedContours = Chop(contours, numCutsX, numCutsY, numCutsZ, contraPar.Name);
 
-            //3. Make the structures, 4. make constraints for each:    (All done in Optimize function)     
-            //Now run the VMAT optimization.
-            Optimize(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraPar.Name);
+            return Tuple.Create(choppedContours, contraPar.Name, planes);
+            
 
 
 
         }
         public static void Optimize(List<List<double[,]>> choppedContours, List<double[]>
-            planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> matchingStructures, string contraName, int numIterations = 2)
+            planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> matchingStructures, string contraName, int numIterations, bool[] features)
         {
-            MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, 1.1);
+            //Only make parotid structures if that feature has been selected
+            if (features[0] == true)
+            {
+                MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, 1.1);
+            }
+            
             //Now run the first VMAT optimization. 
             plan.SetCalculationModel(CalculationType.PhotonVMATOptimization, "PO_13623");
             plan.SetCalculationModel(CalculationType.DVHEstimation, "DVH Estimation Algorithm [15.6.06]");
@@ -156,8 +170,11 @@ namespace VMS.TPS
                 var dose = plan.Dose;
                 //Now need to perform a plan check and iteratively adjust constraints based on whether they passed or failed, and whether they passed with flying colours or failed miserably.
                 //Going to find the percentage by which the constraint failed or passed, and adjust both the priority and dose constraint based on this. 
-                UpdateConstraints(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName);
-                MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, 1.1);
+                UpdateConstraints(ref plan, ref ss, hnPlan, context, matchingStructures);
+                if (features[0] == true)
+                {
+                    MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, 1.1);
+                }
 
 
 
@@ -401,8 +418,7 @@ namespace VMS.TPS
 
 
         }
-        public static void UpdateConstraints(List<List<double[,]>> choppedContours, List<double[]>
-            planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> matchingStructures, string contraName)
+        public static void UpdateConstraints(ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> matchingStructures)
         {
 
             //Go through all plan types and check all constraints.
@@ -442,7 +458,7 @@ namespace VMS.TPS
                                 {
                                     sub = volume * sub / 100;
                                     value = value * prescriptionDose;
-
+                                }
                                     double doseQuant = p.GetDoseAtVolume(matchingStructures[s][match], sub, vp, dp).Dose;
                                     //now check the inequality: 
                                     if (relation == "<")
@@ -450,11 +466,20 @@ namespace VMS.TPS
                                         if (doseQuant < value)
                                         {
                                             returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED.";
+                                            //If an OAR, loosen priority if its satisfied by over 7Gy
+                                            if ((ROIs[s].Type == "OAR")||(value - doseQuant > 700))
+                                            {
+                                                hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * 0.8);
+                                            }
                                         }
                                         else
                                         {
                                             returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1));
-                                            hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * 1.1);
+
+                                            //By what percentage is the constraint being missed by (as ratio)? 
+                                            double percentageOff = 1 + (doseQuant - value) / value;
+                                            
+                                            hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * percentageOff + 10);
                                         }
                                     }
                                     else if (relation == ">")
@@ -467,14 +492,19 @@ namespace VMS.TPS
                                         else
                                         {
                                             returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1));
-                                            hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * 1.1);
+                                            //By what percentage is the constraint being missed by (as ratio)? 
+                                            double percentageOff = 1 - (doseQuant - value) / value; //minus because its negative numerator
+
+                                            hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * percentageOff + 10);
+
+
                                         }
                                     }
                                     else
                                     {
                                         returnString += "Could not understand the relation given in the constraint. \n";
                                     }
-                                }
+                                
                             }
                             catch //mean median...
                             {
@@ -511,11 +541,18 @@ namespace VMS.TPS
                                     if (dose < value)
                                     {
                                         returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED.";
+                                        if ((ROIs[s].Type == "OAR") || (value - dose > 700))
+                                        {
+                                            hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * 0.8);
+                                        }
                                     }
                                     else
                                     {
                                         returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1));
-                                        hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * 1.1);
+                                        //By what percentage is the constraint being missed by (as ratio)? 
+                                        double percentageOff = 1 + (dose - value) / value;
+
+                                        hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * percentageOff + 10);
                                     }
                                 }
                                 else if (relation == ">")
@@ -528,7 +565,10 @@ namespace VMS.TPS
                                     else
                                     {
                                         returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1));
-                                        hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * 1.1);
+                                        //By what percentage is the constraint being missed by (as ratio)? 
+                                        double percentageOff = 1 - (dose - value) / value; //negative because negative numerator
+
+                                        hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * percentageOff + 10);
                                     }
                                 }
                                 else
@@ -576,7 +616,10 @@ namespace VMS.TPS
                                     {
 
                                         returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1));
-                                        hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * 1.1);
+                                        //By what percentage is the constraint being missed by (as ratio)? 
+                                        double percentageOff = 1 + (volumeQuant - value) / value;
+
+                                        hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * percentageOff + 10);
 
                                     }
                                 }
@@ -589,7 +632,9 @@ namespace VMS.TPS
                                     else
                                     {
                                         returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1));
-                                        hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * 1.1);
+                                        double percentageOff = 1 - (volumeQuant - value) / value;
+
+                                        hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * percentageOff + 10);
                                     }
                                 }
                                 else
@@ -606,7 +651,7 @@ namespace VMS.TPS
                 }
             }
 
-            System.Windows.MessageBox.Show(returnString);
+           // System.Windows.MessageBox.Show(returnString);
 
         }
         public static void MakeParotidStructures(List<List<double[,]>> choppedContours, List<double[]>
@@ -627,7 +672,7 @@ namespace VMS.TPS
             double[] importanceValues = new double[18] { 0.751310670731707,  0.526618902439024,   0.386310975609756,
                 1,   0.937500000000000,   0.169969512195122,   0.538871951219512 ,  0.318064024390244,   0.167751524390244,
                 0.348320884146341,   0.00611608231707317, 0.0636128048780488,  0.764222560975610,   0.0481192835365854,  0.166463414634146,
-                0.272984146341463,   0.0484897103658537,  0.0354939024390244, };
+                0.272984146341463,   0.0484897103658537,  0.0354939024390244 };
             //Now need to chop up the parotid, and make new constraints
             List<Structure> subsegments = new List<Structure>();
             string name;
@@ -682,7 +727,11 @@ namespace VMS.TPS
                             doseConstraint = 1500;//hnPlan.ROIs[ROI_Index].Constraints[0].Value;
                             priority = hnPlan.ROIs[ROI_Index].Constraints[0].Priority;
                             priority *= priorityRatio * importanceValues[subsegment];
-                            plan.OptimizationSetup.AddMeanDoseObjective(subsegments[subsegment], new DoseValue(doseConstraint, "cGy"), priority);
+                            if (priority > 15)
+                            {
+                                plan.OptimizationSetup.AddMeanDoseObjective(subsegments[subsegment], new DoseValue(doseConstraint, "cGy"), priority);
+                            }
+                            
                         }
                         catch { }
                     }
@@ -867,6 +916,7 @@ namespace VMS.TPS
             foreach (var objective in plan.OptimizationSetup.Objectives.OfType<OptimizationMeanDoseObjective>())
             {
                 plan.OptimizationSetup.RemoveObjective(objective);
+                
 
             }
 
@@ -936,17 +986,19 @@ namespace VMS.TPS
                             {
                                 if (format.ToLower() == "abs")
                                 {
-                                    double dose = Convert.ToInt32(subscript) * 100; //convert to cGy
+                                    double dose = Convert.ToInt32(subscript); //convert to cGy
                                     //Need to convert to relative volume. 
                                     volume = value / volume * 100;
+                                    volume = (volume + 200) / 3;
                                     plan.OptimizationSetup.AddPointObjective(matchingStructures[i][match], constraintType,
                                         new DoseValue(dose, "cGy"), volume, presetPlan.ROIs[i].Constraints[j].Priority);
-
+                                    
                                 }
                                 else  //if relative, will belong to a PTV
                                 {
                                     double dose = FindPTVNumber(matchingStructures[i][match].Name.ToLower()) * 100;
                                     volume = value;
+                                    volume = (volume + 200) / 3; //putting the volume constraint bigger than the actual volume constraint to push the optimizer
                                     plan.OptimizationSetup.AddPointObjective(matchingStructures[i][match], constraintType,
                                        new DoseValue(dose, "cGy"), volume, presetPlan.ROIs[i].Constraints[j].Priority);
                                 }
@@ -1121,6 +1173,15 @@ namespace VMS.TPS
         }
         public static void BeamMaker(ref ExternalPlanSetup plan, StructureSet ss, double prescriptionDose)
         {
+            //First check if beams already exist
+            foreach (Beam beam in plan.Beams)
+            {
+                if (beam.Id == "vmat1")
+                {
+                    return;
+                } 
+            }
+
             //need to create two arc beams, and make sure they fit to PTVs.
             ExternalBeamMachineParameters ebmp = new ExternalBeamMachineParameters("VaUnit6TB", "6X", 600, "ARC", null);
             //First need to find the isocentre, which will be in the main PTV
@@ -2424,6 +2485,7 @@ namespace VMS.TPS
                     m = (contours[contours.Length / 3 - 1, 1] - contours[0, 1]) / (contours[contours.Length / 3 - 1, 0] - contours[0, 0]);
                     xNew = ((yCut[y] - contours[0, 1]) / m) + contours[0, 0];
                     finalContours = AddPoint(finalContours, contours.Length / 3, new double[] { xNew, yCut[y], contours[0, 2] });
+                    
                 }
                 for (int i = 1; i < numConts - 1; i++)    //for all points, except last one will be out of loop
                 {

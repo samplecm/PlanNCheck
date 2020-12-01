@@ -28,6 +28,7 @@ namespace Plan_n_Check
         public ScriptContext context { get; set; }
 
         public List<Structure> DicomStructures { get; set; }
+        public bool[] Features { get; set; }
         public MainForm(ref ScriptContext contextIn)
         {
             InitializeComponent();
@@ -35,6 +36,7 @@ namespace Plan_n_Check
             this.Plans = new List<Plan>();
             this.MatchingStructures = new List<List<Structure>>();
             this.DicomStructures = new List<Structure>();
+            this.Features = new bool[1];
             
         }
 
@@ -115,9 +117,20 @@ namespace Plan_n_Check
             {
                 StartErrorLabel.Text = "Please select a type of plan to report on.";
             }
+            else if ((!int.TryParse(this.IterationsTextBox.Text, out int value))||(this.IterationsTextBox.Text == "0")) //if numints is not an integer or 0
+            {
+                StartErrorLabel.Text = "Number of iterations must be an integer greater than zero.";
+            }
             else
             {
-                VMS.TPS.Script.StartOptimizer(this.context, this.HnPlan, this.MatchingStructures);
+                int iterations = Convert.ToInt32(this.IterationsTextBox.Text);
+                //Check which special optimization features to include
+                if (CheckBox_ChopParotid.Checked)
+                {
+                    this.Features[0] = true;
+                }
+                StartErrorLabel.Text = "In progress";
+                VMS.TPS.Script.StartOptimizer(this.context, this.HnPlan, this.MatchingStructures, iterations, this.Features);
                 Calculator.RunReport(this.context, this.Plans, this.SavePath);
 
 
@@ -336,6 +349,7 @@ namespace Plan_n_Check
                     }
 
                 }
+                ConstraintGridView.Rows.Clear();
             }
             ConstraintGridView.ForeColor = System.Drawing.Color.Black;
             DataTable dt = new DataTable();
@@ -666,21 +680,22 @@ namespace Plan_n_Check
 
             //Constraint Structure List: 
             //Delete all rows: 
+            conStructGridView.Rows.Clear();
             int numRows = conStructGridView.Rows.Count;
-            if (numRows > 1)
-            {
-                for (int i = numRows - 2; i > 0; i--)
-                {
-                    try
-                    {
-                       conStructGridView.Rows.RemoveAt(i);
-                    }
-                    catch
-                    {
-                    }
+            //if (numRows > 1)
+            //{
+            //    for (int i = numRows - 2; i > 0; i--)
+            //    {
+            //        try
+            //        {
+            //           conStructGridView.Rows.RemoveAt(i);
+            //        }
+            //        catch
+            //        {
+            //        }
 
-                }
-            }
+            //    }
+            //}
             conStructGridView.ForeColor = System.Drawing.Color.Black;
             DataTable dt = new DataTable();
             dt.Columns.Add("Constrained Structure");
@@ -791,6 +806,50 @@ namespace Plan_n_Check
             }
            
 
+        }
+
+        private void removeAssignedButton_Click(object sender, EventArgs e)
+        {
+            int contourIndex = Convert.ToInt32(this.StructureLabel.Text);
+            int selectedRowCount =AssignStructGridView.Rows.GetRowCount(DataGridViewElementStates.Selected);
+            if (selectedRowCount == 1)
+            {
+                int selectedIndex = AssignStructGridView.SelectedRows[0].Index;
+                this.MatchingStructures[contourIndex].RemoveAt(selectedIndex);
+            }
+                
+
+            //Now update the lists
+
+            this.AssignStructGridView.Rows.Clear();
+          
+            this.AssignStructGridView.ForeColor = System.Drawing.Color.Black;
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Assigned Structures");
+            for (int i = 0; i < this.MatchingStructures[contourIndex].Count; i++)
+            {
+                DataRow row = dt.NewRow();
+                row["Assigned Structures"] = this.MatchingStructures[contourIndex][i].Name;
+                dt.Rows.Add(row);
+            }
+            foreach (DataRow DRow in dt.Rows)
+            {
+                int num = this.AssignStructGridView.Rows.Add();
+                this.AssignStructGridView.Rows[num].Cells[0].Value = DRow["Assigned Structures"].ToString();
+            }
+           
+        }
+
+        private void LoadFeaturesButton_Click(object sender, EventArgs e)
+        {
+            this.PanelSpecialFeatures.Visible = true;
+            this.PanelSpecialFeatures.BringToFront();
+        }
+
+        private void ButtonDoneFeatures_Click(object sender, EventArgs e)
+        {
+            this.PanelSpecialFeatures.Visible = false;
+            this.PanelSpecialFeatures.SendToBack();
         }
     }
 }

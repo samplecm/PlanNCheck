@@ -29,8 +29,7 @@
         private void InitializeComponent()
         {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.checkBox19 = new System.Windows.Forms.CheckBox();
@@ -63,18 +62,6 @@
             this.LocationLabel = new System.Windows.Forms.Label();
             this.CustomizeButton = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.AssigningPanel = new System.Windows.Forms.Panel();
-            this.FinishedEdtingButton = new System.Windows.Forms.Button();
-            this.assignedLabel = new System.Windows.Forms.Label();
-            this.StructLabel = new System.Windows.Forms.Label();
-            this.DicomComboBox = new System.Windows.Forms.ComboBox();
-            this.AddStructureButton = new System.Windows.Forms.Button();
-            this.removeAssignedButton = new System.Windows.Forms.Button();
-            this.AssigningLabel = new System.Windows.Forms.Label();
-            this.AssignStructGridView = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.conStructGridView = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel1 = new System.Windows.Forms.Panel();
             this.ConstraintGridView = new System.Windows.Forms.DataGridView();
             this.Structure = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -103,13 +90,34 @@
             this.OkButton = new System.Windows.Forms.Button();
             this.StartErrorLabel = new System.Windows.Forms.Label();
             this.ErrorLabel = new System.Windows.Forms.Label();
+            this.AssigningPanel = new System.Windows.Forms.Panel();
+            this.FinishedEdtingButton = new System.Windows.Forms.Button();
+            this.assignedLabel = new System.Windows.Forms.Label();
+            this.StructLabel = new System.Windows.Forms.Label();
+            this.DicomComboBox = new System.Windows.Forms.ComboBox();
+            this.AddStructureButton = new System.Windows.Forms.Button();
+            this.removeAssignedButton = new System.Windows.Forms.Button();
+            this.AssigningLabel = new System.Windows.Forms.Label();
+            this.AssignStructGridView = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.conStructGridView = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.IterationsLabel = new System.Windows.Forms.Label();
+            this.IterationsTextBox = new System.Windows.Forms.TextBox();
+            this.PanelSpecialFeatures = new System.Windows.Forms.Panel();
+            this.LabelSpecialFeatures = new System.Windows.Forms.Label();
+            this.CheckBox_ChopParotid = new System.Windows.Forms.CheckBox();
+            this.LoadFeaturesButton = new System.Windows.Forms.Button();
+            this.ButtonDoneFeatures = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.ConstraintGridView)).BeginInit();
             this.AssigningPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AssignStructGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.conStructGridView)).BeginInit();
-            this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.ConstraintGridView)).BeginInit();
+            this.PanelSpecialFeatures.SuspendLayout();
             this.SuspendLayout();
             // 
             // label2
@@ -407,10 +415,10 @@
             // BrowseButton
             // 
             this.BrowseButton.BackColor = System.Drawing.Color.Maroon;
-            this.BrowseButton.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BrowseButton.Location = new System.Drawing.Point(112, 456);
+            this.BrowseButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BrowseButton.Location = new System.Drawing.Point(112, 451);
             this.BrowseButton.Name = "BrowseButton";
-            this.BrowseButton.Size = new System.Drawing.Size(75, 23);
+            this.BrowseButton.Size = new System.Drawing.Size(70, 31);
             this.BrowseButton.TabIndex = 5;
             this.BrowseButton.Text = "Browse";
             this.BrowseButton.UseVisualStyleBackColor = false;
@@ -429,10 +437,10 @@
             // StartButton
             // 
             this.StartButton.BackColor = System.Drawing.Color.Maroon;
-            this.StartButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.StartButton.Location = new System.Drawing.Point(639, 421);
+            this.StartButton.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.StartButton.Location = new System.Drawing.Point(577, 461);
             this.StartButton.Name = "StartButton";
-            this.StartButton.Size = new System.Drawing.Size(75, 29);
+            this.StartButton.Size = new System.Drawing.Size(75, 31);
             this.StartButton.TabIndex = 7;
             this.StartButton.Text = "Start";
             this.StartButton.UseVisualStyleBackColor = false;
@@ -441,10 +449,10 @@
             // button2
             // 
             this.button2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.button2.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button2.Location = new System.Drawing.Point(639, 456);
+            this.button2.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button2.Location = new System.Drawing.Point(653, 461);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 25);
+            this.button2.Size = new System.Drawing.Size(75, 31);
             this.button2.TabIndex = 8;
             this.button2.Text = "Cancel";
             this.button2.UseVisualStyleBackColor = false;
@@ -484,7 +492,8 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.AssigningPanel);
+            this.groupBox2.Controls.Add(this.IterationsTextBox);
+            this.groupBox2.Controls.Add(this.IterationsLabel);
             this.groupBox2.Controls.Add(this.panel1);
             this.groupBox2.Controls.Add(this.StartErrorLabel);
             this.groupBox2.Controls.Add(this.ErrorLabel);
@@ -499,11 +508,286 @@
             this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Controls.Add(this.groupBox1);
+            this.groupBox2.Controls.Add(this.AssigningPanel);
+            this.groupBox2.Controls.Add(this.PanelSpecialFeatures);
             this.groupBox2.Location = new System.Drawing.Point(0, 55);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(737, 493);
             this.groupBox2.TabIndex = 12;
             this.groupBox2.TabStop = false;
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.label5);
+            this.panel1.Controls.Add(this.LoadFeaturesButton);
+            this.panel1.Controls.Add(this.ConstraintGridView);
+            this.panel1.Controls.Add(this.EditAssignedButton);
+            this.panel1.Controls.Add(this.AddLabel);
+            this.panel1.Controls.Add(this.OkButtonLabel);
+            this.panel1.Controls.Add(this.FormatLabel);
+            this.panel1.Controls.Add(this.ValueLabel);
+            this.panel1.Controls.Add(this.RelationLabel);
+            this.panel1.Controls.Add(this.SubscriptLabel);
+            this.panel1.Controls.Add(this.TypeLabel);
+            this.panel1.Controls.Add(this.StructureLabel);
+            this.panel1.Controls.Add(this.FormatTB);
+            this.panel1.Controls.Add(this.RelationTB);
+            this.panel1.Controls.Add(this.SubscriptTB);
+            this.panel1.Controls.Add(this.TypeTB);
+            this.panel1.Controls.Add(this.StructureTB);
+            this.panel1.Controls.Add(this.ValueTB);
+            this.panel1.Controls.Add(this.button3);
+            this.panel1.Controls.Add(this.DeleteButton);
+            this.panel1.Controls.Add(this.OkButton);
+            this.panel1.Location = new System.Drawing.Point(2, 25);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(729, 382);
+            this.panel1.TabIndex = 12;
+            this.panel1.Visible = false;
+            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
+            // 
+            // ConstraintGridView
+            // 
+            this.ConstraintGridView.BackgroundColor = System.Drawing.SystemColors.Control;
+            this.ConstraintGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.ConstraintGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Structure,
+            this.Type,
+            this.Subscript,
+            this.Relation,
+            this.Value,
+            this.Format});
+            this.ConstraintGridView.GridColor = System.Drawing.SystemColors.HotTrack;
+            this.ConstraintGridView.Location = new System.Drawing.Point(24, 3);
+            this.ConstraintGridView.Name = "ConstraintGridView";
+            this.ConstraintGridView.Size = new System.Drawing.Size(688, 241);
+            this.ConstraintGridView.TabIndex = 1;
+            // 
+            // Structure
+            // 
+            this.Structure.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Structure.HeaderText = "Structure";
+            this.Structure.Name = "Structure";
+            // 
+            // Type
+            // 
+            this.Type.HeaderText = "Type";
+            this.Type.Name = "Type";
+            // 
+            // Subscript
+            // 
+            this.Subscript.HeaderText = "Subscript";
+            this.Subscript.Name = "Subscript";
+            // 
+            // Relation
+            // 
+            this.Relation.HeaderText = "Relation";
+            this.Relation.Name = "Relation";
+            // 
+            // Value
+            // 
+            this.Value.HeaderText = "Value";
+            this.Value.Name = "Value";
+            // 
+            // Format
+            // 
+            this.Format.HeaderText = "Format";
+            this.Format.Name = "Format";
+            // 
+            // EditAssignedButton
+            // 
+            this.EditAssignedButton.BackColor = System.Drawing.Color.Maroon;
+            this.EditAssignedButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.EditAssignedButton.Location = new System.Drawing.Point(6, 324);
+            this.EditAssignedButton.Name = "EditAssignedButton";
+            this.EditAssignedButton.Size = new System.Drawing.Size(187, 27);
+            this.EditAssignedButton.TabIndex = 18;
+            this.EditAssignedButton.Text = "View / Edit Assigned Structures";
+            this.EditAssignedButton.UseVisualStyleBackColor = false;
+            this.EditAssignedButton.Click += new System.EventHandler(this.EditAssignedButton_Click);
+            // 
+            // AddLabel
+            // 
+            this.AddLabel.AutoSize = true;
+            this.AddLabel.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AddLabel.Location = new System.Drawing.Point(390, 357);
+            this.AddLabel.Name = "AddLabel";
+            this.AddLabel.Size = new System.Drawing.Size(336, 14);
+            this.AddLabel.TabIndex = 17;
+            this.AddLabel.Text = "Please ensure all fields are filled before adding a constraint";
+            this.AddLabel.Visible = false;
+            // 
+            // OkButtonLabel
+            // 
+            this.OkButtonLabel.AutoSize = true;
+            this.OkButtonLabel.Location = new System.Drawing.Point(165, 368);
+            this.OkButtonLabel.Name = "OkButtonLabel";
+            this.OkButtonLabel.Size = new System.Drawing.Size(0, 13);
+            this.OkButtonLabel.TabIndex = 16;
+            this.OkButtonLabel.Visible = false;
+            // 
+            // FormatLabel
+            // 
+            this.FormatLabel.AutoSize = true;
+            this.FormatLabel.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FormatLabel.Location = new System.Drawing.Point(615, 273);
+            this.FormatLabel.Name = "FormatLabel";
+            this.FormatLabel.Size = new System.Drawing.Size(52, 18);
+            this.FormatLabel.TabIndex = 15;
+            this.FormatLabel.Text = "Format";
+            // 
+            // ValueLabel
+            // 
+            this.ValueLabel.AutoSize = true;
+            this.ValueLabel.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ValueLabel.Location = new System.Drawing.Point(507, 273);
+            this.ValueLabel.Name = "ValueLabel";
+            this.ValueLabel.Size = new System.Drawing.Size(43, 18);
+            this.ValueLabel.TabIndex = 14;
+            this.ValueLabel.Text = "Value";
+            // 
+            // RelationLabel
+            // 
+            this.RelationLabel.AutoSize = true;
+            this.RelationLabel.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.RelationLabel.Location = new System.Drawing.Point(408, 273);
+            this.RelationLabel.Name = "RelationLabel";
+            this.RelationLabel.Size = new System.Drawing.Size(59, 18);
+            this.RelationLabel.TabIndex = 13;
+            this.RelationLabel.Text = "Relation";
+            // 
+            // SubscriptLabel
+            // 
+            this.SubscriptLabel.AutoSize = true;
+            this.SubscriptLabel.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.SubscriptLabel.Location = new System.Drawing.Point(305, 272);
+            this.SubscriptLabel.Name = "SubscriptLabel";
+            this.SubscriptLabel.Size = new System.Drawing.Size(65, 18);
+            this.SubscriptLabel.TabIndex = 12;
+            this.SubscriptLabel.Text = "Subscript";
+            // 
+            // TypeLabel
+            // 
+            this.TypeLabel.AutoSize = true;
+            this.TypeLabel.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TypeLabel.Location = new System.Drawing.Point(203, 272);
+            this.TypeLabel.Name = "TypeLabel";
+            this.TypeLabel.Size = new System.Drawing.Size(37, 18);
+            this.TypeLabel.TabIndex = 11;
+            this.TypeLabel.Text = "Type";
+            // 
+            // StructureLabel
+            // 
+            this.StructureLabel.AutoSize = true;
+            this.StructureLabel.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.StructureLabel.Location = new System.Drawing.Point(279, 354);
+            this.StructureLabel.Name = "StructureLabel";
+            this.StructureLabel.Size = new System.Drawing.Size(65, 18);
+            this.StructureLabel.TabIndex = 10;
+            this.StructureLabel.Text = "Structure";
+            this.StructureLabel.Visible = false;
+            // 
+            // FormatTB
+            // 
+            this.FormatTB.Location = new System.Drawing.Point(618, 250);
+            this.FormatTB.Name = "FormatTB";
+            this.FormatTB.Size = new System.Drawing.Size(91, 20);
+            this.FormatTB.TabIndex = 10;
+            // 
+            // RelationTB
+            // 
+            this.RelationTB.Location = new System.Drawing.Point(411, 250);
+            this.RelationTB.Name = "RelationTB";
+            this.RelationTB.Size = new System.Drawing.Size(93, 20);
+            this.RelationTB.TabIndex = 8;
+            // 
+            // SubscriptTB
+            // 
+            this.SubscriptTB.Location = new System.Drawing.Point(308, 250);
+            this.SubscriptTB.Name = "SubscriptTB";
+            this.SubscriptTB.Size = new System.Drawing.Size(97, 20);
+            this.SubscriptTB.TabIndex = 7;
+            // 
+            // TypeTB
+            // 
+            this.TypeTB.Location = new System.Drawing.Point(206, 250);
+            this.TypeTB.Name = "TypeTB";
+            this.TypeTB.Size = new System.Drawing.Size(96, 20);
+            this.TypeTB.TabIndex = 6;
+            // 
+            // StructureTB
+            // 
+            this.StructureTB.Location = new System.Drawing.Point(65, 250);
+            this.StructureTB.Name = "StructureTB";
+            this.StructureTB.Size = new System.Drawing.Size(135, 20);
+            this.StructureTB.TabIndex = 5;
+            // 
+            // ValueTB
+            // 
+            this.ValueTB.Location = new System.Drawing.Point(510, 250);
+            this.ValueTB.Name = "ValueTB";
+            this.ValueTB.Size = new System.Drawing.Size(102, 20);
+            this.ValueTB.TabIndex = 9;
+            // 
+            // button3
+            // 
+            this.button3.BackColor = System.Drawing.Color.Maroon;
+            this.button3.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button3.Location = new System.Drawing.Point(420, 303);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(140, 30);
+            this.button3.TabIndex = 3;
+            this.button3.Text = "Add Constraint";
+            this.button3.UseVisualStyleBackColor = false;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // DeleteButton
+            // 
+            this.DeleteButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.DeleteButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.DeleteButton.Location = new System.Drawing.Point(566, 302);
+            this.DeleteButton.Name = "DeleteButton";
+            this.DeleteButton.Size = new System.Drawing.Size(152, 30);
+            this.DeleteButton.TabIndex = 2;
+            this.DeleteButton.Text = "Delete Constraint";
+            this.DeleteButton.UseVisualStyleBackColor = false;
+            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
+            // 
+            // OkButton
+            // 
+            this.OkButton.BackColor = System.Drawing.Color.Maroon;
+            this.OkButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.OkButton.Location = new System.Drawing.Point(6, 354);
+            this.OkButton.Name = "OkButton";
+            this.OkButton.Size = new System.Drawing.Size(187, 28);
+            this.OkButton.TabIndex = 0;
+            this.OkButton.Text = "Change Plan Type";
+            this.OkButton.UseVisualStyleBackColor = false;
+            this.OkButton.Click += new System.EventHandler(this.OKButton_Click);
+            // 
+            // StartErrorLabel
+            // 
+            this.StartErrorLabel.AutoSize = true;
+            this.StartErrorLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.StartErrorLabel.Location = new System.Drawing.Point(351, 463);
+            this.StartErrorLabel.Name = "StartErrorLabel";
+            this.StartErrorLabel.Size = new System.Drawing.Size(208, 19);
+            this.StartErrorLabel.TabIndex = 14;
+            this.StartErrorLabel.Text = "Please specify a save location.";
+            this.StartErrorLabel.Visible = false;
+            // 
+            // ErrorLabel
+            // 
+            this.ErrorLabel.AutoSize = true;
+            this.ErrorLabel.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ErrorLabel.Location = new System.Drawing.Point(75, 361);
+            this.ErrorLabel.Name = "ErrorLabel";
+            this.ErrorLabel.Size = new System.Drawing.Size(520, 15);
+            this.ErrorLabel.TabIndex = 13;
+            this.ErrorLabel.Text = "Only one plan can be checked at a time. Please run the program separately for eac" +
+    "h plan type.";
+            this.ErrorLabel.Visible = false;
+            this.ErrorLabel.Click += new System.EventHandler(this.ErrorLabel_Click);
             // 
             // AssigningPanel
             // 
@@ -584,6 +868,7 @@
             this.removeAssignedButton.TabIndex = 5;
             this.removeAssignedButton.Text = "Remove Selected";
             this.removeAssignedButton.UseVisualStyleBackColor = false;
+            this.removeAssignedButton.Click += new System.EventHandler(this.removeAssignedButton_Click);
             // 
             // AssigningLabel
             // 
@@ -603,6 +888,7 @@
             this.AssignStructGridView.GridColor = System.Drawing.SystemColors.HotTrack;
             this.AssignStructGridView.Location = new System.Drawing.Point(373, 132);
             this.AssignStructGridView.Name = "AssignStructGridView";
+            this.AssignStructGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.AssignStructGridView.Size = new System.Drawing.Size(307, 106);
             this.AssignStructGridView.TabIndex = 3;
             // 
@@ -635,302 +921,101 @@
             this.dataGridViewTextBoxColumn1.HeaderText = "Constrained Structure";
             this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
             // 
-            // panel1
+            // IterationsLabel
             // 
-            this.panel1.Controls.Add(this.ConstraintGridView);
-            this.panel1.Controls.Add(this.EditAssignedButton);
-            this.panel1.Controls.Add(this.AddLabel);
-            this.panel1.Controls.Add(this.OkButtonLabel);
-            this.panel1.Controls.Add(this.FormatLabel);
-            this.panel1.Controls.Add(this.ValueLabel);
-            this.panel1.Controls.Add(this.RelationLabel);
-            this.panel1.Controls.Add(this.SubscriptLabel);
-            this.panel1.Controls.Add(this.TypeLabel);
-            this.panel1.Controls.Add(this.StructureLabel);
-            this.panel1.Controls.Add(this.FormatTB);
-            this.panel1.Controls.Add(this.RelationTB);
-            this.panel1.Controls.Add(this.SubscriptTB);
-            this.panel1.Controls.Add(this.TypeTB);
-            this.panel1.Controls.Add(this.StructureTB);
-            this.panel1.Controls.Add(this.ValueTB);
-            this.panel1.Controls.Add(this.button3);
-            this.panel1.Controls.Add(this.DeleteButton);
-            this.panel1.Controls.Add(this.OkButton);
-            this.panel1.Location = new System.Drawing.Point(2, 25);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(729, 382);
-            this.panel1.TabIndex = 12;
-            this.panel1.Visible = false;
-            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
+            this.IterationsLabel.AutoSize = true;
+            this.IterationsLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IterationsLabel.Location = new System.Drawing.Point(536, 413);
+            this.IterationsLabel.Name = "IterationsLabel";
+            this.IterationsLabel.Size = new System.Drawing.Size(162, 19);
+            this.IterationsLabel.TabIndex = 19;
+            this.IterationsLabel.Text = "Optimization Iterations:";
             // 
-            // ConstraintGridView
+            // IterationsTextBox
             // 
-            this.ConstraintGridView.BackgroundColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.ConstraintGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
-            this.ConstraintGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.ConstraintGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Structure,
-            this.Type,
-            this.Subscript,
-            this.Relation,
-            this.Value,
-            this.Format});
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlLight;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.ConstraintGridView.DefaultCellStyle = dataGridViewCellStyle3;
-            this.ConstraintGridView.GridColor = System.Drawing.SystemColors.HotTrack;
-            this.ConstraintGridView.Location = new System.Drawing.Point(24, 3);
-            this.ConstraintGridView.Name = "ConstraintGridView";
-            this.ConstraintGridView.Size = new System.Drawing.Size(688, 241);
-            this.ConstraintGridView.TabIndex = 1;
+            this.IterationsTextBox.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.IterationsTextBox.Location = new System.Drawing.Point(704, 410);
+            this.IterationsTextBox.Name = "IterationsTextBox";
+            this.IterationsTextBox.Size = new System.Drawing.Size(16, 27);
+            this.IterationsTextBox.TabIndex = 20;
+            this.IterationsTextBox.Text = "2";
             // 
-            // Structure
+            // PanelSpecialFeatures
             // 
-            this.Structure.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Structure.HeaderText = "Structure";
-            this.Structure.Name = "Structure";
+            this.PanelSpecialFeatures.Controls.Add(this.ButtonDoneFeatures);
+            this.PanelSpecialFeatures.Controls.Add(this.CheckBox_ChopParotid);
+            this.PanelSpecialFeatures.Controls.Add(this.LabelSpecialFeatures);
+            this.PanelSpecialFeatures.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.PanelSpecialFeatures.Location = new System.Drawing.Point(0, 6);
+            this.PanelSpecialFeatures.Name = "PanelSpecialFeatures";
+            this.PanelSpecialFeatures.Size = new System.Drawing.Size(737, 399);
+            this.PanelSpecialFeatures.TabIndex = 19;
+            this.PanelSpecialFeatures.Visible = false;
             // 
-            // Type
+            // LabelSpecialFeatures
             // 
-            this.Type.HeaderText = "Type";
-            this.Type.Name = "Type";
+            this.LabelSpecialFeatures.AutoSize = true;
+            this.LabelSpecialFeatures.Font = new System.Drawing.Font("Calibri", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LabelSpecialFeatures.Location = new System.Drawing.Point(67, 15);
+            this.LabelSpecialFeatures.Name = "LabelSpecialFeatures";
+            this.LabelSpecialFeatures.Size = new System.Drawing.Size(554, 29);
+            this.LabelSpecialFeatures.TabIndex = 0;
+            this.LabelSpecialFeatures.Text = "Please select which special optimization features to use";
             // 
-            // Subscript
+            // CheckBox_ChopParotid
             // 
-            this.Subscript.HeaderText = "Subscript";
-            this.Subscript.Name = "Subscript";
+            this.CheckBox_ChopParotid.AutoSize = true;
+            this.CheckBox_ChopParotid.Location = new System.Drawing.Point(71, 66);
+            this.CheckBox_ChopParotid.Name = "CheckBox_ChopParotid";
+            this.CheckBox_ChopParotid.Size = new System.Drawing.Size(248, 23);
+            this.CheckBox_ChopParotid.TabIndex = 1;
+            this.CheckBox_ChopParotid.Text = "Sub-parotid structure optimization";
+            this.CheckBox_ChopParotid.UseVisualStyleBackColor = true;
             // 
-            // Relation
+            // LoadFeaturesButton
             // 
-            this.Relation.HeaderText = "Relation";
-            this.Relation.Name = "Relation";
+            this.LoadFeaturesButton.BackColor = System.Drawing.Color.Maroon;
+            this.LoadFeaturesButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LoadFeaturesButton.Location = new System.Drawing.Point(8, 293);
+            this.LoadFeaturesButton.Name = "LoadFeaturesButton";
+            this.LoadFeaturesButton.Size = new System.Drawing.Size(185, 27);
+            this.LoadFeaturesButton.TabIndex = 19;
+            this.LoadFeaturesButton.Text = "Select Special Features";
+            this.LoadFeaturesButton.UseVisualStyleBackColor = false;
+            this.LoadFeaturesButton.Click += new System.EventHandler(this.LoadFeaturesButton_Click);
             // 
-            // Value
+            // ButtonDoneFeatures
             // 
-            this.Value.HeaderText = "Value";
-            this.Value.Name = "Value";
+            this.ButtonDoneFeatures.BackColor = System.Drawing.Color.Maroon;
+            this.ButtonDoneFeatures.Location = new System.Drawing.Point(645, 355);
+            this.ButtonDoneFeatures.Name = "ButtonDoneFeatures";
+            this.ButtonDoneFeatures.Size = new System.Drawing.Size(75, 32);
+            this.ButtonDoneFeatures.TabIndex = 2;
+            this.ButtonDoneFeatures.Text = "Done";
+            this.ButtonDoneFeatures.UseVisualStyleBackColor = false;
+            this.ButtonDoneFeatures.Click += new System.EventHandler(this.ButtonDoneFeatures_Click);
             // 
-            // Format
+            // label5
             // 
-            this.Format.HeaderText = "Format";
-            this.Format.Name = "Format";
-            // 
-            // EditAssignedButton
-            // 
-            this.EditAssignedButton.BackColor = System.Drawing.Color.Maroon;
-            this.EditAssignedButton.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.EditAssignedButton.Location = new System.Drawing.Point(6, 306);
-            this.EditAssignedButton.Name = "EditAssignedButton";
-            this.EditAssignedButton.Size = new System.Drawing.Size(193, 37);
-            this.EditAssignedButton.TabIndex = 18;
-            this.EditAssignedButton.Text = "View / Edit Assigned Structures";
-            this.EditAssignedButton.UseVisualStyleBackColor = false;
-            this.EditAssignedButton.Click += new System.EventHandler(this.EditAssignedButton_Click);
-            // 
-            // AddLabel
-            // 
-            this.AddLabel.AutoSize = true;
-            this.AddLabel.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.AddLabel.Location = new System.Drawing.Point(390, 357);
-            this.AddLabel.Name = "AddLabel";
-            this.AddLabel.Size = new System.Drawing.Size(336, 14);
-            this.AddLabel.TabIndex = 17;
-            this.AddLabel.Text = "Please ensure all fields are filled before adding a constraint";
-            this.AddLabel.Visible = false;
-            // 
-            // OkButtonLabel
-            // 
-            this.OkButtonLabel.AutoSize = true;
-            this.OkButtonLabel.Location = new System.Drawing.Point(165, 368);
-            this.OkButtonLabel.Name = "OkButtonLabel";
-            this.OkButtonLabel.Size = new System.Drawing.Size(0, 13);
-            this.OkButtonLabel.TabIndex = 16;
-            this.OkButtonLabel.Visible = false;
-            // 
-            // FormatLabel
-            // 
-            this.FormatLabel.AutoSize = true;
-            this.FormatLabel.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FormatLabel.Location = new System.Drawing.Point(615, 273);
-            this.FormatLabel.Name = "FormatLabel";
-            this.FormatLabel.Size = new System.Drawing.Size(45, 14);
-            this.FormatLabel.TabIndex = 15;
-            this.FormatLabel.Text = "Format";
-            // 
-            // ValueLabel
-            // 
-            this.ValueLabel.AutoSize = true;
-            this.ValueLabel.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ValueLabel.Location = new System.Drawing.Point(507, 273);
-            this.ValueLabel.Name = "ValueLabel";
-            this.ValueLabel.Size = new System.Drawing.Size(38, 14);
-            this.ValueLabel.TabIndex = 14;
-            this.ValueLabel.Text = "Value";
-            // 
-            // RelationLabel
-            // 
-            this.RelationLabel.AutoSize = true;
-            this.RelationLabel.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.RelationLabel.Location = new System.Drawing.Point(408, 273);
-            this.RelationLabel.Name = "RelationLabel";
-            this.RelationLabel.Size = new System.Drawing.Size(53, 14);
-            this.RelationLabel.TabIndex = 13;
-            this.RelationLabel.Text = "Relation";
-            // 
-            // SubscriptLabel
-            // 
-            this.SubscriptLabel.AutoSize = true;
-            this.SubscriptLabel.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.SubscriptLabel.Location = new System.Drawing.Point(305, 272);
-            this.SubscriptLabel.Name = "SubscriptLabel";
-            this.SubscriptLabel.Size = new System.Drawing.Size(57, 14);
-            this.SubscriptLabel.TabIndex = 12;
-            this.SubscriptLabel.Text = "Subscript";
-            // 
-            // TypeLabel
-            // 
-            this.TypeLabel.AutoSize = true;
-            this.TypeLabel.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TypeLabel.Location = new System.Drawing.Point(203, 272);
-            this.TypeLabel.Name = "TypeLabel";
-            this.TypeLabel.Size = new System.Drawing.Size(31, 14);
-            this.TypeLabel.TabIndex = 11;
-            this.TypeLabel.Text = "Type";
-            // 
-            // StructureLabel
-            // 
-            this.StructureLabel.AutoSize = true;
-            this.StructureLabel.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.StructureLabel.Location = new System.Drawing.Point(66, 272);
-            this.StructureLabel.Name = "StructureLabel";
-            this.StructureLabel.Size = new System.Drawing.Size(55, 14);
-            this.StructureLabel.TabIndex = 10;
-            this.StructureLabel.Text = "Structure";
-            // 
-            // FormatTB
-            // 
-            this.FormatTB.Location = new System.Drawing.Point(618, 250);
-            this.FormatTB.Name = "FormatTB";
-            this.FormatTB.Size = new System.Drawing.Size(91, 20);
-            this.FormatTB.TabIndex = 10;
-            // 
-            // RelationTB
-            // 
-            this.RelationTB.Location = new System.Drawing.Point(411, 250);
-            this.RelationTB.Name = "RelationTB";
-            this.RelationTB.Size = new System.Drawing.Size(93, 20);
-            this.RelationTB.TabIndex = 8;
-            // 
-            // SubscriptTB
-            // 
-            this.SubscriptTB.Location = new System.Drawing.Point(308, 250);
-            this.SubscriptTB.Name = "SubscriptTB";
-            this.SubscriptTB.Size = new System.Drawing.Size(97, 20);
-            this.SubscriptTB.TabIndex = 7;
-            // 
-            // TypeTB
-            // 
-            this.TypeTB.Location = new System.Drawing.Point(206, 250);
-            this.TypeTB.Name = "TypeTB";
-            this.TypeTB.Size = new System.Drawing.Size(96, 20);
-            this.TypeTB.TabIndex = 6;
-            // 
-            // StructureTB
-            // 
-            this.StructureTB.Location = new System.Drawing.Point(65, 250);
-            this.StructureTB.Name = "StructureTB";
-            this.StructureTB.Size = new System.Drawing.Size(135, 20);
-            this.StructureTB.TabIndex = 5;
-            // 
-            // ValueTB
-            // 
-            this.ValueTB.Location = new System.Drawing.Point(510, 250);
-            this.ValueTB.Name = "ValueTB";
-            this.ValueTB.Size = new System.Drawing.Size(102, 20);
-            this.ValueTB.TabIndex = 9;
-            // 
-            // button3
-            // 
-            this.button3.BackColor = System.Drawing.Color.Maroon;
-            this.button3.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button3.Location = new System.Drawing.Point(421, 300);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(140, 24);
-            this.button3.TabIndex = 3;
-            this.button3.Text = "Add Constraint";
-            this.button3.UseVisualStyleBackColor = false;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
-            // 
-            // DeleteButton
-            // 
-            this.DeleteButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.DeleteButton.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DeleteButton.Location = new System.Drawing.Point(566, 300);
-            this.DeleteButton.Name = "DeleteButton";
-            this.DeleteButton.Size = new System.Drawing.Size(152, 24);
-            this.DeleteButton.TabIndex = 2;
-            this.DeleteButton.Text = "Delete Constraint";
-            this.DeleteButton.UseVisualStyleBackColor = false;
-            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
-            // 
-            // OkButton
-            // 
-            this.OkButton.BackColor = System.Drawing.Color.Maroon;
-            this.OkButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.OkButton.Location = new System.Drawing.Point(6, 345);
-            this.OkButton.Name = "OkButton";
-            this.OkButton.Size = new System.Drawing.Size(194, 37);
-            this.OkButton.TabIndex = 0;
-            this.OkButton.Text = "Finish Customizing";
-            this.OkButton.UseVisualStyleBackColor = false;
-            this.OkButton.Click += new System.EventHandler(this.OKButton_Click);
-            // 
-            // StartErrorLabel
-            // 
-            this.StartErrorLabel.AutoSize = true;
-            this.StartErrorLabel.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.StartErrorLabel.Location = new System.Drawing.Point(443, 429);
-            this.StartErrorLabel.Name = "StartErrorLabel";
-            this.StartErrorLabel.Size = new System.Drawing.Size(174, 15);
-            this.StartErrorLabel.TabIndex = 14;
-            this.StartErrorLabel.Text = "Please specify a save location.";
-            this.StartErrorLabel.Visible = false;
-            // 
-            // ErrorLabel
-            // 
-            this.ErrorLabel.AutoSize = true;
-            this.ErrorLabel.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ErrorLabel.Location = new System.Drawing.Point(75, 361);
-            this.ErrorLabel.Name = "ErrorLabel";
-            this.ErrorLabel.Size = new System.Drawing.Size(520, 15);
-            this.ErrorLabel.TabIndex = 13;
-            this.ErrorLabel.Text = "Only one plan can be checked at a time. Please run the program separately for eac" +
-    "h plan type.";
-            this.ErrorLabel.Visible = false;
-            this.ErrorLabel.Click += new System.EventHandler(this.ErrorLabel_Click);
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Location = new System.Drawing.Point(62, 272);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(65, 18);
+            this.label5.TabIndex = 20;
+            this.label5.Text = "Structure";
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.BackColor = System.Drawing.Color.Maroon;
             this.ClientSize = new System.Drawing.Size(732, 560);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.label2);
             this.ForeColor = System.Drawing.SystemColors.ControlLight;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
             this.Text = "Plan N Check";
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -938,13 +1023,15 @@
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.ConstraintGridView)).EndInit();
             this.AssigningPanel.ResumeLayout(false);
             this.AssigningPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AssignStructGridView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.conStructGridView)).EndInit();
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.ConstraintGridView)).EndInit();
+            this.PanelSpecialFeatures.ResumeLayout(false);
+            this.PanelSpecialFeatures.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1023,5 +1110,13 @@
         private System.Windows.Forms.Label assignedLabel;
         private System.Windows.Forms.Label StructLabel;
         private System.Windows.Forms.Button FinishedEdtingButton;
+        private System.Windows.Forms.TextBox IterationsTextBox;
+        private System.Windows.Forms.Label IterationsLabel;
+        private System.Windows.Forms.Panel PanelSpecialFeatures;
+        private System.Windows.Forms.CheckBox CheckBox_ChopParotid;
+        private System.Windows.Forms.Label LabelSpecialFeatures;
+        private System.Windows.Forms.Button LoadFeaturesButton;
+        private System.Windows.Forms.Button ButtonDoneFeatures;
+        private System.Windows.Forms.Label label5;
     }
 }

@@ -28,9 +28,9 @@ namespace Plan_n_Check.Calculate
             
             
             double prescriptionDose = p.TotalDose.Dose;
-            if (p.TotalDose.Unit == DoseValue.DoseUnit.cGy)
+            if (p.TotalDose.Unit == DoseValue.DoseUnit.Gy)
             {
-                prescriptionDose /= 100; //Convert to Gy
+                prescriptionDose *= 100; //Convert to Gy
                 
             }
             for (int match = 0; match < dicomStructure.Count; match++)
@@ -53,7 +53,7 @@ namespace Plan_n_Check.Calculate
                     {
                         if (format.ToLower() == "abs")
                         {
-                            returnString += "Gy \n";
+                            returnString += "cGy \n";
                         }
                         else
                         {
@@ -87,32 +87,32 @@ namespace Plan_n_Check.Calculate
                                 value = value * prescriptionDose / 100;
 
                                 double doseQuant = p.GetDoseAtVolume(dicomStructure[match], sub, vp, dp).Dose;
-                                if (p.GetDoseAtVolume(dicomStructure[match], sub, vp, dp).Unit == DoseValue.DoseUnit.cGy) //convert to gy if necessary
-                                {
-                                    doseQuant /= 100;
-                                }
+                                //if (p.GetDoseAtVolume(dicomStructure[match], sub, vp, dp).Unit == DoseValue.DoseUnit.cGy) //convert to gy if necessary
+                                //{
+                                //    doseQuant /= 100;
+                                //}
                                 //now check the inequality: 
                                 if (relation == "<")
                                 {
                                     if (doseQuant < value)
                                     {
-                                        returnString += "Constraint SATISFIED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + "\n";
+                                        returnString += "Constraint SATISFIED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy \n";
                                     }
                                     else
                                     {
-                                        returnString += "Constraint FAILED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + "\n";
+                                        returnString += "Constraint FAILED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy\n";
                                     }
                                 }
                                 else if (relation == ">")
                                 {
                                     if (doseQuant > value)
                                     {
-                                        returnString += "Constraint SATISFIED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + "\n";
+                                        returnString += "Constraint SATISFIED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy \n";
 
                                     }
                                     else
                                     {
-                                        returnString += "Constraint FAILED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + "\n";
+                                        returnString += "Constraint FAILED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy\n";
                                     }
                                 }
                                 else
@@ -145,9 +145,9 @@ namespace Plan_n_Check.Calculate
                                 returnString += "Failed to interpret subscript given for this constraint. \n";
                                 break;
                             }
-                            if (dvhData.MeanDose.Unit == DoseValue.DoseUnit.cGy) //convert to gy if necessary
+                            if (dvhData.MeanDose.Unit == DoseValue.DoseUnit.Gy) //convert to cgy if necessary
                             {
-                                dose /= 100;
+                                dose *= 100;
                             }
                             if (format.ToLower() == "rel")
                             {
@@ -158,23 +158,23 @@ namespace Plan_n_Check.Calculate
                             {
                                 if (dose < value)
                                 {
-                                    returnString += "Constraint SATISFIED. D = " + string.Format("{0:0.0}", dose) + "Gy \n";
+                                    returnString += "Constraint SATISFIED. D = " + string.Format("{0:0.0}", dose) + "cGy \n";
                                 }
                                 else
                                 {
-                                    returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "Gy \n";
+                                    returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "cGy \n";
                                 }
                             }
                             else if (relation == ">")
                             {
                                 if (dose > value)
                                 {
-                                    returnString += "Constraint SATISFIED. D = " + string.Format("{0:0.0}", dose) + "Gy \n";
+                                    returnString += "Constraint SATISFIED. D = " + string.Format("{0:0.0}", dose) + "cGy \n";
 
                                 }
                                 else
                                 {
-                                    returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "Gy \n";
+                                    returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "cGy \n";
                                 }
                             }
                             else
@@ -203,12 +203,12 @@ namespace Plan_n_Check.Calculate
                             if (ROI.Name.ToLower().Contains("ptv"))
                             {
                                 isPTV = true;
-                                frac = FindPTVNumber(ROI.Name.ToLower());
+                                frac = FindPTVNumber(ROI.Name.ToLower()) * 100;
                                 sub = Convert.ToDouble(subscript)*frac / 100;
                                 vp = VolumePresentation.Relative;                    
                             }
                             
-                            DoseValue dose = new DoseValue(sub * 100, "cGy");
+                            DoseValue dose = new DoseValue(sub, "cGy");
                             //Need dose in cGy for calculation:
                             double volumeQuant = p.GetVolumeAtDose(dicomStructure[match], dose, vp);
                             //Now check the inequality: 
@@ -218,22 +218,22 @@ namespace Plan_n_Check.Calculate
                                 {
                                     if (isPTV)
                                     {
-                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "Gy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "cGy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
                                     }
                                     else
                                     {
-                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "Gy was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
                                     }
                                 }
                                 else
                                 {
                                     if (isPTV)
                                     {
-                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "Gy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
                                     }
                                     else
                                     {
-                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "Gy was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "cGy was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
                                     }
                                 }
                             }
@@ -243,22 +243,22 @@ namespace Plan_n_Check.Calculate
                                 {
                                     if (isPTV)
                                     {
-                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "Gy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
                                     }
                                     else
                                     {
-                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "Gy was  " + string.Format("{0:0.0}", (volumeQuant )) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "cGy was  " + string.Format("{0:0.0}", (volumeQuant )) + "% of the structure's total volume. \n";
                                     }
                                 }
                                 else
                                 {
                                     if (isPTV)
                                     {
-                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "Gy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
                                     }
                                     else
                                     {
-                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "Gy was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
                                     }
                                 }
                             }
@@ -509,31 +509,61 @@ namespace Plan_n_Check.Calculate
         }
         public static int FindPTVNumber(string name)
         {
-            string number = "";
+            //sometimes there is the PTV number (2 digits) and then also a number for listing structures, so need to separate these and take the larger
+            List<string> number = new List<string>();
+            string num = "";
+            bool isDigit = false;
+            int index = 0;
             for (int i = 0; i < name.Length; i++)
             {
                 if (Char.IsDigit(name[i]))
-                    number += name[i];
+                {
+                    num += name[i];
+                    isDigit = true;
+                }
+                else
+                {
+                    if (isDigit == true)
+                    {
+                        number.Add(num);
+                        isDigit = false;
+                        num = "";
+                        index++;
+                    }
+                }
+                if (num != "")
+                {
+                    number.Add(num);
+                }
+
+            }//now find the largest number
+            int longest = 0;
+            if (number.Count > 0)
+            {
+                for (int ind = 0; ind < number.Count; ind++)
+                {
+                    if (Convert.ToInt32(number[ind]) > longest)
+                    {
+                        longest = Convert.ToInt32(number[ind]);
+                    }
+                }
+
+                if (longest > 1000)
+                {
+                    longest /= 100;
+                }
+                return longest;
+
             }
-            if (number.Length > 0)
+            else
             {
-                try 
-                {
-                    int num = Convert.ToInt32(number);
-                    return num;
-                }
-                catch
-                {
-                    return 111; //error 1000 means that a number was parsed, but then failed to be converted. 
-                }
-                
-            }else
-            {
+
                 return 111; //error 111 means that no number was found with the ptv name.
             }
         }
 
-        public static int StringDistance(string firstText, string secondText) //Finding out how close strings are (Damerau Levenshtein)
+
+            public static int StringDistance(string firstText, string secondText) //Finding out how close strings are (Damerau Levenshtein)
         {
             var n = firstText.Length + 1;
             var m = secondText.Length + 1;
