@@ -15,5 +15,7 @@ namespace Plan_n_Check.Plans
         { get; set;}
         public abstract double PrescriptionDose
         { get; set; }
+        public abstract List<int> PTV_Types
+        { get; set; }
     }
 }

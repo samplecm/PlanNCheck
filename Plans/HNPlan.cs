@@ -8,10 +8,10 @@ namespace Plan_n_Check.Plans
 {
     public class HNPlan : Plan
     {
-
+        List<int> ptv_Types = new List<int>() {56, 63, 70};
         string name = "Head and Neck";
         List<ROI> rois = new List<ROI>();
-        double prescriptionDose;
+        double prescriptionDose = 7000; //in cGy
         public HNPlan(double presDose)
         {
             this.prescriptionDose = presDose;
@@ -57,21 +57,21 @@ namespace Plan_n_Check.Plans
             ROI PTV70 = new ROI();
             PTV70.Name = "PTV 70";
             PTV70.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110));
-            PTV70.Constraints.Add(new Constraint("D", "max", "<", 1.1 * prescriptionDose, "abs", 100));
+            PTV70.Constraints.Add(new Constraint("D", "max", "<", 1.1 * this.PrescriptionDose, "abs", 100));
             this.rois.Add(PTV70);
 
             //PTV63 (5)
             ROI PTV63 = new ROI();
             PTV63.Name = "PTV 63";
             PTV63.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110));
-            PTV63.Constraints.Add(new Constraint("D", "max", "<", 1.1 * prescriptionDose, "abs", 100));
+            PTV63.Constraints.Add(new Constraint("D", "max", "<", 1.1 * this.PrescriptionDose, "abs", 100));
             this.rois.Add(PTV63);
 
             //PTV56 (6)
             ROI PTV56 = new ROI();
             PTV56.Name = "PTV 56";
             PTV56.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 120));
-            PTV56.Constraints.Add(new Constraint("D", "max", "<", 1.1 * prescriptionDose, "abs", 100));
+            PTV56.Constraints.Add(new Constraint("D", "max", "<", 1.1 * this.PrescriptionDose, "abs", 100));
             this.rois.Add(PTV56);
 
             //Brain (7)
@@ -218,7 +218,7 @@ namespace Plan_n_Check.Plans
             //Body (26)
             ROI Body = new ROI();
             Body.Name = "Body";
-            Body.Constraints.Add(new Constraint("D", "max", "<", 7700, "abs", 100));
+            Body.Constraints.Add(new Constraint("D", "max", "<", 1.1*this.PrescriptionDose, "abs", 100));
             this.rois.Add(Body);
         }
 
@@ -236,6 +236,11 @@ namespace Plan_n_Check.Plans
         {
             get { return prescriptionDose; }
             set { prescriptionDose = value; }
+        }
+        public override List<int> PTV_Types
+        {
+            get { return ptv_Types; }
+            set { ptv_Types = value; }
         }
 
     }
