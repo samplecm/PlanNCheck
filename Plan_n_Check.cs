@@ -68,7 +68,7 @@ namespace VMS.TPS
             System.Windows.Forms.Application.Run(mainForm);
             //System.Windows.System.Windows.MessageBox.Show("Hello", "input", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information, System.Windows.MessageBoxResult.OK);
     }
-        public static Tuple<List<List<Structure>>, List<List<Structure>>> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, bool[] features) //Returns list of matching structures
+        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, bool[] features) //Returns list of matching structures
         {
          
             // Check for patient plan loaded
@@ -96,8 +96,8 @@ namespace VMS.TPS
             List<List<double[,]>> choppedContours = choppedAndName.Item1;
             string contraParName = choppedAndName.Item2;
             List<double[]> planes = choppedAndName.Item3;
-            Optimize(choppedContours, planes, ref plan, ref ss, hnPlan, context, optimizedStructures,matchingStructures, contraParName, numIterations, features);
-            return Tuple.Create(optimizedStructures, matchingStructures);
+            List<List<string>> updatesLog = Optimize(choppedContours, planes, ref plan, ref ss, hnPlan, context, optimizedStructures,matchingStructures, contraParName, numIterations, features);
+            return Tuple.Create(optimizedStructures, matchingStructures, updatesLog);
 
         }
         public static Structure CheckOverlap_OptiMaker(Structure structure, ref StructureSet ss)
@@ -184,8 +184,9 @@ namespace VMS.TPS
 
 
         }
-        public static void Optimize(List<List<double[,]>> choppedContours, List<double[]>
+        public static List<List<string>> Optimize(List<List<double[,]>> choppedContours, List<double[]>
             planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, string contraName, int numIterations, bool[] features)
+        //return a list of strings which is the log of constraint updates during optimization. 
         {
             //Only make parotid structures if that feature has been selected
             if (features[0] == true)
@@ -215,7 +216,7 @@ namespace VMS.TPS
             string mlcID;
             OptimizationOptionsVMAT oov;
             ;
-
+            List<List<string>> updateLog = new List<List<string>>();
             for (int iter = 0; iter < numIterations - 1; iter++)
             {
                 mlcID = plan.Beams.FirstOrDefault<Beam>().MLC.Id;
@@ -225,7 +226,7 @@ namespace VMS.TPS
 
                 //Now need to perform a plan check and iteratively adjust constraints based on whether they passed or failed, and whether they passed with flying colours or failed miserably.
                 //Going to find the percentage by which the constraint failed or passed, and adjust both the priority and dose constraint based on this. 
-                UpdateConstraints(ref plan, ref ss, ref hnPlan, context, optimizedStructures, matchingStructures);
+                updateLog.Add(UpdateConstraints(ref plan, ref ss, ref hnPlan, context, optimizedStructures, matchingStructures));
                 if (features[0] == true)
                 {
                     MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, 1.1);//need matching structures to get full parotid
@@ -237,6 +238,7 @@ namespace VMS.TPS
             plan.OptimizeVMAT(oov);
             plan.CalculateDose();
 
+            return updateLog;
             //Now need to perform a plan check and iteratively adjust constraints based on whether they passed or failed, and whether they passed with flying colours or failed miserably.
             //Going to find the percentage by which the constraint failed or passed, and adjust both the priority and dose constraint based on this. 
            
@@ -477,13 +479,14 @@ namespace VMS.TPS
 
 
         }
-        public static void UpdateConstraints(ref ExternalPlanSetup plan, ref StructureSet ss,ref HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures)
+        public static List<string> UpdateConstraints(ref ExternalPlanSetup plan, ref StructureSet ss,ref HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures)
         {
+            List<string> log = new List<string>();
+            
 
             //Go through all plan types and check all constraints.
             
             PlanSetup p = context.PlanSetup;
-            string returnString = "";
             p.DoseValuePresentation = DoseValuePresentation.Absolute;
             double prescriptionDose = p.TotalDose.Dose;
             List<ROI> ROIs = hnPlan.ROIs;
@@ -529,17 +532,20 @@ namespace VMS.TPS
                                     {
                                         if (doseQuant < value)
                                         {
-                                            returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED.";
+
                                             //If an OAR, loosen priority if its satisfied by over 7Gy
-                                            if ((ROIs[s].Type == "OAR")||(value - doseQuant > 1000))
+                                            if ((ROIs[s].Type == "OAR") && (value - doseQuant > 1000))
                                             {
                                                 hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * 0.8);
+                                                log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED. Dose (" + doseQuant.ToString() + "cGy) not within 10Gy of constraint - adjusted priority from " + string.Format("{0}", priority) + " to " + ((int)(priority * 0.8)).ToString() + ".");
+                                        }
+                                            else
+                                            {
+                                                log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED. Dose (" + doseQuant.ToString() +"cGy). Unadjusted.");
                                             }
                                         }
                                         else
-                                        {
-                                            returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1));
-
+                                        {                                           
                                             //By what percentage is the constraint being missed by (as ratio)? 
                                             double percentageOff = 1 + (doseQuant - value) / value;
 
@@ -549,18 +555,19 @@ namespace VMS.TPS
                                                 newPriority = Math.Min(newPriority, 70);
                                             }
                                             hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
-                                        }
+                                            log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " FAILED- Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(newPriority)));
+                                    }
                                     }
                                     else if (relation == ">")
                                     {
                                         if (doseQuant > value)
                                         {
-                                            returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED.";
+                                            log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED Dose (" + doseQuant.ToString() + "cGy). Unadjusted.");
 
                                         }
                                         else
                                         {
-                                            returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1));
+                                            
                                             //By what percentage is the constraint being missed by (as ratio)? 
                                             double percentageOff = 1 - (doseQuant - value) / value; //minus because its negative numerator
 
@@ -570,13 +577,13 @@ namespace VMS.TPS
                                             newPriority = Math.Min(newPriority, 70);
                                         }
                                         hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
-
+                                        log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " FAILED. Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
 
                                     }
                                     }
                                     else
                                     {
-                                        returnString += "Could not understand the relation given in the constraint. \n";
+                                        log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + "- Could not understand the relation given in the constraint.");
                                     }
                                 
                             }
@@ -601,7 +608,7 @@ namespace VMS.TPS
                                 }
                                 else
                                 {
-                                    returnString += "Failed to interpret subscript given for this constraint. \n";
+                                    log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + "- Could not understand the relation given in the constraint. ");
                                     break;
                                 }
                                 if (dvhData.MeanDose.Unit == DoseValue.DoseUnit.Gy) //convert to gy if necessary
@@ -617,28 +624,44 @@ namespace VMS.TPS
                                 {
                                     if (dose < value)
                                     {
-                                        returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED.";
-                                        if ((ROIs[s].Type == "OAR") || (value - dose > 1000))
+                                        
+                                        if ((ROIs[s].Type == "OAR") && (value - dose > 1000))
                                         {
+                                            log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED by over 10Gy. Decreasing priority to " + string.Format("{0}", (int)(priority * 0.8)));
                                             hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * 0.8);
+                                        }
+                                        else
+                                        {
+                                            log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED. Unadjusted");
                                         }
                                     }
                                     else
-                                    {
-                                        returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1));
+                                    {                                      
                                         //By what percentage is the constraint being missed by (as ratio)? 
                                         double percentageOff = 1 + (dose - value) / value;
                                         int newPriority = Math.Max((int)(priority * percentageOff), priority + 10);
+                                        //Also don't want to increase priority by more than 20 at a time: 
+                                        newPriority = Math.Min(newPriority, priority + 20);
                                         if ((ROIs[s].Type == "OAR") && (ROIs[s].Critical == false))
                                         {
                                             newPriority = Math.Min(newPriority, 70);
+                                            log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
+                                            hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
                                         }
                                         if (dose - value > 2000) //if constraint is failing miserably, stop trying
                                         {
                                             newPriority = 0;
+                                            log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed by more than 20Gy. Deleting constraint.");
+                                            hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
+                                        }
+                                        else
+                                        {
+                                            log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1)));
+                                            hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
                                         }
                                         
-                                        hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
+
+                                        
 
                                     }
                                 }
@@ -646,26 +669,26 @@ namespace VMS.TPS
                                 {
                                     if (dose > value)
                                     {
-                                        returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED.";
+                                        log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED. Unadjusted.");
 
                                     }
                                     else
-                                    {
-                                        returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1));
+                                    {                                       
                                         //By what percentage is the constraint being missed by (as ratio)? 
                                         double percentageOff = 1 - (dose - value) / value; //negative because negative numerator
 
                                         int newPriority = Math.Max((int)(priority * percentageOff), priority + 10);
                                         if ((ROIs[s].Type == "OAR") && (ROIs[s].Critical == false))
                                         {
-                                            newPriority = Math.Min(newPriority, 70);
+                                            newPriority = Math.Min(newPriority, 70);                   
                                         }
+                                        log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
                                         hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
                                     }
                                 }
                                 else
                                 {
-                                    returnString += "Could not understand the relation given in the constraint. \n";
+                                    log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + "-Could not understand the relation given in the constraint.");
                                 }
                             }
                         }
@@ -701,22 +724,23 @@ namespace VMS.TPS
                                 {
                                     if (volumeQuant < value)
                                     {
-                                        returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED.";
+                                        log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED.");
 
                                     }
                                     else
-                                    {
-
-                                        returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1));
+                                    {                                
                                         //By what percentage is the constraint being missed by (as ratio)? 
                                         double percentageOff = 1 + (volumeQuant - value) / value;
 
                                         int newPriority = Math.Max((int)(priority * percentageOff), priority + 10);
+                                        //Also don't want to adjust any constraint by more than 20 at a time:
+                                        newPriority = Math.Min(newPriority, priority + 20);
                                         if ((ROIs[s].Type == "OAR") && (ROIs[s].Critical == false))
                                         {
                                             newPriority = Math.Min(newPriority, 70);
                                         }
                                         hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
+                                        log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
 
                                     }
                                 }
@@ -724,11 +748,10 @@ namespace VMS.TPS
                                 {
                                     if (volumeQuant > value)
                                     {
-                                        returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED.";
+                                        log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED.");
                                     }
                                     else
-                                    {
-                                        returnString += ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1));
+                                    {                                      
                                         double percentageOff = 1 - (volumeQuant - value) / value;
 
                                         int newPriority = Math.Max((int)(priority * percentageOff), priority + 10);
@@ -737,16 +760,17 @@ namespace VMS.TPS
                                             newPriority = Math.Min(newPriority,70);
                                         }
                                         hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
+                                        log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
                                     }
                                 }
                                 else
                                 {
-                                    returnString += "Could not understand the relation given in the constraint. \n";
+                                    log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + "-Could not understand the relation given in the constraint.");
                                 }
                             }
                             catch
                             {
-                                returnString += "Failed to interpret subscript given for this constraint. \n";
+                                log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + "-Could not understand the relation given in the constraint.");
                             }
                         }
                     }
@@ -754,7 +778,7 @@ namespace VMS.TPS
             }
             //Now need to delete and reset all constraints
             SetConstraints(ref plan, hnPlan, optimizedStructures);
-
+            return log;
 
         }
         public static void MakeParotidStructures(List<List<double[,]>> choppedContours, List<double[]>
@@ -1459,15 +1483,37 @@ namespace VMS.TPS
 
             if (!name.ToLower().Contains("ptv")) //If not PTV 
             {
-                int closeness = 0; //structure giving smallest will be the match.
-                int closest = 100;
+                //First filter out structures without a substring of at least 3
+                List<Structure> filteredStructures = new List<Structure>();
                 foreach (Structure structure in ss.Structures)
                 {
-
                     string structureName = structure.Name; //get name of structure in eclipse
+                    bool valid = true;
+                    if (LongestSubstring(structureName, name) < 3)
+                    {
+                        valid = false;
+                    }
+                    else if (!AllowedToMatch(structureName, name))
+                    {
+                        valid = false;
+                    }
+                    if (valid)
+                    {
+                        filteredStructures.Add(structure);
+                    }
+                }
+                int closeness = 0; //structure giving smallest will be the match.
+                int closest = 100;
+                foreach (Structure structure in filteredStructures)
+                {
+                    string structureName = structure.Name;
+                    //Now test string closeness
+                    List<string> closestStrings = new List<string>();
+                    List<int> closestInts = new List<int>();
+
 
                     closeness = StringDistance(structureName, name);
-                    if ((closeness < closest) && (LongestSubstring(structureName, name) >= 3) && (AllowedToMatch(structureName, name))) //must be closest, and also have a substring of at least 3 in common with other. 
+                    if (closeness < closest)  
                     {
                         dicomStructures.Clear();
                         dicomStructures.Add(structure);
@@ -1515,13 +1561,15 @@ namespace VMS.TPS
             keywords.Add("cord");
             keywords.Add("chi");
             keywords.Add("opt");
-            keywords.Add("ner");
+            keywords.Add("oral");
+            keywords.Add("nerv");
             keywords.Add("par");
             keywords.Add("globe");
             keywords.Add("lip");
             keywords.Add("cav");
             keywords.Add("sub");
             keywords.Add("test");
+            keywords.Add("fact");
             int num;
             for (int i = 0; i < keywords.Count; i++)
             {
@@ -1573,35 +1621,35 @@ namespace VMS.TPS
                 }
             }
             //also an issue if has _L_ or " L " or " L-" or "left" in only one. 
-            if ((s1.ToLower().Contains("lpar"))|| (s1.ToLower().Contains("lsub"))||(s1.ToLower().Contains("_l_")) || (s1.ToLower().Contains(" l ")) || (s1.ToLower().Contains(" l-")) || (s1.ToLower().Contains("-l-")) || (s1.ToLower().Contains(" l_")) || (s1.ToLower().Contains("_l ")) || (s1.ToLower().Contains("-l ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("l ")))
+            if ((s1.ToLower().Contains("lpar"))|| (s1.ToLower().Contains("lsub"))||(s1.ToLower().Contains("_l_")) || (s1.ToLower().Contains(" l ")) || (s1.ToLower().Contains(" l-")) || (s1.ToLower().Contains("-l-")) || (s1.ToLower().Contains(" l_")) || (s1.ToLower().Contains("_l ")) || (s1.ToLower().Contains("-l ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("l ")) || (s1.ToLower().Contains("_lt_")) || (s1.ToLower().Contains(" lt ")) || (s1.ToLower().Contains(" lt-")) || (s1.ToLower().Contains("-lt-")) || (s1.ToLower().Contains(" lt_")) || (s1.ToLower().Contains("_lt ")) || (s1.ToLower().Contains("-lt ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("lt ")) || (s1.ToLower().StartsWith("lt ")))
             {
-                if (!((s1.ToLower().Contains("lpar")) || (s1.ToLower().Contains("lsub")) || (s2.ToLower().Contains("_l_")) || (s2.ToLower().Contains(" l ")) || (s2.ToLower().Contains(" l-")) || (s2.ToLower().Contains("-l-")) || (s2.ToLower().Contains(" l_")) || (s2.ToLower().Contains("_l ")) || (s2.ToLower().Contains("-l ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("l "))))
+                if (!((s2.ToLower().Contains("lpar")) || (s2.ToLower().Contains("lsub")) || (s2.ToLower().Contains("_l_")) || (s2.ToLower().Contains(" l ")) || (s2.ToLower().Contains(" l-")) || (s2.ToLower().Contains("-l-")) || (s2.ToLower().Contains(" l_")) || (s2.ToLower().Contains("_l ")) || (s2.ToLower().Contains("-l ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("l ")) || (s2.ToLower().Contains("_lt_")) || (s2.ToLower().Contains(" lt ")) || (s2.ToLower().Contains(" lt-")) || (s2.ToLower().Contains("-lt-")) || (s2.ToLower().Contains(" lt_")) || (s2.ToLower().Contains("_lt ")) || (s2.ToLower().Contains("-lt ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("lt ")) || (s2.ToLower().StartsWith("lt "))))
                 {
                     allowed = false;
                 }
             }
-            if ((s1.ToLower().Contains("rpar")) || (s1.ToLower().Contains("rsub")) || (s1.ToLower().Contains("_r_")) || (s1.ToLower().Contains(" r ")) || (s1.ToLower().Contains(" r-")) || (s1.ToLower().Contains("-r-")) || (s1.ToLower().Contains(" r_")) || (s1.ToLower().Contains("_r ")) || (s1.ToLower().Contains("-r ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("r ")))
+            if ((s2.ToLower().Contains("lpar")) || (s2.ToLower().Contains("lsub")) || (s2.ToLower().Contains("_l_")) || (s2.ToLower().Contains(" l ")) || (s2.ToLower().Contains(" l-")) || (s2.ToLower().Contains("-l-")) || (s2.ToLower().Contains(" l_")) || (s2.ToLower().Contains("_l ")) || (s2.ToLower().Contains("-l ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("l ")) || (s2.ToLower().Contains("_lt_")) || (s2.ToLower().Contains(" lt ")) || (s2.ToLower().Contains(" lt-")) || (s2.ToLower().Contains("-lt-")) || (s2.ToLower().Contains(" lt_")) || (s2.ToLower().Contains("_lt ")) || (s2.ToLower().Contains("-lt ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("lt ")) || (s2.ToLower().StartsWith("lt ")))
             {
-                if (!((s1.ToLower().Contains("rpar")) || (s1.ToLower().Contains("rsub")) || (s2.ToLower().Contains("_r_")) || (s2.ToLower().Contains(" r ")) || (s2.ToLower().Contains(" r-")) || (s2.ToLower().Contains("-r-")) || (s2.ToLower().Contains(" r_")) || (s2.ToLower().Contains("_r ")) || (s2.ToLower().Contains("-r ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("r "))))
+                if (!((s1.ToLower().Contains("lpar")) || (s1.ToLower().Contains("lsub")) || (s1.ToLower().Contains("_l_")) || (s1.ToLower().Contains(" l ")) || (s1.ToLower().Contains(" l-")) || (s1.ToLower().Contains("-l-")) || (s1.ToLower().Contains(" l_")) || (s1.ToLower().Contains("_l ")) || (s1.ToLower().Contains("-l ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("l ")) || (s1.ToLower().Contains("_lt_")) || (s1.ToLower().Contains(" lt ")) || (s1.ToLower().Contains(" lt-")) || (s1.ToLower().Contains("-lt-")) || (s1.ToLower().Contains(" lt_")) || (s1.ToLower().Contains("_lt ")) || (s1.ToLower().Contains("-lt ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("lt ")) || (s1.ToLower().StartsWith("lt "))))
                 {
                     allowed = false;
                 }
             }
-            //Also seems to happen for lt and rt
-            if ((s1.ToLower().Contains("_lt_")) || (s1.ToLower().Contains(" lt ")) || (s1.ToLower().Contains(" lt-")) || (s1.ToLower().Contains("-lt-")) || (s1.ToLower().Contains(" lt_")) || (s1.ToLower().Contains("_lt ")) || (s1.ToLower().Contains("-lt ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("lt ")) || (s1.ToLower().StartsWith("lt ")))
+            if ((s1.ToLower().Contains("rpar")) || (s1.ToLower().Contains("rsub")) || (s1.ToLower().Contains("_r_")) || (s1.ToLower().Contains(" r ")) || (s1.ToLower().Contains(" r-")) || (s1.ToLower().Contains("-r-")) || (s1.ToLower().Contains(" r_")) || (s1.ToLower().Contains("_r ")) || (s1.ToLower().Contains("-r ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("r ")) || (s1.ToLower().Contains("_rt_")) || (s1.ToLower().Contains(" rt ")) || (s1.ToLower().Contains(" rt-")) || (s1.ToLower().Contains("-rt-")) || (s1.ToLower().Contains(" rt_")) || (s1.ToLower().Contains("_rt ")) || (s1.ToLower().Contains("-rt ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("rt ")) || (s1.ToLower().StartsWith("rt ")))
             {
-                if (!((s2.ToLower().Contains("_lt_")) || (s2.ToLower().Contains(" lt ")) || (s2.ToLower().Contains(" lt-")) || (s2.ToLower().Contains("-lt-")) || (s2.ToLower().Contains(" lt_")) || (s2.ToLower().Contains("_lt ")) || (s2.ToLower().Contains("-lt ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("lt ")) || (s2.ToLower().StartsWith("lt "))))
+                if (!((s2.ToLower().Contains("rpar")) || (s2.ToLower().Contains("rsub")) || (s2.ToLower().Contains("_r_")) || (s2.ToLower().Contains(" r ")) || (s2.ToLower().Contains(" r-")) || (s2.ToLower().Contains("-r-")) || (s2.ToLower().Contains(" r_")) || (s2.ToLower().Contains("_r ")) || (s2.ToLower().Contains("-r ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("r ")) || (s2.ToLower().Contains("_rt_")) || (s2.ToLower().Contains(" rt ")) || (s2.ToLower().Contains(" rt-")) || (s2.ToLower().Contains("-rt-")) || (s2.ToLower().Contains(" rt_")) || (s2.ToLower().Contains("_rt ")) || (s2.ToLower().Contains("-rt ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("rt ")) || (s2.ToLower().StartsWith("rt "))))
                 {
                     allowed = false;
                 }
             }
-            if ((s1.ToLower().Contains("_rt_")) || (s1.ToLower().Contains(" rt ")) || (s1.ToLower().Contains(" rt-")) || (s1.ToLower().Contains("-rt-")) || (s1.ToLower().Contains(" rt_")) || (s1.ToLower().Contains("_rt ")) || (s1.ToLower().Contains("-rt ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("rt ")) || (s1.ToLower().StartsWith("rt ")))
+            if ((s2.ToLower().Contains("rpar")) || (s2.ToLower().Contains("rsub")) || (s2.ToLower().Contains("_r_")) || (s2.ToLower().Contains(" r ")) || (s2.ToLower().Contains(" r-")) || (s2.ToLower().Contains("-r-")) || (s2.ToLower().Contains(" r_")) || (s2.ToLower().Contains("_r ")) || (s2.ToLower().Contains("-r ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("r ")) || (s2.ToLower().Contains("_rt_")) || (s2.ToLower().Contains(" rt ")) || (s2.ToLower().Contains(" rt-")) || (s2.ToLower().Contains("-rt-")) || (s2.ToLower().Contains(" rt_")) || (s2.ToLower().Contains("_rt ")) || (s2.ToLower().Contains("-rt ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("rt ")) || (s2.ToLower().StartsWith("rt ")))
             {
-                if (!((s2.ToLower().Contains("_rt_")) || (s2.ToLower().Contains(" rt ")) || (s2.ToLower().Contains(" rt-")) || (s2.ToLower().Contains("-rt-")) || (s2.ToLower().Contains(" rt_")) || (s2.ToLower().Contains("_rt ")) || (s2.ToLower().Contains("-rt ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("rt ")) || (s2.ToLower().StartsWith("rt "))))
+                if (!((s1.ToLower().Contains("rpar")) || (s1.ToLower().Contains("rsub")) || (s1.ToLower().Contains("_r_")) || (s1.ToLower().Contains(" r ")) || (s1.ToLower().Contains(" r-")) || (s1.ToLower().Contains("-r-")) || (s1.ToLower().Contains(" r_")) || (s1.ToLower().Contains("_r ")) || (s1.ToLower().Contains("-r ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("r ")) || (s1.ToLower().Contains("_rt_")) || (s1.ToLower().Contains(" rt ")) || (s1.ToLower().Contains(" rt-")) || (s1.ToLower().Contains("-rt-")) || (s1.ToLower().Contains(" rt_")) || (s1.ToLower().Contains("_rt ")) || (s1.ToLower().Contains("-rt ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("rt ")) || (s1.ToLower().StartsWith("rt "))))
                 {
                     allowed = false;
                 }
             }
+            
 
             //parotids are tricky, so basically if it has par, and an L its left, and if no L its right.
             if ((s1.ToLower().Contains("par")) && (s2.ToLower().Contains("par")))

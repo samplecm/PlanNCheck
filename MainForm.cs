@@ -132,9 +132,10 @@ namespace Plan_n_Check
                 var structureLists = VMS.TPS.Script.StartOptimizer(this.context, this.HnPlan, this.MatchingStructures, iterations, this.Features);
                 List<List<Structure>> optimizedStructures = structureLists.Item1;
                 List<List<Structure>> matchingStructures = structureLists.Item2;
+                List<List<string>> updateLog = structureLists.Item3;
                 if (SaveCheck.Checked)
                 {
-                    Calculator.RunReport(this.context, this.HnPlan, this.SavePath, optimizedStructures, this.MatchingStructures);
+                    Calculator.RunReport(this.context, this.HnPlan, this.SavePath, optimizedStructures, this.MatchingStructures, updateLog);
                 }
                
                 this.DialogResult = DialogResult.OK;
@@ -149,7 +150,7 @@ namespace Plan_n_Check
         private void CustomizeButton_Click(object sender, EventArgs e)
         {
             //First make sure only one checkbox is checked. 
-            
+    
             int checkCount = 0;
             foreach (CheckBox checkBox in groupBox1.Controls.OfType<CheckBox>())
             {
@@ -171,10 +172,52 @@ namespace Plan_n_Check
             }
             else //if one plan is checked
             {
-                //Need to keep track of amount of times clicked. Only create a clean plan on first click. Otherwise return to default must be pressed.
-                ErrorLabel.Visible = false;
-                panel1.Visible = true;
-                panel1.BringToFront();
+               
+                List<Plan> plans = new List<Plan>();
+                HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
+                plans.Add(hnPlan);
+                this.Plans = plans;
+                this.HnPlan = hnPlan;
+                this.MatchingStructures.Clear();
+                for (int i = 0; i < hnPlan.ROIs.Count; i++)
+                {
+                    List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
+                    this.MatchingStructures.Add(assignedStructures);
+                }
+                //Also check for special prescription PTVs (not 56, 63, or 70 for HNPlan) and find maximum PTV prescription, which if less than the prescription dose
+                //will be used to adjust all PTV maximum dose constraints, and maximum body constraint.
+                int ptvType;
+                int maxPTV_Dose = 0;
+                foreach (Structure structure in context.StructureSet.Structures)
+                {
+                    if (structure.Name.ToLower().Contains("ptv"))
+                    {
+                        ptvType = VMS.TPS.Script.FindPTVNumber(structure.Name.ToLower());
+                        if (ptvType > maxPTV_Dose)
+                        {
+                            maxPTV_Dose = ptvType;
+                        }
+                        //Check if standard prescription dose type;
+                        bool isStandard = this.HnPlan.PTV_Types.IndexOf(ptvType) != -1;
+                        if (!isStandard)
+                        {
+                            //Make a new constraint
+                            string Name = "PTV" + ptvType.ToString();
+                            ROI newPTV = new ROI();
+                            newPTV.Name = Name;
+                            newPTV.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110));
+                            newPTV.Constraints.Add(new Constraint("D", "max", "<", 1.1 * this.HnPlan.PrescriptionDose, "abs", 100));
+                            this.HnPlan.ROIs.Add(newPTV);
+                            this.MatchingStructures.Add(new List<Structure>() { structure }); //Constraints will be updated according to this
+                        }
+                    }
+                }
+                
+                this.panel5.Visible = false;
+                this.panel5.SendToBack();
+                this.panel1.BringToFront();
+                this.ErrorLabel.Visible = false;
+                this.panel1.Visible = true;
                 PopulateGrid();
             }
         
@@ -188,7 +231,8 @@ namespace Plan_n_Check
 
         private void OKButton_Click(object sender, EventArgs e)
         {
-            
+            this.panel5.BringToFront();
+            this.panel5.Visible = true;
             this.panel1.Visible = false;
             this.panel1.SendToBack();
             
@@ -198,6 +242,29 @@ namespace Plan_n_Check
                 List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, this.HnPlan.ROIs[i]); //find structures that match the constraint structure
                 this.MatchingStructures.Add(assignedStructures);
             }
+            //Also check for special prescription PTVs (not 56, 63, or 70 for HNPlan)
+            int ptvType;
+            foreach (Structure structure in context.StructureSet.Structures)
+            {
+                if (structure.Name.ToLower().Contains("ptv"))
+                {
+                    ptvType = VMS.TPS.Script.FindPTVNumber(structure.Name.ToLower());
+                    //Check if standard prescription dose type;
+                    bool isStandard = this.HnPlan.PTV_Types.IndexOf(ptvType) != -1;
+                    if (!isStandard)
+                    {
+                        //Make a new constraint
+                        string Name = "PTV" + ptvType.ToString();
+                        ROI newPTV = new ROI();
+                        newPTV.Name = Name;
+                        newPTV.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110));
+                        newPTV.Constraints.Add(new Constraint("D", "max", "<", 1.1 * this.HnPlan.PrescriptionDose, "abs", 100));
+                        this.HnPlan.ROIs.Add(newPTV);
+                        this.MatchingStructures.Add(new List<Structure>() { structure });
+                    }
+                }
+            }
+            
         }
 
         private void checkBox8_CheckedChanged(object sender, EventArgs e)
@@ -419,273 +486,93 @@ namespace Plan_n_Check
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox3_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox4_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox5_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox6_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox7_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox9_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox10_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox11_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox12_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox13_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox14_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox15_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
 
         }
 
         private void checkBox16_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+           
         }
 
         private void checkBox17_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox18_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void checkBox19_CheckedChanged(object sender, EventArgs e)
         {
-            List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
+            
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -870,6 +757,16 @@ namespace Plan_n_Check
             this.PanelSpecialFeatures.SendToBack();
             this.panel1.Visible = true;
             this.panel1.BringToFront();
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void RelationTB_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
