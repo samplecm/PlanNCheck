@@ -19,7 +19,7 @@ namespace Plan_n_Check.Calculate
     public static class Calculator
     {       
         
-        public static string CheckConstraints(ScriptContext context, ROI ROI, List<Structure> dicomStructure)
+        public static string CheckConstraints(ScriptContext context, ROI ROI, List<Structure> dicomStructure, bool isParotid = false)
         {
             string returnString = "";
             //Go through all plan types and check all constraints for report. 
@@ -155,14 +155,23 @@ namespace Plan_n_Check.Calculate
                             }
                             //Now check the relation
                             if (relation == "<")
-                            {
+                            {                               
                                 if (dose < value)
                                 {
                                     returnString += "Constraint SATISFIED. D = " + string.Format("{0:0.0}", dose) + "cGy \n";
                                 }
+                                
                                 else
                                 {
-                                    returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "cGy \n";
+                                    if ((ROI.Name.Contains("parotid"))&&(dose < 2500))
+                                    {
+                                        returnString += "D = " + string.Format("{0:0.0}", dose) + "cGy. Possibly acceptable. \n";
+                                    }
+                                    else
+                                    {
+                                        returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "cGy \n";
+                                    }
+
                                 }
                             }
                             else if (relation == ">")
@@ -278,7 +287,7 @@ namespace Plan_n_Check.Calculate
             return returnString;
         }
 
-        public static void RunReport(ScriptContext context, HNPlan hnplan, string path, List<List<Structure>> matchingStructures, List<List<Structure>> optimizedStructures)
+        public static void RunReport(ScriptContext context, HNPlan hnplan, string path, List<List<Structure>> matchingStructures, List<List<Structure>> optimizedStructures, List<List<string>> updateLog)
         {
             //Need to go one by one and check constraints. 
 
@@ -343,6 +352,20 @@ namespace Plan_n_Check.Calculate
                         }
                     outputFile.WriteLine(ReportStrings[i]);
                 }
+                }
+                outputFile.WriteLine("----------------------------------------------------------------");
+                outputFile.WriteLine("----------------------------------------------------------------\n\n");
+
+
+                outputFile.WriteLine("Update Log");
+                outputFile.WriteLine("----------------------------------------------------------------\n\n");
+                foreach (List<string> log in updateLog)
+                {
+                    foreach (string constraintLog in log)
+                    {
+                        outputFile.WriteLine(constraintLog);
+                        outputFile.WriteLine("----------------------------------------------------------------");
+                    }
                 }
             }
 
