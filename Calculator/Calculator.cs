@@ -12,6 +12,7 @@ using VMS.TPS.Common.Model.API;
 using VMS.TPS.Common.Model.Types;
 using Plan_n_Check;
 using Plan_n_Check.Plans;
+using TheArtOfDev.HtmlRenderer.PdfSharp;
 
 
 namespace Plan_n_Check.Calculate
@@ -21,7 +22,7 @@ namespace Plan_n_Check.Calculate
         
         public static string CheckConstraints(ScriptContext context, ROI ROI, List<Structure> dicomStructure, bool isParotid = false)
         {
-            string returnString = "";
+            string returnString = "<p>";
             //Go through all plan types and check all constraints for report. 
             PlanSetup p = context.PlanSetup;
             p.DoseValuePresentation = DoseValuePresentation.Absolute;
@@ -35,7 +36,7 @@ namespace Plan_n_Check.Calculate
             }
             for (int match = 0; match < dicomStructure.Count; match++)
             {
-                returnString += "Matching Structure " + string.Format("{0}", match + 1) + ": \n";
+                returnString += "<h6>Matching Structure " + string.Format("{0}", match + 1) + ": </h6>";
                 //first go one by one through the constraints.
                 for (int i = 0; i < ROI.Constraints.Count; i++)
                 {                  
@@ -45,29 +46,35 @@ namespace Plan_n_Check.Calculate
                     //Get type of constraint
                     string type = ROI.Constraints[i].Type;
                     string subscript = ROI.Constraints[i].Subscript;
+                    string htmlSubscript = "&#60;";
+                    
                     string relation = ROI.Constraints[i].EqualityType;
+                    if (relation == ">")
+                    {
+                        htmlSubscript = "&#62;";
+                    }
                     double value = ROI.Constraints[i].Value;
                     string format = ROI.Constraints[i].Format;
-                    returnString += "Constraint " + string.Format("{0}", i + 1) + ": " + type + "_" + subscript + relation + value.ToString();
+                    returnString += "Constraint " + string.Format("{0}", i + 1) + ": " + type + "<sub>" +  subscript.ToString() + "</sub>" + htmlSubscript + value.ToString();
                     if (type.ToLower() == "d")
                     {
                         if (format.ToLower() == "abs")
                         {
-                            returnString += "cGy \n";
+                            returnString += "cGy <br>";
                         }
                         else
                         {
-                            returnString += "% \n";
+                            returnString += "% <br>";
                         }
                     }else
                     {
                         if (format.ToLower() == "abs")
                         {
-                            returnString += "cc \n";
+                            returnString += "cc <br>";
                         }
                         else
                         {
-                            returnString += "% \n";
+                            returnString += "% <br>";
                         }
                     }
                     
@@ -96,23 +103,23 @@ namespace Plan_n_Check.Calculate
                                 {
                                     if (doseQuant < value)
                                     {
-                                        returnString += "Constraint SATISFIED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy \n";
+                                        returnString += "Constraint SATISFIED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy <br>";
                                     }
                                     else
                                     {
-                                        returnString += "Constraint FAILED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy\n";
+                                        returnString += "Constraint FAILED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy<br>";
                                     }
                                 }
                                 else if (relation == ">")
                                 {
                                     if (doseQuant > value)
                                     {
-                                        returnString += "Constraint SATISFIED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy \n";
+                                        returnString += "Constraint SATISFIED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy <br>";
 
                                     }
                                     else
                                     {
-                                        returnString += "Constraint FAILED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy\n";
+                                        returnString += "Constraint FAILED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy<br>";
                                     }
                                 }
                                 else
@@ -142,7 +149,7 @@ namespace Plan_n_Check.Calculate
                             }
                             else
                             {
-                                returnString += "Failed to interpret subscript given for this constraint. \n";
+                                returnString += "Failed to interpret subscript given for this constraint. <br>";
                                 break;
                             }
                             if (dvhData.MeanDose.Unit == DoseValue.DoseUnit.Gy) //convert to cgy if necessary
@@ -158,18 +165,18 @@ namespace Plan_n_Check.Calculate
                             {                               
                                 if (dose < value)
                                 {
-                                    returnString += "Constraint SATISFIED. D = " + string.Format("{0:0.0}", dose) + "cGy \n";
+                                    returnString += "Constraint SATISFIED. D = " + string.Format("{0:0.0}", dose) + "cGy <br>";
                                 }
                                 
                                 else
                                 {
-                                    if ((ROI.Name.Contains("parotid"))&&(dose < 2500))
+                                    if ((ROI.Name.ToLower().Contains("paro"))&&(dose < 2500))
                                     {
-                                        returnString += "D = " + string.Format("{0:0.0}", dose) + "cGy. Possibly acceptable. \n";
+                                        returnString += "D = " + string.Format("{0:0.0}", dose) + "cGy. Possibly acceptable. <br>";
                                     }
                                     else
                                     {
-                                        returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "cGy \n";
+                                        returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "cGy <br>";
                                     }
 
                                 }
@@ -178,17 +185,17 @@ namespace Plan_n_Check.Calculate
                             {
                                 if (dose > value)
                                 {
-                                    returnString += "Constraint SATISFIED. D = " + string.Format("{0:0.0}", dose) + "cGy \n";
+                                    returnString += "Constraint SATISFIED. D = " + string.Format("{0:0.0}", dose) + "cGy <br>";
 
                                 }
                                 else
                                 {
-                                    returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "cGy \n";
+                                    returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "cGy <br>";
                                 }
                             }
                             else
                             {
-                                returnString += "Could not understand the relation given in the constraint. \n";
+                                returnString += "Could not understand the relation given in the constraint. <br>";
                             }
                         }
                     }
@@ -227,22 +234,22 @@ namespace Plan_n_Check.Calculate
                                 {
                                     if (isPTV)
                                     {
-                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "cGy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "cGy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
                                     }
                                     else
                                     {
-                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
                                     }
                                 }
                                 else
                                 {
                                     if (isPTV)
                                     {
-                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
                                     }
                                     else
                                     {
-                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "cGy was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "cGy was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
                                     }
                                 }
                             }
@@ -252,38 +259,38 @@ namespace Plan_n_Check.Calculate
                                 {
                                     if (isPTV)
                                     {
-                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
                                     }
                                     else
                                     {
-                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "cGy was  " + string.Format("{0:0.0}", (volumeQuant )) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "cGy was  " + string.Format("{0:0.0}", (volumeQuant )) + "% of the structure's total volume. <br>";
                                     }
                                 }
                                 else
                                 {
                                     if (isPTV)
                                     {
-                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
                                     }
                                     else
                                     {
-                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. \n";
+                                        returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
                                     }
                                 }
                             }
                             else
                             {
-                                returnString += "Could not understand the relation given in the constraint. \n";
+                                returnString += "Could not understand the relation given in the constraint. <br>";
                             }
                         }
                         catch
                         {
-                            returnString += "Failed to interpret subscript given for this constraint. \n";
+                            returnString += "Failed to interpret subscript given for this constraint. <br>";
                         }
                     }
                 }
             }
-
+            returnString += "</p>";
             return returnString;
         }
 
@@ -313,63 +320,78 @@ namespace Plan_n_Check.Calculate
             //Get the current date and time:
             var culture = new CultureInfo("en-US");
             DateTime localDate = DateTime.Now;
-            using (StreamWriter outputFile = new StreamWriter(path))  //start writing a report.
+            string outputFile = "<!DOCTYPE html> <html> <body>";
+            outputFile += "<h1>Treatment Plan Verification Report </h1>";
+            outputFile += "<h2>Plan n Check </h2>";
+            outputFile += "<h3>Date of Report: " + localDate.ToString(culture) + "</h3>";
+            
+            outputFile += "<p><h4>Patient:</h4><br>";
+            outputFile += "Last name: " + patient.LastName.ToString() + "<br>";
+            outputFile += "First name: " + patient.FirstName.ToString() + "<br>";
+
+
+            outputFile += "<br><br></p>";
+            for (int i = 0; i < hnplan.ROIs.Count; i++)
             {
-                outputFile.WriteLine("Treatment Plan Verification Report ");
-                outputFile.WriteLine("Date of Report: " + localDate.ToString(culture));
-                outputFile.WriteLine("////////////////////////////////////////////////////////////////");
-                outputFile.WriteLine("Patient:");
-                outputFile.WriteLine("Last name: " + patient.LastName.ToString());
-                outputFile.WriteLine("First name: " + patient.FirstName.ToString());
-                outputFile.WriteLine("////////////////////////////////////////////////////////////////");
-                outputFile.WriteLine("////////////////////////////////////////////////////////////////");
-                outputFile.WriteLine("\n \n");
-                for (int i = 0; i < hnplan.ROIs.Count; i++)
+                ROI roi = hnplan.ROIs[i];
+
+                outputFile += "<p><h4>Structure: " + roi.Name + "</h4>";
+                if (matchingStructures[i].Count == 0)
                 {
-                    ROI roi = hnplan.ROIs[i];
-                    outputFile.WriteLine("----------------------------------------------------------------");
-                    outputFile.WriteLine("Structure: " + roi.Name);
-                    if (matchingStructures[i].Count == 0)
+                    outputFile += "No matching dicom structures found. <br>";
+                }
+                else
+                {
+                    outputFile += "<h5>DICOM Structure(s) (" + matchingStructures[i].Count + ") matching</h5>";
+               
+                        for (int ms = 0; ms < matchingStructures[i].Count; ms++)
                     {
-                        outputFile.WriteLine("No matching dicom structures found.");
+                        outputFile += matchingStructures[i][ms].Name + "<br>";
                     }
-                    else
+                
+                for (int j = 0; j < matchingStructures[i].Count; j++)
                     {
-                        outputFile.WriteLine("DICOM Structure(s): " + matchingStructures[i].Count + ": " + matchingStructures[i][0].Name);
-                    if (matchingStructures[i].Count > 1)
-                    {
-                            for (int ms = 1; ms < matchingStructures[i].Count; ms++)
+                        if (matchingStructures[i][j].Name != optimizedStructures[i][j].Name)
                         {
-                            outputFile.WriteLine("                       " + matchingStructures[i][ms].Name);
+                            outputFile += "Optimization Structure " + optimizedStructures[i][j].Name + " created for " + matchingStructures[i][j].Name + "<br>";
                         }
                     }
-                    for (int j = 0; j < matchingStructures[i].Count; j++)
-                        {
-                            if (matchingStructures[i][j].Name != optimizedStructures[i][j].Name)
-                            {
-                                outputFile.WriteLine("Optimization Structure " + optimizedStructures[i][j].Name + " created for " + matchingStructures[i][j].Name);
-                            }
-                        }
-                    outputFile.WriteLine(ReportStrings[i]);
+                outputFile += ReportStrings[i];
                 }
-                }
-                outputFile.WriteLine("----------------------------------------------------------------");
-                outputFile.WriteLine("----------------------------------------------------------------\n\n");
+                outputFile += "</p>";
+            }
+           
 
+            if (updateLog.Count != 0)
+            {
+                outputFile += "<h3>Update Log</h3>";
 
-                outputFile.WriteLine("Update Log");
-                outputFile.WriteLine("----------------------------------------------------------------\n\n");
+                int iteration = 1;
                 foreach (List<string> log in updateLog)
                 {
+                    outputFile += "<h4>Iteration " + iteration.ToString() + " of constraint updates:</h4>";
+                    iteration++;
+                    outputFile += "<p>";
                     foreach (string constraintLog in log)
                     {
-                        outputFile.WriteLine(constraintLog);
-                        outputFile.WriteLine("----------------------------------------------------------------");
-                    }
-                }
-            }
+                        outputFile += constraintLog + "<br>";
 
+                    }
+                    outputFile += "</p>";
+
+                }
+                outputFile += "</body></html>";
             }
+            
+
+            //Now convert this html to a pdf
+           
+           
+            var pdf = PdfGenerator.GeneratePdf(outputFile, PdfSharp.PageSize.Letter);
+            pdf.Save(path);
+                
+            
+        }
 
             public static List<Structure> AssignStructure(StructureSet ss, ROI roi) //return a list containing a list of structures matching the ROI for each constrained ROI
         {
@@ -659,7 +681,7 @@ namespace Plan_n_Check.Calculate
             int n = Y.Length;
             // Create an array to store lengths of  
             // longest common suffixes of substrings. 
-       
+
             int[,] LCStuff = new int[m + 1, n + 1];
 
             // To store length of the longest common 
@@ -688,6 +710,12 @@ namespace Plan_n_Check.Calculate
             }
 
             return result;
+            
+
+        }
+        public static void DVHPlot(Structure structure, ScriptContext scriptContext)
+        {
+            var model = new OxyPlot.PlotModel { Title = $"DVH Plot" };
         }
     }
 }
