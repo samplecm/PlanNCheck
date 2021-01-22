@@ -12,6 +12,7 @@ using VMS.TPS.Common.Model.API;
 using VMS.TPS.Common.Model.Types;
 using Plan_n_Check;
 using Plan_n_Check.Plans;
+using TheArtOfDev.HtmlRenderer.PdfSharp;
 // TODO: Replace the following version attributes by creating AssemblyInfo.cs. You can do this in the properties of the Visual Studio project.
 [assembly: ESAPIScript(IsWriteable = true)]
 [assembly: AssemblyVersion("1.0.0.1")]
@@ -31,7 +32,7 @@ namespace VMS.TPS
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public void Execute(ScriptContext context /*, System.Windows.Window window, ScriptEnvironment environment*/)
+    public void Execute(ScriptContext context)
     {
             //Assembly assembly = Assembly.LoadFrom(@"C:\Windows\Microsoft.NET\Framework\v4.0.30319");
             //Type type = assembly.GetType(@"C:\Windows\Microsoft.NET\Framework\v4.0.30319.DialogBox");
@@ -361,7 +362,27 @@ namespace VMS.TPS
                                     }
                                     else
                                     {
-                                        returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "Gy \n";
+                                        if (matchingStructures[s][match].Name.Contains("paro"))
+                                        {
+                                            if (dose < 2500)
+                                            {
+                                                returnString += "Constraint may be satisfied if the other parotid gland's mean dose is less than 25Gy.";
+                                            }
+                                            
+                                        }
+                                        else if(matchingStructures[s][match].Name.Contains("subman"))
+                                        {
+                                            if (dose < 2500)
+                                            {
+                                                returnString += "Constraint may be satisfied if the other submandibular gland's mean dose is less than 25Gy.";
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "Gy \n";
+                                        }
+                                        
                                     }
                                 }
                                 else if (relation == ">")
@@ -482,6 +503,7 @@ namespace VMS.TPS
         public static List<string> UpdateConstraints(ref ExternalPlanSetup plan, ref StructureSet ss,ref HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures)
         {
             List<string> log = new List<string>();
+            log.Add("<p>");
             
 
             //Go through all plan types and check all constraints.
@@ -645,8 +667,7 @@ namespace VMS.TPS
                                         if ((ROIs[s].Type == "OAR") && (ROIs[s].Critical == false))
                                         {
                                             newPriority = Math.Min(newPriority, 70);
-                                            log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
-                                            hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
+                                            
                                         }
                                         if (dose - value > 2000) //if constraint is failing miserably, stop trying
                                         {
@@ -775,6 +796,7 @@ namespace VMS.TPS
                         }
                     }
                 }
+                log.Add("</p>");
             }
             //Now need to delete and reset all constraints
             SetConstraints(ref plan, hnPlan, optimizedStructures);

@@ -16,6 +16,9 @@ using VMS.TPS;
 using Plan_n_Check;
 using Plan_n_Check.Plans;
 using Plan_n_Check.Calculate;
+using OxyPlot.Series;
+using OxyPlot;
+using OxyPlot.Axes;
 
 namespace Plan_n_Check
 {
@@ -29,14 +32,25 @@ namespace Plan_n_Check
 
         public List<Structure> DicomStructures { get; set; }
         public bool[] Features { get; set; }
+
+        public OxyPlot.WindowsForms.PlotView PV { get; set; }
+
+
+
+
         public MainForm(ref ScriptContext contextIn)
         {
             InitializeComponent();
             this.context = contextIn;
+            this.FormBorderStyle = FormBorderStyle.None;
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Location = new System.Drawing.Point(0, 0);
             this.Plans = new List<Plan>();
             this.MatchingStructures = new List<List<Structure>>();
             this.DicomStructures = new List<Structure>();
             this.Features = new bool[1];
+
+            
             
         }
 
@@ -45,7 +59,7 @@ namespace Plan_n_Check
             var sfd = new SaveFileDialog
             {
                 Title = "Choose Save Location",
-                Filter = "TXT Files (*.txt)|*.txt",
+                Filter = "PDF Files (*.pdf)|*.pdf",
                 FileName = name
             };
 
@@ -64,6 +78,34 @@ namespace Plan_n_Check
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            OxyPlot.WindowsForms.PlotView pv = new OxyPlot.WindowsForms.PlotView();
+            pv.Location = new System.Drawing.Point(30, 60);
+            pv.Size = new System.Drawing.Size(650, 380);
+            pv.Model = new OxyPlot.PlotModel { Title = "DVH" };
+            pv.Model.Axes.Add(new LinearAxis
+            {
+                Title = "Dose (cGy)",
+                Position = AxisPosition.Bottom
+            }
+                );
+            pv.Model.Axes.Add(new LinearAxis
+            {
+                Title = "Volume (cc)",
+                Position = AxisPosition.Left
+            }
+                );
+            this.PV = pv;
+            this.Controls.Add(this.PV);
+            this.PlotPanel.Controls.Add(this.PV);
+
+            List<string> listStructures = new List<string>();
+            foreach (Structure structure in this.context.StructureSet.Structures)
+            {
+                listStructures.Add(structure.Name);
+
+            }
+
+            this.PlotCombobox.DataSource = listStructures;
 
         }
 
@@ -115,10 +157,10 @@ namespace Plan_n_Check
             {
                 StartErrorLabel.Text = "Please select a type of plan to report on.";
             }
-            else if ((!int.TryParse(this.IterationsTextBox.Text, out int value))||(this.IterationsTextBox.Text == "0")) //if numints is not an integer or 0
-            {
-                StartErrorLabel.Text = "Number of iterations must be an integer greater than zero.";
-            }
+            //else if ((!int.TryParse(this.IterationsTextBox.Text, out int value))||(this.IterationsTextBox.Text == "0")) //if numints is not an integer or 0
+            //{
+            //    StartErrorLabel.Text = "Number of iterations must be an integer greater than zero.";
+            //}
             else
             {
                 int iterations = Convert.ToInt32(this.IterationsTextBox.Text);
@@ -128,7 +170,7 @@ namespace Plan_n_Check
                     this.Features[0] = true;
                 }
                 this.StartErrorLabel.Text = "In progress";
-                this.StartErrorLabel.Visible = true;               
+                this.StartErrorLabel.Visible = true;
                 var structureLists = VMS.TPS.Script.StartOptimizer(this.context, this.HnPlan, this.MatchingStructures, iterations, this.Features);
                 List<List<Structure>> optimizedStructures = structureLists.Item1;
                 List<List<Structure>> matchingStructures = structureLists.Item2;
@@ -137,9 +179,10 @@ namespace Plan_n_Check
                 {
                     Calculator.RunReport(this.context, this.HnPlan, this.SavePath, optimizedStructures, this.MatchingStructures, updateLog);
                 }
-               
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                this.StartErrorLabel.Visible = false;
+                this.PlotPanel.Visible = true;
+                this.PlotPanel.BringToFront();
+                
             }
                      
         }
@@ -212,7 +255,26 @@ namespace Plan_n_Check
                         }
                     }
                 }
-                
+                List<string> TypeList = new List<string>();
+                TypeList.Add("D");
+                TypeList.Add("V");
+                this.Combobox_Type.DataSource = TypeList;
+
+                List<string> RelationList = new List<string>();
+                RelationList.Add("<");
+                RelationList.Add(">");
+                this.Combobox_Relation.DataSource = RelationList;
+
+                List<string> FormatList = new List<string>();
+                FormatList.Add("Abs");
+                FormatList.Add("Rel");
+                this.Combobox_Format.DataSource = FormatList;
+
+
+
+
+
+
                 this.panel5.Visible = false;
                 this.panel5.SendToBack();
                 this.panel1.BringToFront();
@@ -289,25 +351,14 @@ namespace Plan_n_Check
 
         private void button3_Click(object sender, EventArgs e) //add constraint
         {
-            if ((String.IsNullOrEmpty(StructureTB.Text)) || (String.IsNullOrEmpty(TypeTB.Text)) || (String.IsNullOrEmpty(SubscriptTB.Text)) || 
-                (String.IsNullOrEmpty(RelationTB.Text)) || (String.IsNullOrEmpty(ValueTB.Text)) || (String.IsNullOrEmpty(FormatTB.Text))) 
+            if ((String.IsNullOrEmpty(this.StructureTB.Text)) || (String.IsNullOrEmpty(this.SubscriptTB.Text)) || 
+                (String.IsNullOrEmpty(this.ValueTB.Text))) 
             {               
                 this.AddLabel.Visible = true;
 
-            }else if ((TypeTB.Text.ToLower() != "d") && (TypeTB.Text.ToLower() != "v"))
+            }else if ((this.Combobox_Type.SelectedIndex == -1)||(this.Combobox_Relation.SelectedIndex == -1) ||(this.Combobox_Format.SelectedIndex == -1))
             {
-                this.AddLabel.Text = "Invalid Type.";
-                this.AddLabel.Visible = true;
-            }
-            else if ((RelationTB.Text.ToLower() != "<") && (RelationTB.Text.ToLower() != ">"))
-            {
-                this.AddLabel.Text = "Invalid Relation. Can either be \"<\" or \">\".";
-                this.AddLabel.Visible = true;
-            }
-            else if ((FormatTB.Text.ToLower() != "rel") && (FormatTB.Text.ToLower() != "abs"))
-            {
-                this.AddLabel.Text = "Invalid Format. Can either be \"rel\" or \"abs\". ";
-                this.AddLabel.Visible = true;
+
             }
             else if (!Double.TryParse(ValueTB.Text, out double _))
             {
@@ -334,7 +385,7 @@ namespace Plan_n_Check
                     if (this.HnPlan.ROIs[i].Name == StructureTB.Text.ToString()) //if structure already exists
                     {
                         structExists = true;
-                        Constraint newConstraint = new Constraint(TypeTB.Text.ToString(), SubscriptTB.Text.ToString(), RelationTB.Text.ToString(), Convert.ToDouble(ValueTB.Text.ToString()), FormatTB.Text.ToString());
+                        Constraint newConstraint = new Constraint(this.Combobox_Type.SelectedItem.ToString(), SubscriptTB.Text.ToString(), this.Combobox_Relation.SelectedItem.ToString(), Convert.ToDouble(ValueTB.Text.ToString()), this.Combobox_Format.SelectedItem.ToString());
                         this.HnPlan.ROIs[i].Constraints.Add(newConstraint);
                         break;
                     }
@@ -343,7 +394,7 @@ namespace Plan_n_Check
                 {
                     ROI NewROI = new ROI();
                     NewROI.Name = StructureTB.Text.ToString();
-                    NewROI.Constraints.Add(new Constraint(TypeTB.Text.ToString(), SubscriptTB.Text.ToString(), RelationTB.Text.ToString(), Convert.ToDouble(ValueTB.Text.ToString()), FormatTB.Text.ToString()));
+                    NewROI.Constraints.Add(new Constraint(this.Combobox_Type.SelectedItem.ToString(), SubscriptTB.Text.ToString(), this.Combobox_Relation.SelectedItem.ToString(), Convert.ToDouble(ValueTB.Text.ToString()), this.Combobox_Format.SelectedItem.ToString()));
 
                     this.HnPlan.ROIs.Add(NewROI);
                     //Need to also add assigned structure for this
@@ -354,11 +405,11 @@ namespace Plan_n_Check
 
             }
             PopulateGrid();
-            this.TypeTB.Text = "";
+            this.Combobox_Type.SelectedIndex = -1;
             this.ValueTB.Text = "";
-            this.RelationTB.Text = "";
-            this.FormatTB.Text = "";
-            this.SubscriptTB.Text = "";
+            this.Combobox_Relation.SelectedIndex = -1;
+            this.Combobox_Format.SelectedIndex = -1;
+            this.Combobox_Type.SelectedIndex = -1;
         }
 
         private void DeleteButton_Click(object sender, EventArgs e)
@@ -768,5 +819,144 @@ namespace Plan_n_Check
         {
 
         }
+
+        private void DicomComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void helpButtonConstraints_Click(object sender, EventArgs e)
+        {
+            this.LatexPanel.BringToFront();
+            this.LatexPanel.Visible = true;
+
+        }
+
+        private void DoneLatexButton_Click(object sender, EventArgs e)
+        {
+            this.LatexPanel.SendToBack();
+            this.LatexPanel.Visible = false;
+        }
+
+        private void PlotDoneButton_Click(object sender, EventArgs e)
+        {
+            this.PlotPanel.Visible = false;
+            this.PlotPanel.SendToBack();
+        }
+
+        private void PlotButton_Click(object sender, EventArgs e)
+        {
+            this.PlotPanel.Controls.Remove(this.PV);
+            this.Controls.Remove(this.PV);
+            this.Refresh();
+
+            OxyPlot.WindowsForms.PlotView pv = new OxyPlot.WindowsForms.PlotView();
+            pv.Location = new System.Drawing.Point(30, 60);
+            pv.Size = new System.Drawing.Size(650, 380);
+            pv.Model = new OxyPlot.PlotModel { Title = "DVH" };
+            pv.Model.Axes.Add(new LinearAxis
+            {
+                Title = "Dose (cGy)",
+                Position = AxisPosition.Bottom
+            }
+                );
+            pv.Model.Axes.Add(new LinearAxis
+            {
+                Title = "Volume (cc)",
+                Position = AxisPosition.Left
+            }
+                );
+            this.PV = pv;
+            this.Controls.Add(this.PV);
+            this.PlotPanel.Controls.Add(this.PV);
+
+            MakePlot();
+            
+
+        }
+
+        private void PlotFormButton_Click(object sender, EventArgs e)
+        {
+            this.PlotPanel.Visible = true;
+            this.PlotPanel.BringToFront();
+            this.PlotPanel.Controls.Remove(this.PV);
+            this.Controls.Remove(this.PV);
+            this.Refresh();
+
+            OxyPlot.WindowsForms.PlotView pv = new OxyPlot.WindowsForms.PlotView();
+            pv.Location = new System.Drawing.Point(30, 60);
+            pv.Size = new System.Drawing.Size(650, 380);
+            pv.Model = new OxyPlot.PlotModel { Title = "DVH" };
+            pv.Model.Axes.Add(new LinearAxis
+            {
+                Title = "Dose (cGy)",
+                Position = AxisPosition.Bottom
+            }
+                );
+            pv.Model.Axes.Add(new LinearAxis
+            {
+                Title = "Volume (cc)",
+                Position = AxisPosition.Left
+            }
+                );
+            this.PV = pv;
+            this.Controls.Add(this.PV);
+            this.PlotPanel.Controls.Add(this.PV);
+            MakePlot();
+        }
+        private void MakePlot()
+        {
+            if (this.PlotCombobox.SelectedIndex == -1)
+            {
+                return;
+            }
+            string structureName = this.PlotCombobox.SelectedItem.ToString();
+            Structure plotStructure = this.context.StructureSet.Structures.First();
+            foreach (Structure structure in this.context.StructureSet.Structures)
+            {
+                if (structure.Name == structureName) {
+                    plotStructure = structure;
+                }
+            }
+            var dvh = CalculateDVH(this.context.PlanSetup, plotStructure);
+            var series = CreateDVHSeries(dvh);
+            this.PV.Model.Series.Add(series);
+            this.Controls.Add(this.PV);
+            this.PlotPanel.Controls.Add(this.PV);
+
+            
+
+            
+
+
+        }
+        
+        private DVHData CalculateDVH(PlanSetup plan, Structure structure)
+        {
+            return plan.GetDVHCumulativeData(structure, DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, 0.01);
+        }
+        private OxyPlot.Series.Series CreateDVHSeries(DVHData dvh)
+        {
+            var series = new LineSeries();
+            var points = CreateDataPoints(dvh);
+            series.Points.AddRange(points);
+            return series;
+        }
+
+        private List<DataPoint> CreateDataPoints(DVHData dvh)
+        {
+            var points = new List<DataPoint>();
+            foreach (var dvhPoint in dvh.CurveData)
+            {
+                var point = CreateDataPoint(dvhPoint);
+                points.Add(point);
+            }
+            return points;
+        }
+        private DataPoint CreateDataPoint(DVHPoint dvhPoint)
+        {
+            return new DataPoint(dvhPoint.DoseValue.Dose, dvhPoint.Volume);
+        }
+       
     }
 }
