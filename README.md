@@ -1,6 +1,6 @@
 # Plan N Check
 
-![alt text](https://github.com/samplecm/PlanNCheck/blob/master/Capture.PNG?raw=true)
+![alt text](https://github.com/samplecm/PlanNCheck/blob/master/Capture.png?raw=true)
 
 Plan N Check is a binary plug in script for Varian Eclipse. 
 Its currently being developed as a research tool for starting a radiation therapy **plan** by automatically creating patient beams, fitting collimators, applying constraints to dicom structures automatically, updating, and iteratively adjusting constraints. 
