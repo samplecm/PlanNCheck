@@ -155,6 +155,8 @@ namespace Plan_n_Check
             this.PlotButton = new System.Windows.Forms.Button();
             this.PlotCombobox = new System.Windows.Forms.ComboBox();
             this.PlotDoneButton = new System.Windows.Forms.Button();
+            this.PriorityRatio_TextBox = new System.Windows.Forms.TextBox();
+            this.PriorityLabel = new System.Windows.Forms.Label();
             CustomizeButton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.AssigningPanel.SuspendLayout();
@@ -1013,6 +1015,8 @@ namespace Plan_n_Check
             // PanelSpecialFeatures
             // 
             this.PanelSpecialFeatures.BackColor = System.Drawing.Color.White;
+            this.PanelSpecialFeatures.Controls.Add(this.PriorityLabel);
+            this.PanelSpecialFeatures.Controls.Add(this.PriorityRatio_TextBox);
             this.PanelSpecialFeatures.Controls.Add(this.LabelSpecialFeatures);
             this.PanelSpecialFeatures.Controls.Add(this.ButtonDoneFeatures);
             this.PanelSpecialFeatures.Controls.Add(this.CheckBox_ChopParotid);
@@ -1508,15 +1512,36 @@ namespace Plan_n_Check
             this.PlotDoneButton.UseVisualStyleBackColor = false;
             this.PlotDoneButton.Click += new System.EventHandler(this.PlotDoneButton_Click);
             // 
+            // PriorityRatio_TextBox
+            // 
+            this.PriorityRatio_TextBox.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.PriorityRatio_TextBox.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.PriorityRatio_TextBox.Location = new System.Drawing.Point(303, 164);
+            this.PriorityRatio_TextBox.Name = "PriorityRatio_TextBox";
+            this.PriorityRatio_TextBox.Size = new System.Drawing.Size(34, 27);
+            this.PriorityRatio_TextBox.TabIndex = 21;
+            this.PriorityRatio_TextBox.Text = "0.5";
+            // 
+            // PriorityLabel
+            // 
+            this.PriorityLabel.AutoSize = true;
+            this.PriorityLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.PriorityLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.PriorityLabel.Location = new System.Drawing.Point(202, 167);
+            this.PriorityLabel.Name = "PriorityLabel";
+            this.PriorityLabel.Size = new System.Drawing.Size(100, 19);
+            this.PriorityLabel.TabIndex = 22;
+            this.PriorityLabel.Text = "Priority Ratio";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(734, 591);
+            this.Controls.Add(this.PanelSpecialFeatures);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.AssigningPanel);
-            this.Controls.Add(this.PanelSpecialFeatures);
             this.Controls.Add(this.LocationLabel);
             this.Controls.Add(this.LabelSaveCheck);
             this.Controls.Add(this.panel3);
@@ -1677,5 +1702,7 @@ namespace Plan_n_Check
         private ComboBox PlotCombobox;
         private Button PlotDoneButton;
         private Button PlotFormButton;
+        private Label PriorityLabel;
+        private TextBox PriorityRatio_TextBox;
     }
 }

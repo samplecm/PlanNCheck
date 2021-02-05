@@ -69,7 +69,7 @@ namespace VMS.TPS
             System.Windows.Forms.Application.Run(mainForm);
             //System.Windows.System.Windows.MessageBox.Show("Hello", "input", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information, System.Windows.MessageBoxResult.OK);
     }
-        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, bool[] features) //Returns list of matching structures
+        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, List<Tuple<bool, double>> features) //Returns list of matching structures
         {
          
             // Check for patient plan loaded
@@ -186,13 +186,14 @@ namespace VMS.TPS
 
         }
         public static List<List<string>> Optimize(List<List<double[,]>> choppedContours, List<double[]>
-            planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, string contraName, int numIterations, bool[] features)
+            planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, string contraName, int numIterations, List<Tuple<bool, double>> features)
         //return a list of strings which is the log of constraint updates during optimization. 
         {
             //Only make parotid structures if that feature has been selected
-            if (features[0] == true)
+            if (features[0].Item1 == true)
             {
-                MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, 1.1);
+                double priorityRatio = features[0].Item2;
+                MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, priorityRatio);
             }
             else
             {
@@ -228,9 +229,9 @@ namespace VMS.TPS
                 //Now need to perform a plan check and iteratively adjust constraints based on whether they passed or failed, and whether they passed with flying colours or failed miserably.
                 //Going to find the percentage by which the constraint failed or passed, and adjust both the priority and dose constraint based on this. 
                 updateLog.Add(UpdateConstraints(ref plan, ref ss, ref hnPlan, context, optimizedStructures, matchingStructures));
-                if (features[0] == true)
+                if (features[0].Item1 == true)
                 {
-                    MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, 1.1);//need matching structures to get full parotid
+                    MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, features[0].Item2);//need matching structures to get full parotid
                 }
             }
             //The final iteration does 4 VMAT cycles
@@ -815,8 +816,24 @@ namespace VMS.TPS
                     ss.RemoveStructure(structure);
                 }
             }
+            //Find out constraint on contrapar
+            int ROI_Index = 0;
+            double doseConstraint = 0;
+            double priority = 0;
+            for (int i = 0; i < matchingStructures.Count; i++)
+            {
+                for (int j = 0; j < matchingStructures[i].Count; j++)
+                {
+                    if (contraName == matchingStructures[i][j].Name)
+                    {
+                        ROI_Index = i;
+                    }
 
+                }
 
+            }
+            //Base constraints on the d50 parameter in the saliva model for the subregion in Gy
+            double[] D50 = new double[18] { 21.7, 20.4, 14.3, 21.6, 14.8, 13.5, 15, 11.6, 7.8, 20.7, 13.5, 1000, 21.7, 1000, 1000, 15.3, 1000, 1000 };
             int numSections = choppedContours.Count;
             double[] importanceValues = new double[18] { 0.751310670731707,  0.526618902439024,   0.386310975609756,
                 1,   0.937500000000000,   0.169969512195122,   0.538871951219512 ,  0.318064024390244,   0.167751524390244,
@@ -852,45 +869,29 @@ namespace VMS.TPS
                         //Now also need to set an optimization constraint based on the importance, and the constraint set on the whole contralateral parotid.    
 
                     }
-                    //Find out constraint on contrapar
-                    int ROI_Index = 0;
-                    double doseConstraint = 0;
-                    double priority = 0;
-                    for (int i = 0; i < matchingStructures.Count; i++)
-                    {
-                        for (int j = 0; j < matchingStructures[i].Count; j++)
+                    
+                    Tuple<double,int> overlapData = RatioOverlapWithPTV(choppedContours[subsegment], ss);
+                    //First element is overlap ratio, second is prescription dose of overlapping ptv
+                    double overlapRatio = overlapData.Item1;
+                    System.Windows.MessageBox.Show(overlapRatio.ToString());
+                    int overlapPTVDose = overlapData.Item2;
+                    System.Windows.MessageBox.Show(overlapPTVDose.ToString());
+                    try
                         {
-                            if (contraName == matchingStructures[i][j].Name)
-                            {
-                                ROI_Index = i;
-                            }
-
-                        }
-
-                    }
-                    bool overlap = DoesOverlapWithPTV(choppedContours[subsegment], ss);
-                    if (!overlap) //only set a constraint for the subsegment if it does not overlap with a ptv. 
-                    {
-                        try
-                        {
-                            doseConstraint = 1500;//hnPlan.ROIs[ROI_Index].Constraints[0].Value;
+                            
+                            doseConstraint = D50[subsegment];//hnPlan.ROIs[ROI_Index].Constraints[0].Value;
                             priority = hnPlan.ROIs[ROI_Index].Constraints[0].Priority;
                             priority *= priorityRatio * importanceValues[subsegment];
-                            if (priority > 15)
+                        //Furthermore, want to temper priority and dose constraint. Take weighted average of dose constraint with the ptv it overlaps with
+                            doseConstraint = (1-overlapRatio) * (doseConstraint*100) + overlapRatio * overlapPTVDose;
+                        priority = priority * (1 - overlapRatio);
+                        if ((priority > 10)&&(doseConstraint != 1000))
                             {
                                 plan.OptimizationSetup.AddMeanDoseObjective(subsegments[subsegment], new DoseValue(doseConstraint, "cGy"), priority);
                             }
                             
                         }
                         catch { }
-                    }
-                    else
-                    {
-                        
-                    }
-
-
-
                 }
                 else
                 {
@@ -899,12 +900,14 @@ namespace VMS.TPS
             }
 
         }
-        public static bool DoesOverlapWithPTV(List<double[,]> contours, StructureSet ss)
+        public static Tuple<double,int> RatioOverlapWithPTV(List<double[,]> contours, StructureSet ss)
         {
             //right now consider 3 or more points for a given subsegment inside a ptv means it is overlapping.
             double x, y, z;
             VVector point;
             int overlapNum = 0;
+            int totalPoints = 0;
+            int ptvDose = 0;
 
             //get list of ptvs
             List<Structure> ptvs = new List<Structure>();
@@ -922,6 +925,7 @@ namespace VMS.TPS
                     x = contours[j][k, 0];
                     y = contours[j][k, 1];
                     z = contours[j][k, 2];
+                    totalPoints++;
                     point = new VVector(x, y, z);
 
                     for (int ptv = 0; ptv < ptvs.Count; ptv++)
@@ -929,19 +933,16 @@ namespace VMS.TPS
                         if (ptvs[ptv].IsPointInsideSegment(point))
                         {
                             overlapNum++;
+                            ptvDose = FindPTVNumber(ptvs[ptv].Name) * 100;
+                            break; //Only need to count once if it does overlap with a ptv. 
                         }
                     }
 
                 }
             }
-            if (overlapNum >= 3)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            double overlapRatio = overlapNum / totalPoints;
+
+            return Tuple.Create(overlapRatio, ptvDose);
         }
         public static VVector[] ArrayToVVector(double[,] contourArray)
         {

@@ -31,7 +31,7 @@ namespace Plan_n_Check
         public ScriptContext context { get; set; }
 
         public List<Structure> DicomStructures { get; set; }
-        public bool[] Features { get; set; }
+        public List<Tuple<bool, double>> Features { get; set; }
 
         public OxyPlot.WindowsForms.PlotView PV { get; set; }
 
@@ -48,7 +48,7 @@ namespace Plan_n_Check
             this.Plans = new List<Plan>();
             this.MatchingStructures = new List<List<Structure>>();
             this.DicomStructures = new List<Structure>();
-            this.Features = new bool[1];
+            this.Features = new List<Tuple<bool, double>>();
 
             
             
@@ -167,7 +167,7 @@ namespace Plan_n_Check
                 //Check which special optimization features to include
                 if (CheckBox_ChopParotid.Checked)
                 {
-                    this.Features[0] = true;
+                    this.Features.Add(Tuple.Create(true, Convert.ToDouble(this.PriorityRatio_TextBox.Text)));
                 }
                 this.StartErrorLabel.Text = "In progress";
                 this.StartErrorLabel.Visible = true;
