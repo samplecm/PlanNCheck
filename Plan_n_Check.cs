@@ -69,7 +69,7 @@ namespace VMS.TPS
             System.Windows.Forms.Application.Run(mainForm);
             //System.Windows.System.Windows.MessageBox.Show("Hello", "input", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information, System.Windows.MessageBoxResult.OK);
     }
-        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, List<Tuple<bool, double>> features) //Returns list of matching structures
+        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, List<Tuple<bool, double[], string>> features) //Returns list of matching structures
         {
          
             // Check for patient plan loaded
@@ -92,11 +92,24 @@ namespace VMS.TPS
             //matchingStructures is the same length as hnPlan.ROIs.count
             //Now set optimization constraints
             List<List<Structure>> optimizedStructures = SetConstraints(ref plan, hnPlan, matchingStructures, true); //true to check for opti structures, returns new matching list of structures
-                                                                                                 //with some replaced by opti if necessary
-            Tuple<List<List<double[,]>>, string, List<double[]>> choppedAndName = ParotidChop(ref plan, hnPlan, matchingStructures, ss, context);
-            List<List<double[,]>> choppedContours = choppedAndName.Item1;
-            string contraParName = choppedAndName.Item2;
-            List<double[]> planes = choppedAndName.Item3;
+            List<List<double[,]>> choppedContours;
+            List<double[]> planes;
+            string contraParName;
+              
+            if (features[0].Item1 == true)
+            {
+                Tuple<List<List<double[,]>>, string, List<double[]>>  choppedAndName = ParotidChop(ref plan, hnPlan, matchingStructures, ss, context);
+                choppedContours = choppedAndName.Item1;
+                contraParName = choppedAndName.Item2;
+                planes = choppedAndName.Item3;
+            }
+            else
+            {
+                choppedContours = new List<List<double[,]>>();
+                contraParName = "";
+                planes = new List<double[]>();
+            }
+            
             List<List<string>> updatesLog = Optimize(choppedContours, planes, ref plan, ref ss, hnPlan, context, optimizedStructures,matchingStructures, contraParName, numIterations, features);
             return Tuple.Create(optimizedStructures, matchingStructures, updatesLog);
 
@@ -186,13 +199,14 @@ namespace VMS.TPS
 
         }
         public static List<List<string>> Optimize(List<List<double[,]>> choppedContours, List<double[]>
-            planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, string contraName, int numIterations, List<Tuple<bool, double>> features)
+            planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, string contraName, int numIterations, List<Tuple<bool, double[], string>> features)
         //return a list of strings which is the log of constraint updates during optimization. 
         {
             //Only make parotid structures if that feature has been selected
+            
             if (features[0].Item1 == true)
             {
-                double priorityRatio = features[0].Item2;
+                double priorityRatio = features[0].Item2[0];
                 MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, priorityRatio);
             }
             else
@@ -231,7 +245,7 @@ namespace VMS.TPS
                 updateLog.Add(UpdateConstraints(ref plan, ref ss, ref hnPlan, context, optimizedStructures, matchingStructures));
                 if (features[0].Item1 == true)
                 {
-                    MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, features[0].Item2);//need matching structures to get full parotid
+                    MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, features[0].Item2[0]);//need matching structures to get full parotid
                 }
             }
             //The final iteration does 4 VMAT cycles
@@ -873,9 +887,9 @@ namespace VMS.TPS
                     Tuple<double,int> overlapData = RatioOverlapWithPTV(choppedContours[subsegment], ss);
                     //First element is overlap ratio, second is prescription dose of overlapping ptv
                     double overlapRatio = overlapData.Item1;
-                    System.Windows.MessageBox.Show(overlapRatio.ToString());
+
                     int overlapPTVDose = overlapData.Item2;
-                    System.Windows.MessageBox.Show(overlapPTVDose.ToString());
+
                     try
                         {
                             
@@ -900,6 +914,91 @@ namespace VMS.TPS
             }
 
         }
+        public static Tuple<List<List<double[,]>>, List<double[]>> OrganChop(Structure organ, int[] numCuts, ref ExternalPlanSetup plan, StructureSet ss, ScriptContext context)
+        {
+            /* 
+             
+             1.) split this up into its separate contours
+             2. make new structure for each
+\
+             */
+
+            
+            //Now get contours for it
+            // GetContours function will return the list of contours, as well as a list of all z-planes which contours were taken from, in a tuple
+            var tuple = GetContours(organ, context);
+            List<double[,]> contours = tuple.Item1;
+            List<double[]> planes = tuple.Item2;
+
+
+            //2. Now the parotid segmentation!
+            int numCutsZ = numCuts[0];
+            int numCutsX = numCuts[2];
+            int numCutsY = numCuts[1];
+            List<List<double[,]>> choppedContours = Chop(contours, numCutsX, numCutsY, numCutsZ, organ.Name);
+
+            return Tuple.Create(choppedContours, planes);
+
+
+
+
+        }
+        public static void MakeSubsegmentStructures(Structure roi, double[] numCutsDouble, ref ExternalPlanSetup plan, ref StructureSet ss, ScriptContext context)
+        {
+            //Convert numCuts to int array
+            int[] numCuts = numCutsDouble.Select(d => (int)d).ToArray();
+            Tuple<List<List<double[,]>>, List<double[]>> choppedTuple = OrganChop(roi, numCuts,ref plan, ss, context);
+            List<List<double[,]>> choppedContours = choppedTuple.Item1;
+            List<double[]> planes = choppedTuple.Item2;
+            Image image = context.Image;
+            //First divide ROI into its subsegments
+            
+
+
+
+            int numSections = choppedContours.Count;
+            
+            //Now need to chop up the parotid, and make new constraints
+            List<Structure> subsegments = new List<Structure>();
+            string name;
+
+            for (int subsegment = 0; subsegment < numSections; subsegment++) //loop over all subsegments
+            {
+                int min = Math.Min(6, roi.Name.Length-1);
+                name = roi.Name.Substring(0,min) + "_subseg" +  (subsegment + 1).ToString();
+                if (ss.CanAddStructure("CONTROL", name))
+                {
+                    subsegments.Add(ss.AddStructure("CONTROL", name));
+                    for (int zPlane = 0; zPlane < choppedContours[subsegment].Count; zPlane++) //loop over all contours for current subsegment, and add contour to structure
+                    {
+                        int planeIndex = 0;
+                        for (int z = 0; z < planes.Count; z++)//Find the index of the plane corresponding to the current z value of the contour (saved in the planes list)
+                        {
+                            if (choppedContours[subsegment][zPlane][0, 2] == planes[z][1])
+                            {
+                                planeIndex = (int)planes[z][0];
+                            }
+                        }
+                        VVector[] currentContour = ArrayToVVector(choppedContours[subsegment][zPlane]);
+                        //Before adding this contour, need to convert the coordinates from dicom back to the user coordinate system. 
+                        for (int i = 0; i < currentContour.Length; i++)
+                        {
+                            currentContour[i] = image.DicomToUser(currentContour[i], plan);
+                        }
+                        subsegments[subsegment].AddContourOnImagePlane(currentContour, planeIndex);
+                        //Now also need to set an optimization constraint based on the importance, and the constraint set on the whole contralateral parotid.    
+
+                    }
+
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("Could not create new subsegment structures.");
+                }
+            }
+
+        }
+
         public static Tuple<double,int> RatioOverlapWithPTV(List<double[,]> contours, StructureSet ss)
         {
             //right now consider 3 or more points for a given subsegment inside a ptv means it is overlapping.
@@ -940,7 +1039,7 @@ namespace VMS.TPS
 
                 }
             }
-            double overlapRatio = overlapNum / totalPoints;
+            double overlapRatio = (double)overlapNum / (double)totalPoints;
 
             return Tuple.Create(overlapRatio, ptvDose);
         }
@@ -1554,7 +1653,7 @@ namespace VMS.TPS
             {
                 //Get the type of PTV 
                 int PTV_Type = FindPTVNumber(name);
-                if (PTV_Type == 111)
+                if (PTV_Type == 0)
                 {
                     
                 }
@@ -1644,30 +1743,30 @@ namespace VMS.TPS
                 }
             }
             //also an issue if has _L_ or " L " or " L-" or "left" in only one. 
-            if ((s1.ToLower().Contains("lpar"))|| (s1.ToLower().Contains("lsub"))||(s1.ToLower().Contains("_l_")) || (s1.ToLower().Contains(" l ")) || (s1.ToLower().Contains(" l-")) || (s1.ToLower().Contains("-l-")) || (s1.ToLower().Contains(" l_")) || (s1.ToLower().Contains("_l ")) || (s1.ToLower().Contains("-l ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("l ")) || (s1.ToLower().Contains("_lt_")) || (s1.ToLower().Contains(" lt ")) || (s1.ToLower().Contains(" lt-")) || (s1.ToLower().Contains("-lt-")) || (s1.ToLower().Contains(" lt_")) || (s1.ToLower().Contains("_lt ")) || (s1.ToLower().Contains("-lt ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("lt ")) || (s1.ToLower().StartsWith("lt ")))
+            if ((s1.ToLower().Contains("l sub")) || (s1.ToLower().Contains("l par")) || (s1.ToLower().Contains("lpar"))|| (s1.ToLower().Contains("lsub"))||(s1.ToLower().Contains("_l_")) || (s1.ToLower().Contains(" l ")) || (s1.ToLower().Contains(" l-")) || (s1.ToLower().Contains("-l-")) || (s1.ToLower().Contains(" l_")) || (s1.ToLower().Contains("_l ")) || (s1.ToLower().Contains("-l ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("l ")) || (s1.ToLower().Contains("_lt_")) || (s1.ToLower().Contains(" lt ")) || (s1.ToLower().Contains(" lt-")) || (s1.ToLower().Contains("-lt-")) || (s1.ToLower().Contains(" lt_")) || (s1.ToLower().Contains("_lt ")) || (s1.ToLower().Contains("-lt ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("lt ")) || (s1.ToLower().StartsWith("lt ")))
             {
-                if (!((s2.ToLower().Contains("lpar")) || (s2.ToLower().Contains("lsub")) || (s2.ToLower().Contains("_l_")) || (s2.ToLower().Contains(" l ")) || (s2.ToLower().Contains(" l-")) || (s2.ToLower().Contains("-l-")) || (s2.ToLower().Contains(" l_")) || (s2.ToLower().Contains("_l ")) || (s2.ToLower().Contains("-l ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("l ")) || (s2.ToLower().Contains("_lt_")) || (s2.ToLower().Contains(" lt ")) || (s2.ToLower().Contains(" lt-")) || (s2.ToLower().Contains("-lt-")) || (s2.ToLower().Contains(" lt_")) || (s2.ToLower().Contains("_lt ")) || (s2.ToLower().Contains("-lt ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("lt ")) || (s2.ToLower().StartsWith("lt "))))
+                if (!((s2.ToLower().Contains("l sub")) || (s2.ToLower().Contains("l par")) || (s2.ToLower().Contains("lpar")) || (s2.ToLower().Contains("lsub")) || (s2.ToLower().Contains("_l_")) || (s2.ToLower().Contains(" l ")) || (s2.ToLower().Contains(" l-")) || (s2.ToLower().Contains("-l-")) || (s2.ToLower().Contains(" l_")) || (s2.ToLower().Contains("_l ")) || (s2.ToLower().Contains("-l ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("l ")) || (s2.ToLower().Contains("_lt_")) || (s2.ToLower().Contains(" lt ")) || (s2.ToLower().Contains(" lt-")) || (s2.ToLower().Contains("-lt-")) || (s2.ToLower().Contains(" lt_")) || (s2.ToLower().Contains("_lt ")) || (s2.ToLower().Contains("-lt ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("lt ")) || (s2.ToLower().StartsWith("lt "))))
                 {
                     allowed = false;
                 }
             }
-            if ((s2.ToLower().Contains("lpar")) || (s2.ToLower().Contains("lsub")) || (s2.ToLower().Contains("_l_")) || (s2.ToLower().Contains(" l ")) || (s2.ToLower().Contains(" l-")) || (s2.ToLower().Contains("-l-")) || (s2.ToLower().Contains(" l_")) || (s2.ToLower().Contains("_l ")) || (s2.ToLower().Contains("-l ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("l ")) || (s2.ToLower().Contains("_lt_")) || (s2.ToLower().Contains(" lt ")) || (s2.ToLower().Contains(" lt-")) || (s2.ToLower().Contains("-lt-")) || (s2.ToLower().Contains(" lt_")) || (s2.ToLower().Contains("_lt ")) || (s2.ToLower().Contains("-lt ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("lt ")) || (s2.ToLower().StartsWith("lt ")))
+            if ((s2.ToLower().Contains("l sub")) || (s2.ToLower().Contains("l par")) || (s2.ToLower().Contains("lpar")) || (s2.ToLower().Contains("lsub")) || (s2.ToLower().Contains("_l_")) || (s2.ToLower().Contains(" l ")) || (s2.ToLower().Contains(" l-")) || (s2.ToLower().Contains("-l-")) || (s2.ToLower().Contains(" l_")) || (s2.ToLower().Contains("_l ")) || (s2.ToLower().Contains("-l ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("l ")) || (s2.ToLower().Contains("_lt_")) || (s2.ToLower().Contains(" lt ")) || (s2.ToLower().Contains(" lt-")) || (s2.ToLower().Contains("-lt-")) || (s2.ToLower().Contains(" lt_")) || (s2.ToLower().Contains("_lt ")) || (s2.ToLower().Contains("-lt ")) || (s2.ToLower().Contains("left")) || (s2.ToLower().StartsWith("lt ")) || (s2.ToLower().StartsWith("lt ")))
             {
-                if (!((s1.ToLower().Contains("lpar")) || (s1.ToLower().Contains("lsub")) || (s1.ToLower().Contains("_l_")) || (s1.ToLower().Contains(" l ")) || (s1.ToLower().Contains(" l-")) || (s1.ToLower().Contains("-l-")) || (s1.ToLower().Contains(" l_")) || (s1.ToLower().Contains("_l ")) || (s1.ToLower().Contains("-l ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("l ")) || (s1.ToLower().Contains("_lt_")) || (s1.ToLower().Contains(" lt ")) || (s1.ToLower().Contains(" lt-")) || (s1.ToLower().Contains("-lt-")) || (s1.ToLower().Contains(" lt_")) || (s1.ToLower().Contains("_lt ")) || (s1.ToLower().Contains("-lt ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("lt ")) || (s1.ToLower().StartsWith("lt "))))
+                if (!((s1.ToLower().Contains("l sub")) || (s1.ToLower().Contains("l par")) || (s1.ToLower().Contains("lpar")) || (s1.ToLower().Contains("lsub")) || (s1.ToLower().Contains("_l_")) || (s1.ToLower().Contains(" l ")) || (s1.ToLower().Contains(" l-")) || (s1.ToLower().Contains("-l-")) || (s1.ToLower().Contains(" l_")) || (s1.ToLower().Contains("_l ")) || (s1.ToLower().Contains("-l ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("l ")) || (s1.ToLower().Contains("_lt_")) || (s1.ToLower().Contains(" lt ")) || (s1.ToLower().Contains(" lt-")) || (s1.ToLower().Contains("-lt-")) || (s1.ToLower().Contains(" lt_")) || (s1.ToLower().Contains("_lt ")) || (s1.ToLower().Contains("-lt ")) || (s1.ToLower().Contains("left")) || (s1.ToLower().StartsWith("lt ")) || (s1.ToLower().StartsWith("lt "))))
                 {
                     allowed = false;
                 }
             }
-            if ((s1.ToLower().Contains("rpar")) || (s1.ToLower().Contains("rsub")) || (s1.ToLower().Contains("_r_")) || (s1.ToLower().Contains(" r ")) || (s1.ToLower().Contains(" r-")) || (s1.ToLower().Contains("-r-")) || (s1.ToLower().Contains(" r_")) || (s1.ToLower().Contains("_r ")) || (s1.ToLower().Contains("-r ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("r ")) || (s1.ToLower().Contains("_rt_")) || (s1.ToLower().Contains(" rt ")) || (s1.ToLower().Contains(" rt-")) || (s1.ToLower().Contains("-rt-")) || (s1.ToLower().Contains(" rt_")) || (s1.ToLower().Contains("_rt ")) || (s1.ToLower().Contains("-rt ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("rt ")) || (s1.ToLower().StartsWith("rt ")))
+            if ((s1.ToLower().Contains("r sub")) || (s1.ToLower().Contains("r par")) || (s1.ToLower().Contains("rpar")) || (s1.ToLower().Contains("rsub")) || (s1.ToLower().Contains("_r_")) || (s1.ToLower().Contains(" r ")) || (s1.ToLower().Contains(" r-")) || (s1.ToLower().Contains("-r-")) || (s1.ToLower().Contains(" r_")) || (s1.ToLower().Contains("_r ")) || (s1.ToLower().Contains("-r ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("r ")) || (s1.ToLower().Contains("_rt_")) || (s1.ToLower().Contains(" rt ")) || (s1.ToLower().Contains(" rt-")) || (s1.ToLower().Contains("-rt-")) || (s1.ToLower().Contains(" rt_")) || (s1.ToLower().Contains("_rt ")) || (s1.ToLower().Contains("-rt ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("rt ")) || (s1.ToLower().StartsWith("rt ")))
             {
-                if (!((s2.ToLower().Contains("rpar")) || (s2.ToLower().Contains("rsub")) || (s2.ToLower().Contains("_r_")) || (s2.ToLower().Contains(" r ")) || (s2.ToLower().Contains(" r-")) || (s2.ToLower().Contains("-r-")) || (s2.ToLower().Contains(" r_")) || (s2.ToLower().Contains("_r ")) || (s2.ToLower().Contains("-r ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("r ")) || (s2.ToLower().Contains("_rt_")) || (s2.ToLower().Contains(" rt ")) || (s2.ToLower().Contains(" rt-")) || (s2.ToLower().Contains("-rt-")) || (s2.ToLower().Contains(" rt_")) || (s2.ToLower().Contains("_rt ")) || (s2.ToLower().Contains("-rt ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("rt ")) || (s2.ToLower().StartsWith("rt "))))
+                if (!((s2.ToLower().Contains("r sub")) || (s2.ToLower().Contains("r par")) || (s2.ToLower().Contains("rpar")) || (s2.ToLower().Contains("rsub")) || (s2.ToLower().Contains("_r_")) || (s2.ToLower().Contains(" r ")) || (s2.ToLower().Contains(" r-")) || (s2.ToLower().Contains("-r-")) || (s2.ToLower().Contains(" r_")) || (s2.ToLower().Contains("_r ")) || (s2.ToLower().Contains("-r ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("r ")) || (s2.ToLower().Contains("_rt_")) || (s2.ToLower().Contains(" rt ")) || (s2.ToLower().Contains(" rt-")) || (s2.ToLower().Contains("-rt-")) || (s2.ToLower().Contains(" rt_")) || (s2.ToLower().Contains("_rt ")) || (s2.ToLower().Contains("-rt ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("rt ")) || (s2.ToLower().StartsWith("rt "))))
                 {
                     allowed = false;
                 }
             }
-            if ((s2.ToLower().Contains("rpar")) || (s2.ToLower().Contains("rsub")) || (s2.ToLower().Contains("_r_")) || (s2.ToLower().Contains(" r ")) || (s2.ToLower().Contains(" r-")) || (s2.ToLower().Contains("-r-")) || (s2.ToLower().Contains(" r_")) || (s2.ToLower().Contains("_r ")) || (s2.ToLower().Contains("-r ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("r ")) || (s2.ToLower().Contains("_rt_")) || (s2.ToLower().Contains(" rt ")) || (s2.ToLower().Contains(" rt-")) || (s2.ToLower().Contains("-rt-")) || (s2.ToLower().Contains(" rt_")) || (s2.ToLower().Contains("_rt ")) || (s2.ToLower().Contains("-rt ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("rt ")) || (s2.ToLower().StartsWith("rt ")))
+            if ((s2.ToLower().Contains("r sub")) || (s2.ToLower().Contains("r par")) || (s2.ToLower().Contains("rpar")) || (s2.ToLower().Contains("rsub")) || (s2.ToLower().Contains("_r_")) || (s2.ToLower().Contains(" r ")) || (s2.ToLower().Contains(" r-")) || (s2.ToLower().Contains("-r-")) || (s2.ToLower().Contains(" r_")) || (s2.ToLower().Contains("_r ")) || (s2.ToLower().Contains("-r ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("r ")) || (s2.ToLower().Contains("_rt_")) || (s2.ToLower().Contains(" rt ")) || (s2.ToLower().Contains(" rt-")) || (s2.ToLower().Contains("-rt-")) || (s2.ToLower().Contains(" rt_")) || (s2.ToLower().Contains("_rt ")) || (s2.ToLower().Contains("-rt ")) || (s2.ToLower().Contains("right")) || (s2.ToLower().StartsWith("rt ")) || (s2.ToLower().StartsWith("rt ")))
             {
-                if (!((s1.ToLower().Contains("rpar")) || (s1.ToLower().Contains("rsub")) || (s1.ToLower().Contains("_r_")) || (s1.ToLower().Contains(" r ")) || (s1.ToLower().Contains(" r-")) || (s1.ToLower().Contains("-r-")) || (s1.ToLower().Contains(" r_")) || (s1.ToLower().Contains("_r ")) || (s1.ToLower().Contains("-r ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("r ")) || (s1.ToLower().Contains("_rt_")) || (s1.ToLower().Contains(" rt ")) || (s1.ToLower().Contains(" rt-")) || (s1.ToLower().Contains("-rt-")) || (s1.ToLower().Contains(" rt_")) || (s1.ToLower().Contains("_rt ")) || (s1.ToLower().Contains("-rt ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("rt ")) || (s1.ToLower().StartsWith("rt "))))
+                if (!((s1.ToLower().Contains("r sub")) || (s1.ToLower().Contains("r par")) || (s1.ToLower().Contains("rpar")) || (s1.ToLower().Contains("rsub")) || (s1.ToLower().Contains("_r_")) || (s1.ToLower().Contains(" r ")) || (s1.ToLower().Contains(" r-")) || (s1.ToLower().Contains("-r-")) || (s1.ToLower().Contains(" r_")) || (s1.ToLower().Contains("_r ")) || (s1.ToLower().Contains("-r ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("r ")) || (s1.ToLower().Contains("_rt_")) || (s1.ToLower().Contains(" rt ")) || (s1.ToLower().Contains(" rt-")) || (s1.ToLower().Contains("-rt-")) || (s1.ToLower().Contains(" rt_")) || (s1.ToLower().Contains("_rt ")) || (s1.ToLower().Contains("-rt ")) || (s1.ToLower().Contains("right")) || (s1.ToLower().StartsWith("rt ")) || (s1.ToLower().StartsWith("rt "))))
                 {
                     allowed = false;
                 }
@@ -1736,7 +1835,7 @@ namespace VMS.TPS
             else
             {
 
-                return 111; //error 111 means that no number was found with the ptv name.
+                return 0; //error 0 means that no number was found with the ptv name.
             }
         }
 

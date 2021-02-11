@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Windows.Forms;
 using System.Windows;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Drawing;
 using System.Runtime.CompilerServices;
@@ -31,9 +32,11 @@ namespace Plan_n_Check
         public ScriptContext context { get; set; }
 
         public List<Structure> DicomStructures { get; set; }
-        public List<Tuple<bool, double>> Features { get; set; }
+        public List<Tuple<bool, double[], string>> Features { get; set; }
 
         public OxyPlot.WindowsForms.PlotView PV { get; set; }
+        public Stopwatch TotalTime { get; set; }
+        public Stopwatch OptimTime { get; set; }
 
 
 
@@ -48,7 +51,12 @@ namespace Plan_n_Check
             this.Plans = new List<Plan>();
             this.MatchingStructures = new List<List<Structure>>();
             this.DicomStructures = new List<Structure>();
-            this.Features = new List<Tuple<bool, double>>();
+            this.Features = new List<Tuple<bool, double[], string>>();
+            this.TotalTime = new Stopwatch();
+            this.TotalTime.Start();
+            this.OptimTime = new Stopwatch();
+            
+
 
             
             
@@ -147,6 +155,8 @@ namespace Plan_n_Check
 
         private void StartButton_Click(object sender, EventArgs e)
         {
+            
+            
             //Call method for starting report. 
             if (this.SavePath == "")
             {
@@ -165,12 +175,19 @@ namespace Plan_n_Check
             {
                 int iterations = Convert.ToInt32(this.IterationsTextBox.Text);
                 //Check which special optimization features to include
+
+                //Parotid Seg:
                 if (CheckBox_ChopParotid.Checked)
                 {
-                    this.Features.Add(Tuple.Create(true, Convert.ToDouble(this.PriorityRatio_TextBox.Text)));
+                    this.Features.Add(Tuple.Create(true, new double[1] { Convert.ToDouble(this.PriorityRatio_TextBox.Text) }, ""));
+                }else
+                {
+                    this.Features.Add(Tuple.Create(false, new double[1] { Convert.ToDouble(this.PriorityRatio_TextBox.Text) }, ""));
                 }
+                
                 this.StartErrorLabel.Text = "In progress";
                 this.StartErrorLabel.Visible = true;
+                this.OptimTime.Start();
                 var structureLists = VMS.TPS.Script.StartOptimizer(this.context, this.HnPlan, this.MatchingStructures, iterations, this.Features);
                 List<List<Structure>> optimizedStructures = structureLists.Item1;
                 List<List<Structure>> matchingStructures = structureLists.Item2;
@@ -180,9 +197,18 @@ namespace Plan_n_Check
                     Calculator.RunReport(this.context, this.HnPlan, this.SavePath, optimizedStructures, this.MatchingStructures, updateLog);
                 }
                 this.StartErrorLabel.Visible = false;
+                this.TotalTime.Stop();
+                this.OptimTime.Stop();
+
                 this.PlotPanel.Visible = true;
                 this.PlotPanel.BringToFront();
-                
+                double totalMins = this.TotalTime.Elapsed.TotalMinutes;
+                double totalSeconds = this.TotalTime.Elapsed.TotalSeconds;
+                double optimMins = this.OptimTime.Elapsed.TotalMinutes;
+                double optimSeconds = this.OptimTime.Elapsed.TotalSeconds;
+                System.Windows.MessageBox.Show("Total time elapsed: " + totalSeconds.ToString() + " seconds");
+                System.Windows.MessageBox.Show("Optimization time elapsed: " + optimSeconds.ToString() + " seconds");
+
             }
                      
         }
@@ -242,14 +268,14 @@ namespace Plan_n_Check
                         }
                         //Check if standard prescription dose type;
                         bool isStandard = this.HnPlan.PTV_Types.IndexOf(ptvType) != -1;
-                        if (!isStandard)
+                        if ((!isStandard)&&(ptvType != 0))
                         {
                             //Make a new constraint
-                            string Name = "PTV" + ptvType.ToString();
+                            string Name = "PTV" + maxPTV_Dose.ToString();
                             ROI newPTV = new ROI();
                             newPTV.Name = Name;
                             newPTV.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110));
-                            newPTV.Constraints.Add(new Constraint("D", "max", "<", 1.1 * this.HnPlan.PrescriptionDose, "abs", 100));
+                            newPTV.Constraints.Add(new Constraint("D", "max", "<", ptvType * 100, "abs", 100));
                             this.HnPlan.ROIs.Add(newPTV);
                             this.MatchingStructures.Add(new List<Structure>() { structure }); //Constraints will be updated according to this
                         }
@@ -798,6 +824,28 @@ namespace Plan_n_Check
         {
             this.PanelSpecialFeatures.Visible = true;
             this.PanelSpecialFeatures.BringToFront();
+            //populate the combo boxes
+            this.OrganSeg_OrgansCombo.DataSource = new List<string>();
+            List<string> organNames = new List<string>();
+            foreach (Structure s in this.context.StructureSet.Structures)
+            {
+                organNames.Add(s.Name);
+            }
+            this.OrganSeg_OrgansCombo.DataSource = organNames;
+
+            List<int> axial_sliceNums = new List<int>();
+            List<int> coronal_sliceNums = new List<int>();
+            List<int> sagittal_sliceNums = new List<int>();
+            //Get options 0 through 10
+            for (int i = 0; i <= 10; i++)
+            {
+                axial_sliceNums.Add(i);
+                coronal_sliceNums.Add(i);
+                sagittal_sliceNums.Add(i);
+            }
+            this.Axial_Combobox.DataSource = axial_sliceNums;
+            this.Sagittal_Combobox.DataSource = sagittal_sliceNums;
+            this.Coronal_Combobox.DataSource = coronal_sliceNums;
             this.panel1.Visible = false;
             this.panel1.SendToBack();
         }
@@ -957,6 +1005,52 @@ namespace Plan_n_Check
         {
             return new DataPoint(dvhPoint.DoseValue.Dose, dvhPoint.Volume);
         }
-       
+
+        private void Button_StartSegmentation_Click(object sender, EventArgs e)
+        {
+            ExternalPlanSetup plan = this.context.ExternalPlanSetup;
+            StructureSet ss = this.context.StructureSet;
+            //Organ Seg:
+            string organName = (string)this.OrganSeg_OrgansCombo.SelectedItem;
+            Structure organ = this.context.StructureSet.Structures.First();
+            foreach (Structure s in this.context.StructureSet.Structures)
+            {
+                if (organName == s.Name)
+                {
+                    organ = s;
+                }
+            }
+            double[] organSegOptions = new double[] { Convert.ToDouble(this.Axial_Combobox.SelectedItem), Convert.ToDouble(this.Coronal_Combobox.SelectedItem), Convert.ToDouble(this.Sagittal_Combobox.SelectedItem) };
+            this.Features.Add(Tuple.Create(true, organSegOptions, organName));
+
+            VMS.TPS.Script.MakeSubsegmentStructures(organ, organSegOptions, ref plan, ref ss, this.context);
+        }
+
+        private void Button_DeleteSubsegments_Click(object sender, EventArgs e)
+        {
+            int numDeleted = 0;
+            Structure organ = this.context.StructureSet.Structures.First();
+            foreach (Structure s in this.context.StructureSet.Structures)
+            {
+                if ((string)this.OrganSeg_OrgansCombo.SelectedItem == s.Name)
+                {
+                    organ = s;
+                }
+            }
+            foreach (Structure s2 in this.context.StructureSet.Structures.ToList())
+            {
+                int min = Math.Min(6, organ.Name.Length-1);
+                string subName = organ.Name.Substring(0, min);
+                if (s2.Name.Contains(subName + "_subseg"))
+                {
+                    this.context.StructureSet.RemoveStructure(s2);
+                    numDeleted++;
+                }
+            }
+            if (numDeleted > 0)
+            {
+                System.Windows.MessageBox.Show("Deleted " + numDeleted + " subsegment structures");
+            }
+        }
     }
 }

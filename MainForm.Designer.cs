@@ -112,6 +112,8 @@ namespace Plan_n_Check
             this.DeleteButton = new System.Windows.Forms.Button();
             this.OkButton = new System.Windows.Forms.Button();
             this.PanelSpecialFeatures = new System.Windows.Forms.Panel();
+            this.PriorityLabel = new System.Windows.Forms.Label();
+            this.PriorityRatio_TextBox = new System.Windows.Forms.TextBox();
             this.LabelSpecialFeatures = new System.Windows.Forms.Label();
             this.ButtonDoneFeatures = new System.Windows.Forms.Button();
             this.CheckBox_ChopParotid = new System.Windows.Forms.CheckBox();
@@ -155,8 +157,17 @@ namespace Plan_n_Check
             this.PlotButton = new System.Windows.Forms.Button();
             this.PlotCombobox = new System.Windows.Forms.ComboBox();
             this.PlotDoneButton = new System.Windows.Forms.Button();
-            this.PriorityRatio_TextBox = new System.Windows.Forms.TextBox();
-            this.PriorityLabel = new System.Windows.Forms.Label();
+            this.Checkbox_OrganSeg = new System.Windows.Forms.CheckBox();
+            this.OrganSeg_OrgansCombo = new System.Windows.Forms.ComboBox();
+            this.Axial_Combobox = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.Label_AxialSlice = new System.Windows.Forms.Label();
+            this.Label_Coronal = new System.Windows.Forms.Label();
+            this.Coronal_Combobox = new System.Windows.Forms.ComboBox();
+            this.Label_Sagittal = new System.Windows.Forms.Label();
+            this.Sagittal_Combobox = new System.Windows.Forms.ComboBox();
+            this.Button_StartSegmentation = new System.Windows.Forms.Button();
+            this.Button_DeleteSubsegments = new System.Windows.Forms.Button();
             CustomizeButton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.AssigningPanel.SuspendLayout();
@@ -1015,6 +1026,17 @@ namespace Plan_n_Check
             // PanelSpecialFeatures
             // 
             this.PanelSpecialFeatures.BackColor = System.Drawing.Color.White;
+            this.PanelSpecialFeatures.Controls.Add(this.Button_DeleteSubsegments);
+            this.PanelSpecialFeatures.Controls.Add(this.Button_StartSegmentation);
+            this.PanelSpecialFeatures.Controls.Add(this.Label_Sagittal);
+            this.PanelSpecialFeatures.Controls.Add(this.Sagittal_Combobox);
+            this.PanelSpecialFeatures.Controls.Add(this.Label_Coronal);
+            this.PanelSpecialFeatures.Controls.Add(this.Coronal_Combobox);
+            this.PanelSpecialFeatures.Controls.Add(this.Label_AxialSlice);
+            this.PanelSpecialFeatures.Controls.Add(this.label1);
+            this.PanelSpecialFeatures.Controls.Add(this.Axial_Combobox);
+            this.PanelSpecialFeatures.Controls.Add(this.OrganSeg_OrgansCombo);
+            this.PanelSpecialFeatures.Controls.Add(this.Checkbox_OrganSeg);
             this.PanelSpecialFeatures.Controls.Add(this.PriorityLabel);
             this.PanelSpecialFeatures.Controls.Add(this.PriorityRatio_TextBox);
             this.PanelSpecialFeatures.Controls.Add(this.LabelSpecialFeatures);
@@ -1026,6 +1048,27 @@ namespace Plan_n_Check
             this.PanelSpecialFeatures.Size = new System.Drawing.Size(737, 386);
             this.PanelSpecialFeatures.TabIndex = 19;
             this.PanelSpecialFeatures.Visible = false;
+            // 
+            // PriorityLabel
+            // 
+            this.PriorityLabel.AutoSize = true;
+            this.PriorityLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.PriorityLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.PriorityLabel.Location = new System.Drawing.Point(39, 146);
+            this.PriorityLabel.Name = "PriorityLabel";
+            this.PriorityLabel.Size = new System.Drawing.Size(100, 19);
+            this.PriorityLabel.TabIndex = 22;
+            this.PriorityLabel.Text = "Priority Ratio";
+            // 
+            // PriorityRatio_TextBox
+            // 
+            this.PriorityRatio_TextBox.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.PriorityRatio_TextBox.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.PriorityRatio_TextBox.Location = new System.Drawing.Point(140, 143);
+            this.PriorityRatio_TextBox.Name = "PriorityRatio_TextBox";
+            this.PriorityRatio_TextBox.Size = new System.Drawing.Size(34, 27);
+            this.PriorityRatio_TextBox.TabIndex = 21;
+            this.PriorityRatio_TextBox.Text = "0.5";
             // 
             // LabelSpecialFeatures
             // 
@@ -1057,11 +1100,11 @@ namespace Plan_n_Check
             this.CheckBox_ChopParotid.BackColor = System.Drawing.Color.DarkTurquoise;
             this.CheckBox_ChopParotid.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CheckBox_ChopParotid.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.CheckBox_ChopParotid.Location = new System.Drawing.Point(199, 132);
+            this.CheckBox_ChopParotid.Location = new System.Drawing.Point(36, 113);
             this.CheckBox_ChopParotid.Name = "CheckBox_ChopParotid";
-            this.CheckBox_ChopParotid.Size = new System.Drawing.Size(302, 27);
+            this.CheckBox_ChopParotid.Size = new System.Drawing.Size(224, 27);
             this.CheckBox_ChopParotid.TabIndex = 1;
-            this.CheckBox_ChopParotid.Text = "Sub-parotid structure optimization";
+            this.CheckBox_ChopParotid.Text = "Sub-parotid optimization";
             this.CheckBox_ChopParotid.UseVisualStyleBackColor = false;
             // 
             // panel3
@@ -1343,7 +1386,7 @@ namespace Plan_n_Check
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 31);
             this.button2.TabIndex = 8;
-            this.button2.Text = "Quit";
+            this.button2.Text = "Close";
             this.button2.UseVisualStyleBackColor = false;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -1512,26 +1555,120 @@ namespace Plan_n_Check
             this.PlotDoneButton.UseVisualStyleBackColor = false;
             this.PlotDoneButton.Click += new System.EventHandler(this.PlotDoneButton_Click);
             // 
-            // PriorityRatio_TextBox
+            // Checkbox_OrganSeg
             // 
-            this.PriorityRatio_TextBox.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PriorityRatio_TextBox.ForeColor = System.Drawing.Color.DarkTurquoise;
-            this.PriorityRatio_TextBox.Location = new System.Drawing.Point(303, 164);
-            this.PriorityRatio_TextBox.Name = "PriorityRatio_TextBox";
-            this.PriorityRatio_TextBox.Size = new System.Drawing.Size(34, 27);
-            this.PriorityRatio_TextBox.TabIndex = 21;
-            this.PriorityRatio_TextBox.Text = "0.5";
+            this.Checkbox_OrganSeg.AutoSize = true;
+            this.Checkbox_OrganSeg.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.Checkbox_OrganSeg.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Checkbox_OrganSeg.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.Checkbox_OrganSeg.Location = new System.Drawing.Point(35, 208);
+            this.Checkbox_OrganSeg.Name = "Checkbox_OrganSeg";
+            this.Checkbox_OrganSeg.Size = new System.Drawing.Size(190, 27);
+            this.Checkbox_OrganSeg.TabIndex = 23;
+            this.Checkbox_OrganSeg.Text = "Organ segmentation";
+            this.Checkbox_OrganSeg.UseVisualStyleBackColor = false;
             // 
-            // PriorityLabel
+            // OrganSeg_OrgansCombo
             // 
-            this.PriorityLabel.AutoSize = true;
-            this.PriorityLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PriorityLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
-            this.PriorityLabel.Location = new System.Drawing.Point(202, 167);
-            this.PriorityLabel.Name = "PriorityLabel";
-            this.PriorityLabel.Size = new System.Drawing.Size(100, 19);
-            this.PriorityLabel.TabIndex = 22;
-            this.PriorityLabel.Text = "Priority Ratio";
+            this.OrganSeg_OrgansCombo.FormattingEnabled = true;
+            this.OrganSeg_OrgansCombo.Location = new System.Drawing.Point(129, 243);
+            this.OrganSeg_OrgansCombo.Name = "OrganSeg_OrgansCombo";
+            this.OrganSeg_OrgansCombo.Size = new System.Drawing.Size(142, 27);
+            this.OrganSeg_OrgansCombo.TabIndex = 24;
+            // 
+            // Axial_Combobox
+            // 
+            this.Axial_Combobox.FormattingEnabled = true;
+            this.Axial_Combobox.Location = new System.Drawing.Point(129, 283);
+            this.Axial_Combobox.Name = "Axial_Combobox";
+            this.Axial_Combobox.Size = new System.Drawing.Size(56, 27);
+            this.Axial_Combobox.TabIndex = 25;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.label1.Location = new System.Drawing.Point(58, 246);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(51, 19);
+            this.label1.TabIndex = 26;
+            this.label1.Text = "Organ";
+            // 
+            // Label_AxialSlice
+            // 
+            this.Label_AxialSlice.AutoSize = true;
+            this.Label_AxialSlice.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_AxialSlice.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.Label_AxialSlice.Location = new System.Drawing.Point(26, 283);
+            this.Label_AxialSlice.Name = "Label_AxialSlice";
+            this.Label_AxialSlice.Size = new System.Drawing.Size(83, 19);
+            this.Label_AxialSlice.TabIndex = 27;
+            this.Label_AxialSlice.Text = "Axial Slices";
+            // 
+            // Label_Coronal
+            // 
+            this.Label_Coronal.AutoSize = true;
+            this.Label_Coronal.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_Coronal.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.Label_Coronal.Location = new System.Drawing.Point(6, 318);
+            this.Label_Coronal.Name = "Label_Coronal";
+            this.Label_Coronal.Size = new System.Drawing.Size(103, 19);
+            this.Label_Coronal.TabIndex = 29;
+            this.Label_Coronal.Text = "Coronal Slices";
+            // 
+            // Coronal_Combobox
+            // 
+            this.Coronal_Combobox.FormattingEnabled = true;
+            this.Coronal_Combobox.Location = new System.Drawing.Point(129, 316);
+            this.Coronal_Combobox.Name = "Coronal_Combobox";
+            this.Coronal_Combobox.Size = new System.Drawing.Size(56, 27);
+            this.Coronal_Combobox.TabIndex = 28;
+            // 
+            // Label_Sagittal
+            // 
+            this.Label_Sagittal.AutoSize = true;
+            this.Label_Sagittal.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_Sagittal.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.Label_Sagittal.Location = new System.Drawing.Point(6, 349);
+            this.Label_Sagittal.Name = "Label_Sagittal";
+            this.Label_Sagittal.Size = new System.Drawing.Size(101, 19);
+            this.Label_Sagittal.TabIndex = 31;
+            this.Label_Sagittal.Text = "Sagittal Slices";
+            // 
+            // Sagittal_Combobox
+            // 
+            this.Sagittal_Combobox.FormattingEnabled = true;
+            this.Sagittal_Combobox.Location = new System.Drawing.Point(129, 349);
+            this.Sagittal_Combobox.Name = "Sagittal_Combobox";
+            this.Sagittal_Combobox.Size = new System.Drawing.Size(56, 27);
+            this.Sagittal_Combobox.TabIndex = 30;
+            // 
+            // Button_StartSegmentation
+            // 
+            this.Button_StartSegmentation.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.Button_StartSegmentation.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Button_StartSegmentation.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.Button_StartSegmentation.Location = new System.Drawing.Point(231, 206);
+            this.Button_StartSegmentation.Name = "Button_StartSegmentation";
+            this.Button_StartSegmentation.Size = new System.Drawing.Size(75, 32);
+            this.Button_StartSegmentation.TabIndex = 32;
+            this.Button_StartSegmentation.Text = "Create";
+            this.Button_StartSegmentation.UseVisualStyleBackColor = false;
+            this.Button_StartSegmentation.Click += new System.EventHandler(this.Button_StartSegmentation_Click);
+            // 
+            // Button_DeleteSubsegments
+            // 
+            this.Button_DeleteSubsegments.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.Button_DeleteSubsegments.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Button_DeleteSubsegments.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.Button_DeleteSubsegments.Location = new System.Drawing.Point(312, 206);
+            this.Button_DeleteSubsegments.Name = "Button_DeleteSubsegments";
+            this.Button_DeleteSubsegments.Size = new System.Drawing.Size(75, 32);
+            this.Button_DeleteSubsegments.TabIndex = 33;
+            this.Button_DeleteSubsegments.Text = "Delete";
+            this.Button_DeleteSubsegments.UseVisualStyleBackColor = false;
+            this.Button_DeleteSubsegments.Click += new System.EventHandler(this.Button_DeleteSubsegments_Click);
             // 
             // MainForm
             // 
@@ -1704,5 +1841,16 @@ namespace Plan_n_Check
         private Button PlotFormButton;
         private Label PriorityLabel;
         private TextBox PriorityRatio_TextBox;
+        private Label Label_Sagittal;
+        private ComboBox Sagittal_Combobox;
+        private Label Label_Coronal;
+        private ComboBox Coronal_Combobox;
+        private Label Label_AxialSlice;
+        private Label label1;
+        private ComboBox Axial_Combobox;
+        private ComboBox OrganSeg_OrgansCombo;
+        private CheckBox Checkbox_OrganSeg;
+        private Button Button_StartSegmentation;
+        private Button Button_DeleteSubsegments;
     }
 }
