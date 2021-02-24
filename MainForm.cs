@@ -1013,6 +1013,12 @@ namespace Plan_n_Check
             //Organ Seg:
             string organName = (string)this.OrganSeg_OrgansCombo.SelectedItem;
             Structure organ = this.context.StructureSet.Structures.First();
+            bool applyConstraints = false;
+            if (this.CheckboxSegmentConstraints.Checked)
+            {
+                applyConstraints = true;
+
+            }
             foreach (Structure s in this.context.StructureSet.Structures)
             {
                 if (organName == s.Name)
@@ -1022,8 +1028,12 @@ namespace Plan_n_Check
             }
             double[] organSegOptions = new double[] { Convert.ToDouble(this.Axial_Combobox.SelectedItem), Convert.ToDouble(this.Coronal_Combobox.SelectedItem), Convert.ToDouble(this.Sagittal_Combobox.SelectedItem) };
             this.Features.Add(Tuple.Create(true, organSegOptions, organName));
+            //Need to update the hnplan structure so it knows that the structure has subsegments:
+            HNPlan hnPlan = this.HnPlan;
+            VMS.TPS.Script.MakeSubsegmentStructures(organ, organSegOptions, ref plan, ref ss, this.context, applyConstraints, this.MatchingStructures, ref hnPlan);
+            //update the hnplan property of the class
+            this.HnPlan = hnPlan;
 
-            VMS.TPS.Script.MakeSubsegmentStructures(organ, organSegOptions, ref plan, ref ss, this.context);
         }
 
         private void Button_DeleteSubsegments_Click(object sender, EventArgs e)

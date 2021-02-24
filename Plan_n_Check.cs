@@ -943,22 +943,45 @@ namespace VMS.TPS
 
 
         }
-        public static void MakeSubsegmentStructures(Structure roi, double[] numCutsDouble, ref ExternalPlanSetup plan, ref StructureSet ss, ScriptContext context)
+        public static void MakeSubsegmentStructures(Structure roi, double[] numCutsDouble, ref ExternalPlanSetup plan, ref StructureSet ss, ScriptContext context, bool applyConstraints, List<List<Structure>> matchingStructures, ref HNPlan hnplan)
         {
             //Convert numCuts to int array
             int[] numCuts = numCutsDouble.Select(d => (int)d).ToArray();
+            //Chop up the contours
             Tuple<List<List<double[,]>>, List<double[]>> choppedTuple = OrganChop(roi, numCuts,ref plan, ss, context);
             List<List<double[,]>> choppedContours = choppedTuple.Item1;
             List<double[]> planes = choppedTuple.Item2;
-            Image image = context.Image;
-            //First divide ROI into its subsegments
-            
-
-
-
+            Image image = context.Image;  
             int numSections = choppedContours.Count;
+            //get constraint on original structure, if applyconstraints is true:
+            int ROI_Index = 0;
+            DoseValue doseConstraint = new DoseValue(0, "cGy");
+            string constraintType = "";
+            double priority = 0;
             
-            //Now need to chop up the parotid, and make new constraints
+            if (applyConstraints)
+            {
+                
+                for (int i = 0; i < matchingStructures.Count; i++)
+                {
+                    for (int j = 0; j < matchingStructures[i].Count; j++)
+                    {
+                        if (roi.Name == matchingStructures[i][j].Name)
+                        {
+                            ROI_Index = i;
+                            //assume its a dose constraint
+                            hnplan.ROIs[i].HasSubsegments = true;
+                            doseConstraint = new DoseValue(hnplan.ROIs[i].Constraints[0].Value, "cGy");
+                            constraintType = hnplan.ROIs[i].Constraints[0].Subscript;
+                            priority = hnplan.ROIs[i].Constraints[0].Priority;
+
+                        }
+
+                    }
+
+                }
+            }
+            
             List<Structure> subsegments = new List<Structure>();
             string name;
 
@@ -995,8 +1018,26 @@ namespace VMS.TPS
                 {
                     System.Windows.MessageBox.Show("Could not create new subsegment structures.");
                 }
-            }
+                //Now need to apply constraint
+                if (applyConstraints)
+                {
+                    if (constraintType.ToLower() == "mean")
+                    {
+                        plan.OptimizationSetup.AddMeanDoseObjective(subsegments[subsegment], 0.9 * doseConstraint, priority);
+                    }
+                    else if (constraintType.ToLower() == "min")
+                    {
+                        plan.OptimizationSetup.AddPointObjective(subsegments[subsegment], OptimizationObjectiveOperator.Lower, 1.05 * doseConstraint, 100, priority);
+                    }
+                    else if (constraintType.ToLower() == "max")
+                    {
+                        plan.OptimizationSetup.AddPointObjective(subsegments[subsegment], OptimizationObjectiveOperator.Upper, 0.9 * doseConstraint, 0, priority);
+                    }
+                }
+               
 
+            }
+        
         }
 
         public static Tuple<double,int> RatioOverlapWithPTV(List<double[,]> contours, StructureSet ss)
@@ -1154,7 +1195,7 @@ namespace VMS.TPS
             return contraPar;
         }
 
-        public static List<List<Structure>> SetConstraints(ref ExternalPlanSetup plan, HNPlan presetPlan, List<List<Structure>> matchingStructures, bool checkOptis = false)
+        public static List<List<Structure>> SetConstraints(ref ExternalPlanSetup plan, HNPlan hnPlan, List<List<Structure>> matchingStructures, bool checkOptis = false)
         {
             StructureSet ss = plan.StructureSet;
             //Will be checking if opti structures need to be made. If so, they will be created and used for optimization. So we need a new matching list
@@ -1178,7 +1219,7 @@ namespace VMS.TPS
 
             }
             //Now loop over all constraints and set them
-            for (int i = 0; i < presetPlan.ROIs.Count; i++)    //Loop over all structures
+            for (int i = 0; i < hnPlan.ROIs.Count; i++)    //Loop over all structures
             {
                 if (checkOptis)
                 {
@@ -1191,20 +1232,27 @@ namespace VMS.TPS
                     //Here I want to make sure that the matched structure does not overlap with PTVs, and if it does I want to make an opti structure. 
                     if (checkOptis)
                     {
-                        optimizedStructures[i].Add(CheckOverlap_OptiMaker(matchingStructures[i][match], ref ss));
+                        if (!hnPlan.ROIs[i].Critical){
+                            optimizedStructures[i].Add(CheckOverlap_OptiMaker(matchingStructures[i][match], ref ss));
+                        }
+                        else
+                        {
+                            optimizedStructures[i].Add(matchingStructures[i][match]);
+                        }
+                        
                                                       
                     }
                     
 
-                    for (int j = 0; j < presetPlan.ROIs[i].Constraints.Count; j++)    //Loop over all constraints for the current structure
+                    for (int j = 0; j < hnPlan.ROIs[i].Constraints.Count; j++)    //Loop over all constraints for the current structure
                     {
                         plan.OptimizationSetup.AddNormalTissueObjective(80.0f, 0.0f, 100.0f, 40.0f, 0.05f);
 
-                        string type = presetPlan.ROIs[i].Constraints[j].Type;
-                        string subscript = presetPlan.ROIs[i].Constraints[j].Subscript;
-                        string relation = presetPlan.ROIs[i].Constraints[j].EqualityType;
-                        double value = presetPlan.ROIs[i].Constraints[j].Value;
-                        string format = presetPlan.ROIs[i].Constraints[j].Format;
+                        string type = hnPlan.ROIs[i].Constraints[j].Type;
+                        string subscript = hnPlan.ROIs[i].Constraints[j].Subscript;
+                        string relation = hnPlan.ROIs[i].Constraints[j].EqualityType;
+                        double value = hnPlan.ROIs[i].Constraints[j].Value;
+                        string format = hnPlan.ROIs[i].Constraints[j].Format;
                         double volume = optimizedStructures[i][match].Volume;
 
                         OptimizationObjectiveOperator constraintType;
@@ -1225,29 +1273,67 @@ namespace VMS.TPS
 
                                 //convert to cGy (90% of maximum for optimization)
                                 plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match],
-                                    constraintType, new DoseValue(value, "cGy"), volume, presetPlan.ROIs[i].Constraints[j].Priority);
+                                    constraintType, new DoseValue(value, "cGy"), volume, hnPlan.ROIs[i].Constraints[j].Priority);
                             }
                             catch //is a mean or max restriction
                             {
                                 if (subscript.ToLower() == "mean")
                                 {
                                     double dose = value * 0.9; //take 90 percent of mean constraint dose to start
-                                    plan.OptimizationSetup.AddMeanDoseObjective(optimizedStructures[i][match],
-                                        new DoseValue(dose, "cGy"), presetPlan.ROIs[i].Constraints[j].Priority);
+                                    OptimizationObjective objective = plan.OptimizationSetup.AddMeanDoseObjective(optimizedStructures[i][match],
+                                        new DoseValue(dose, "cGy"), hnPlan.ROIs[i].Constraints[j].Priority);
+                                    //update subsegment constraints if organ is subsegmented
+                                    if (hnPlan.ROIs[i].HasSubsegments)
+                                    {
+                                        //replace whole organ constraint with subsegment constraints
+                                        plan.OptimizationSetup.RemoveObjective(objective);
+                                        foreach (Structure structure in ss.Structures)
+                                        {
+                                            if ((structure.Name.Contains(optimizedStructures[i][match].Name.Substring(0,5)))&& (structure.Name.Contains("subseg"))){
+                                                plan.OptimizationSetup.AddMeanDoseObjective(structure,
+                                        new DoseValue(dose, "cGy"), hnPlan.ROIs[i].Constraints[j].Priority);
+                                            }
+                                        }
+                                    }
 
                                 }
                                 else if (subscript.ToLower() == "max")
                                 {
                                     double dose = value * 0.9; //take 90 percent of constraint dose to start
-                                    plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
-                                        new DoseValue(dose, "cGy"), 0, presetPlan.ROIs[i].Constraints[j].Priority);
+                                    OptimizationObjective objective = plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
+                                        new DoseValue(dose, "cGy"), 0, hnPlan.ROIs[i].Constraints[j].Priority);
+                                    if (hnPlan.ROIs[i].HasSubsegments)
+                                    {
+                                        //replace whole organ constraint with subsegment constraints
+                                        plan.OptimizationSetup.RemoveObjective(objective);
+                                        foreach (Structure structure in ss.Structures)
+                                        {
+                                            if ((structure.Name.Contains(optimizedStructures[i][match].Name.Substring(0, 5))) && (structure.Name.Contains("subseg"))){
+                                                plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
+                                                new DoseValue(dose, "cGy"), 0, hnPlan.ROIs[i].Constraints[j].Priority);
+                                            }
+                                        }
+                                    }
 
                                 }
                                 else if (subscript.ToLower() == "min")
                                 {
                                     double dose = value * 1.05; //take 110% percent of constraint dose to start
-                                    plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
-                                        new DoseValue(dose, "cGy"), 100, presetPlan.ROIs[i].Constraints[j].Priority);
+                                    OptimizationObjective objective =  plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
+                                        new DoseValue(dose, "cGy"), 100, hnPlan.ROIs[i].Constraints[j].Priority);
+                                    if (hnPlan.ROIs[i].HasSubsegments)
+                                    {
+                                        //replace whole organ constraint with subsegment constraints
+                                        plan.OptimizationSetup.RemoveObjective(objective);
+                                        foreach (Structure structure in ss.Structures)
+                                        {
+                                            if ((structure.Name.Contains(optimizedStructures[i][match].Name.Substring(0, 5))) && (structure.Name.Contains("subseg"))){
+                                                plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
+                                                new DoseValue(dose, "cGy"), 100, hnPlan.ROIs[i].Constraints[j].Priority);
+                                            }
+                                        }
+                                    }
+
                                 }
                             }
                         }
@@ -1260,9 +1346,13 @@ namespace VMS.TPS
                                     double dose = Convert.ToInt32(subscript); //convert to cGy
                                     //Need to convert to relative volume. 
                                     volume = value / volume * 100;
-                                    volume = (volume) / 3; //Make it an even harsher constraint
+                                    volume*=0.9; //Make it an even harsher constraint
+                                    if (volume < 0.1)
+                                    {
+                                        volume = 0;
+                                    }
                                     plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
-                                        new DoseValue(dose * 0.95, "cGy"), volume, presetPlan.ROIs[i].Constraints[j].Priority);
+                                        new DoseValue(dose * 0.95, "cGy"), volume, hnPlan.ROIs[i].Constraints[j].Priority);
                                     
                                 }
                                 else  //if relative, will belong to a PTV
@@ -1271,7 +1361,7 @@ namespace VMS.TPS
                                     volume = value;
                                     volume = 100; //set to 100 to push the optimizer
                                     plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
-                                       new DoseValue(dose, "cGy"), volume, presetPlan.ROIs[i].Constraints[j].Priority);
+                                       new DoseValue(dose, "cGy"), volume, hnPlan.ROIs[i].Constraints[j].Priority);
                                 }
                             }
                             catch
