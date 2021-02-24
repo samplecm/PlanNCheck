@@ -114,29 +114,32 @@ namespace VMS.TPS
             return Tuple.Create(optimizedStructures, matchingStructures, updatesLog);
 
         }
-        public static Structure CheckOverlap_OptiMaker(Structure structure, ref StructureSet ss)
+        public static Structure CheckOverlap_OptiMaker(Structure structure, ref StructureSet ss,bool isCritical)
         {
-         
+            
             if (structure.Name.ToLower().Contains("ptv") || structure.Name.ToLower().Contains("body")) //don't check if it is a ptv already or body contours...
             {
                 return structure;
             }
-            const int MaxLength = 16; //maximum length for the name in eclipse for who knows what reason
-            string name = "PC_opti_" + structure.Name;
-            if (name.Length > MaxLength)
-            {
-                name = "PC_opti_" + structure.Name.Substring(0, 7);
-            }
+            int nameLen = Math.Min(structure.Name.Length, 7);
+            string name = "PC_opti_" + structure.Name.Substring(0, nameLen);
+
             Structure opti;
+            foreach (Structure struc in ss.Structures.ToList())
+            {
+                if (struc.Name == name)
+                {
+                    ss.RemoveStructure(struc);
+                }
+            }
             try
             {
                 opti = ss.AddStructure("CONTROL", name);
             }
             catch
             {
-                Random r = new Random();
-                name = "opti_" + Convert.ToString(r.Next(0, 9));
-                opti = ss.AddStructure("CONTROL", name);
+                return structure;
+
             }
                 
                 opti.SegmentVolume = structure.Margin(0);
@@ -151,13 +154,13 @@ namespace VMS.TPS
                 }
             }
             //Check if it changed (if it did overlap, need to make a new opti structure)
-            if (opti.Volume == 0)
+            if ((opti.Volume == 0)||(isCritical))
             {
                 ss.RemoveStructure(opti);
                 return structure;
             }
             //So this is an imperfect function and the volumes will be different no matter what... so make sure they are different by more than 5%
-            else if ((structure.Volume - opti.Volume) / structure.Volume > 1.05)
+            else if ((structure.Volume - opti.Volume) / structure.Volume > 0.05)
             {
                 return opti;
             }
@@ -249,7 +252,7 @@ namespace VMS.TPS
                 }
             }
             //The final iteration does 4 VMAT cycles
-            mlcID = plan.Beams.FirstOrDefault<Beam>().MLC.Id;
+            mlcID = plan.Beams.FirstOrDefault<Beam>().MLC.Id; //both MLCs have same Id
             oov = new OptimizationOptionsVMAT(4, mlcID);
             plan.OptimizeVMAT(oov);
             plan.CalculateDose();
@@ -1232,13 +1235,14 @@ namespace VMS.TPS
                     //Here I want to make sure that the matched structure does not overlap with PTVs, and if it does I want to make an opti structure. 
                     if (checkOptis)
                     {
-                        if (!hnPlan.ROIs[i].Critical){
-                            optimizedStructures[i].Add(CheckOverlap_OptiMaker(matchingStructures[i][match], ref ss));
-                        }
-                        else
+                        if (!hnPlan.ROIs[i].Critical)
                         {
-                            optimizedStructures[i].Add(matchingStructures[i][match]);
+                            optimizedStructures[i].Add(CheckOverlap_OptiMaker(matchingStructures[i][match], ref ss, false));
                         }
+                        else{
+                            optimizedStructures[i].Add(CheckOverlap_OptiMaker(matchingStructures[i][match], ref ss, true));
+                        }
+
                         
                                                       
                     }
