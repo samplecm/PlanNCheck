@@ -992,6 +992,14 @@ namespace VMS.TPS
             {
                 int min = Math.Min(6, roi.Name.Length-1);
                 name = roi.Name.Substring(0,min) + "_subseg" +  (subsegment + 1).ToString();
+                //Delete structures if already there:
+                foreach (Structure s2 in ss.Structures.ToList())
+                {
+                    if (s2.Name == (name))
+                    {
+                        ss.RemoveStructure(s2);
+                    }
+                }
                 if (ss.CanAddStructure("CONTROL", name))
                 {
                     subsegments.Add(ss.AddStructure("CONTROL", name));
@@ -1629,44 +1637,41 @@ namespace VMS.TPS
                     }
                 }
             }
-            return new VRect<double>(xMin - margin, yMin - margin, xMax + margin, yMax + margin);
+            xMin = Math.Max(-1490, xMin);
+            yMin = Math.Max(-1490, yMin);
+            xMax = Math.Min(1490, xMax);
+            yMax = Math.Min(1490, yMax);
+            return new VRect<double>(xMin, yMin, xMax, yMax);
         }
 
         private static void AdjustJawSizeForContour(ref double xMin, ref double xMax, ref double yMin, ref double yMax, VVector isocentre, IEnumerable<VVector> contour, double gantryRtnInRad, double collRtnInRad, bool exactFit = false)
         {
             foreach (var point in contour)
             {
-                var projection = ProjectToBeamEyeView(point, isocentre, gantryRtnInRad, collRtnInRad);
-                var xCoord = projection.Item1;
-                var yCoord = projection.Item2;
+                Tuple<double,double> projection = ProjectToBeamEyeView(point, isocentre, gantryRtnInRad, collRtnInRad);
+                double x = projection.Item1;
+                double y = projection.Item2;
 
-                // Update the coordinates for jaw positions.
-                if (xCoord < xMin)
+                if (x < xMin)
                 {
-                    xMin = xCoord;
+                    xMin = x;
+                }
+                else if (x > xMax)
+                {
+                    xMax = x;
                 }
 
-                if (xCoord > xMax)
+                if (y < yMin)
                 {
-                    xMax = xCoord;
+                    yMin = y;
                 }
-
-                if (yCoord < yMin)
+                else if (y > yMax)
                 {
-                    yMin = yCoord;
-                }
-
-                if (yCoord > yMax)
-                {
-                    yMax = yCoord;
+                    yMax = y;
                 }
             }
         }
 
-
-        /// <summary>
-        /// Project a given point to beam's eye view. Assumes head first supine treatment orientation.
-        /// </summary>
         private static Tuple<double, double> ProjectToBeamEyeView(VVector point, VVector isocentre, double gantryRtnInRad, double collRtnInRad)
         {
             // Calculate coordinates with respect to isocentre location.
