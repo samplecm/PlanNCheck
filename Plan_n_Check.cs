@@ -217,7 +217,7 @@ namespace VMS.TPS
                 //remove previously segmented structures if there
                 foreach (Structure structure in ss.Structures.ToList())
                 {
-                    if (structure.Name.ToLower().Contains("subsegment"))
+                    if (structure.Name.ToLower().Contains("CPG_subseg"))
                     {
                         ss.RemoveStructure(structure);
                     }
@@ -248,7 +248,7 @@ namespace VMS.TPS
                 updateLog.Add(UpdateConstraints(ref plan, ref ss, ref hnPlan, context, optimizedStructures, matchingStructures));
                 if (features[0].Item1 == true)
                 {
-                    MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, features[0].Item2[0]);//need matching structures to get full parotid
+                    MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, features[0].Item2[0]);
                 }
             }
             //The final iteration does 4 VMAT cycles
@@ -828,7 +828,7 @@ namespace VMS.TPS
             //First off, in case this script is re-run, we need to remove any subsegment structures already made. 
             foreach (Structure structure in ss.Structures.ToList())
             {
-                if (structure.Name.ToLower().Contains("subsegment"))
+                if (structure.Name.ToLower().Contains("cpg_subseg"))
                 {
                     ss.RemoveStructure(structure);
                 }
@@ -862,7 +862,7 @@ namespace VMS.TPS
 
             for (int subsegment = 0; subsegment < numSections; subsegment++) //loop over all subsegments
             {
-                name = "Subsegment " + (subsegment + 1).ToString();
+                name = "CPG_subseg " + (subsegment + 1).ToString();
                 if (ss.CanAddStructure("CONTROL", name))
                 {
                     subsegments.Add(ss.AddStructure("CONTROL", name));
@@ -908,7 +908,8 @@ namespace VMS.TPS
                             }
                             
                         }
-                        catch { }
+                        catch { System.Windows.MessageBox.Show("Error when applying CPG subsegment constraints"); 
+                    }
                 }
                 else
                 {
@@ -1637,10 +1638,10 @@ namespace VMS.TPS
                     }
                 }
             }
-            xMin = Math.Max(-1490, xMin);
-            yMin = Math.Max(-1490, yMin);
-            xMax = Math.Min(1490, xMax);
-            yMax = Math.Min(1490, yMax);
+            xMin = Math.Max(-149, xMin);
+            yMin = Math.Max(-149, yMin);
+            xMax = Math.Min(149, xMax);
+            yMax = Math.Min(149, yMax);
             return new VRect<double>(xMin, yMin, xMax, yMax);
         }
 
