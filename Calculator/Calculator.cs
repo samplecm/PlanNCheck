@@ -41,7 +41,7 @@ namespace Plan_n_Check.Calculate
                 for (int i = 0; i < ROI.Constraints.Count; i++)
                 {                  
                     //Get DVH data for structure: 
-                    DVHData dvhData = p.GetDVHCumulativeData(dicomStructure[match], DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, 0.001);
+                    DVHData dvhData = p.GetDVHCumulativeData(dicomStructure[match], DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, 0.01);
               
                     //Get type of constraint
                     string type = ROI.Constraints[i].Type;
@@ -130,7 +130,7 @@ namespace Plan_n_Check.Calculate
                         }
                         catch //mean median...
                         {
-                            double dose = 0;
+                            double dose;
                             if (subscript.ToLower() == "mean")
                             {
                                 dose = dvhData.MeanDose.Dose;
