@@ -217,7 +217,7 @@ namespace VMS.TPS
                 //remove previously segmented structures if there
                 foreach (Structure structure in ss.Structures.ToList())
                 {
-                    if (structure.Name.ToLower().Contains("CPG_subseg"))
+                    if (structure.Name.ToLower().Contains("cpg_subseg"))
                     {
                         ss.RemoveStructure(structure);
                     }
@@ -893,23 +893,21 @@ namespace VMS.TPS
 
                     int overlapPTVDose = overlapData.Item2;
 
-                    try
+                    
+                            
+                    doseConstraint = D50[subsegment];//hnPlan.ROIs[ROI_Index].Constraints[0].Value;
+                    priority = hnPlan.ROIs[ROI_Index].Constraints[0].Priority;
+                    priority *= priorityRatio * importanceValues[subsegment];
+                
+                    if ((priority > 10)&&(doseConstraint != 1000))
                         {
-                            
-                            doseConstraint = D50[subsegment];//hnPlan.ROIs[ROI_Index].Constraints[0].Value;
-                            priority = hnPlan.ROIs[ROI_Index].Constraints[0].Priority;
-                            priority *= priorityRatio * importanceValues[subsegment];
                         //Furthermore, want to temper priority and dose constraint. Take weighted average of dose constraint with the ptv it overlaps with
-                            doseConstraint = (1-overlapRatio) * (doseConstraint*100) + overlapRatio * overlapPTVDose;
+                        doseConstraint = (1 - overlapRatio) * (doseConstraint * 100) + overlapRatio * overlapPTVDose;
                         priority = priority * (1 - overlapRatio);
-                        if ((priority > 10)&&(doseConstraint != 1000))
-                            {
-                                plan.OptimizationSetup.AddMeanDoseObjective(subsegments[subsegment], new DoseValue(doseConstraint, "cGy"), priority);
-                            }
-                            
+                        plan.OptimizationSetup.AddMeanDoseObjective(subsegments[subsegment], new DoseValue(doseConstraint, "cGy"), priority);
                         }
-                        catch { System.Windows.MessageBox.Show("Error when applying CPG subsegment constraints"); 
-                    }
+                            
+
                 }
                 else
                 {
@@ -1054,6 +1052,7 @@ namespace VMS.TPS
 
         public static Tuple<double,int> RatioOverlapWithPTV(List<double[,]> contours, StructureSet ss)
         {
+            //returns a tuple with the overlap ratio and also the PTV dose in Gy found to overlap with it (not necessarily the only one that overlaps though)
             //right now consider 3 or more points for a given subsegment inside a ptv means it is overlapping.
             double x, y, z;
             VVector point;
@@ -1085,8 +1084,11 @@ namespace VMS.TPS
                         if (ptvs[ptv].IsPointInsideSegment(point))
                         {
                             overlapNum++;
-                            ptvDose = FindPTVNumber(ptvs[ptv].Name) * 100;
-                            break; //Only need to count once if it does overlap with a ptv. 
+                            if (overlapNum < 2) { //only do once
+                                ptvDose = FindPTVNumber(ptvs[ptv].Name) * 100; //Just taking the first ptv found to overlap with it
+                            }
+                            
+                            break; 
                         }
                     }
 
@@ -1121,80 +1123,61 @@ namespace VMS.TPS
             }
             //Now find the parotids, by first getting index of parotids in the head and neck plan list, and taking the assigned structure for each,
             List<Structure> parotids = new List<Structure>();
-            List<int> overlappingPars = new List<int>();
+            List<double> overlapRatios = new List<double>();
             for (int s = 0; s < hnPlan.ROIs.Count; s++)
             {
                 if (hnPlan.ROIs[s].Name.ToLower().Contains("parotid"))
                 {
-                    parotids.Add(matchingStructures[s][0]);
+                    try { parotids.Add(matchingStructures[s][0]); }
+                    catch
+                    {
+                        System.Windows.MessageBox.Show("Could not find matching parotid substructure in FindContraPar");
+                    }
+                    
                 }
+            }
+            if (parotids.Count < 2)
+            {
+                return parotids[0];
             }
             List<List<double[,]>> contours = new List<List<double[,]>>();
             //now need to find which structure in parotids is closest to PTVs. 
-            //first check if one overlaps and the other doesn't. In this case, make non-overlapping one the contralateral.
-            for (int i = 0; i < parotids.Count; i++)
+            //first check if one has larger overlap ratio than the other. In this case, make non-overlapping one the contralateral.
+            double overlap; 
+            for (int i = 0; i < parotids.Count; i++)//go through all parotids
             {
                 contours.Add(StructureContours(parotids[i], plan, context, ss));
+                //get the overlap ratio for the parotid 
+                overlap = RatioOverlapWithPTV(contours[contours.Count-1], ss).Item1;
+                overlapRatios.Add(overlap);
             }
-            bool overlap;
-            double x, y, z;
-            VVector point;
-            for (int i = 0; i < parotids.Count; i++)
+            
+            //Now find out if one overlaps more
+            if (overlapRatios[0] > overlapRatios[1])
             {
-                overlap = false;
-                for (int j = 0; j < contours[i].Count; j++) //loop over axial plane contours
-                {
-                    if (overlap)
-                    {
-                        overlappingPars.Add(i);
-                        break;
-                    }
-                    for (int k = 0; k < contours[i][j].GetLength(0); k++)
-                    {
-                        x = contours[i][j][k, 0];
-                        y = contours[i][j][k, 1];
-                        z = contours[i][j][k, 2];
-                        point = new VVector(x, y, z);
-
-                        for (int ptv = 0; ptv < ptvs.Count; ptv++)
-                        {
-                            if (ptvs[ptv].IsPointInsideSegment(point))
-                            {
-                                overlap = true;
-                                break;
-                            }
-                        }
-                        if (overlap)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-            //Now find out if only one overlapped: 
-            int numOverlapping = overlappingPars.Count;
-
-            if (numOverlapping == 1)
+                return parotids[1];
+            }else if (overlapRatios[1] > overlapRatios[0])
             {
-                return parotids[overlappingPars[0]];
+                return parotids[0];
             }
 
-            //Or else need to find the distance between parotid and ptvs. 
-            double dist;
+            //Or else need to find the average distance between each parotid and ptvs. 
+            double avgDist;
             double smallestDist = 0;
-            Structure contraPar = parotids[1]; //placeHolder
+            Structure contraPar = parotids[0]; //placeHolder
             VVector parCentre, ptvCentre;
             for (int i = 0; i < parotids.Count; i++)
             {
-                dist = 0;
+                avgDist = 0;
                 parCentre = parotids[i].CenterPoint;
 
                 for (int ptv = 0; ptv < ptvs.Count; ptv++)
                 {
                     ptvCentre = ptvs[ptv].CenterPoint;
-                    dist += Math.Pow(parCentre.x - ptvCentre.x, 2) + Math.Pow(parCentre.y - ptvCentre.y, 2) + Math.Pow(parCentre.x - ptvCentre.x, 2);
+                    avgDist += Math.Sqrt(Math.Pow(parCentre.x - ptvCentre.x, 2) + Math.Pow(parCentre.y - ptvCentre.y, 2) + Math.Pow(parCentre.z - ptvCentre.z, 2));
                 }
-                if (dist > smallestDist)
+                avgDist /= ptvs.Count; //get the average distance between this parotid and all ptvs
+                if (avgDist > smallestDist)
                 {
 
                     contraPar = parotids[i];
@@ -1302,7 +1285,7 @@ namespace VMS.TPS
                                         plan.OptimizationSetup.RemoveObjective(objective);
                                         foreach (Structure structure in ss.Structures)
                                         {
-                                            if ((structure.Name.Contains(optimizedStructures[i][match].Name.Substring(0,5)))&& (structure.Name.Contains("subseg"))){
+                                            if ((structure.Name.Contains(optimizedStructures[i][match].Name.Substring(0,5)))&& (structure.Name.ToLower().Contains("subseg"))){
                                                 plan.OptimizationSetup.AddMeanDoseObjective(structure,
                                         new DoseValue(dose, "cGy"), hnPlan.ROIs[i].Constraints[j].Priority);
                                             }
@@ -1392,6 +1375,7 @@ namespace VMS.TPS
         }
         public static List<double[,]> StructureContours(Structure structure, ExternalPlanSetup plan, ScriptContext context, StructureSet ss)
         {
+            //returns list of contours for a structure
             var image = context.Image;
 
             List<VVector[]> contoursTemp = new List<VVector[]>();
@@ -1642,6 +1626,20 @@ namespace VMS.TPS
             yMin = Math.Max(-149, yMin);
             xMax = Math.Min(149, xMax);
             yMax = Math.Min(149, yMax);
+            //Issues if exceed a field size of 22cm, so need to trim if necessary:
+            if (xMax-xMin > 220)
+            {
+                //trim the largest one down to meet the size restriction:
+                if (Math.Abs(xMin) > xMax)
+                {
+                    double extraLength = (xMax - xMin) - 220;
+                    xMin += extraLength + 5;
+                }else if (xMax > Math.Abs(xMin))
+                {
+                    double extraLength = (xMax - xMin) - 220;
+                    xMax -= extraLength + 5;
+                }
+            }
             return new VRect<double>(xMin, yMin, xMax, yMax);
         }
 

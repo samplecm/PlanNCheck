@@ -45,7 +45,7 @@ namespace Plan_n_Check
         {
             InitializeComponent();
             this.context = contextIn;
-            this.FormBorderStyle = FormBorderStyle.None;
+            //this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Location = new System.Drawing.Point(0, 0);
             this.Plans = new List<Plan>();
@@ -1054,6 +1054,24 @@ namespace Plan_n_Check
                 if (s2.Name.Contains(subName + "_subseg"))
                 {
                     this.context.StructureSet.RemoveStructure(s2);
+                    numDeleted++;
+                }
+            }
+            if (numDeleted > 0)
+            {
+                System.Windows.MessageBox.Show("Deleted " + numDeleted + " subsegment structures");
+            }
+        }
+
+        private void ButtonDeleteParotidSub_Click(object sender, EventArgs e)
+        {
+            int numDeleted = 0;
+          
+            foreach (Structure s in this.context.StructureSet.Structures.ToList())
+            {
+                if (s.Name.ToLower().Contains("cpg_subseg"))
+                {
+                    this.context.StructureSet.RemoveStructure(s);
                     numDeleted++;
                 }
             }
