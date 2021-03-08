@@ -169,6 +169,7 @@ namespace Plan_n_Check
             this.PlotCombobox = new System.Windows.Forms.ComboBox();
             this.PlotDoneButton = new System.Windows.Forms.Button();
             this.CheckboxSegmentConstraints = new System.Windows.Forms.CheckBox();
+            this.ButtonDeleteParotidSub = new System.Windows.Forms.Button();
             CustomizeButton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.AssigningPanel.SuspendLayout();
@@ -1027,6 +1028,7 @@ namespace Plan_n_Check
             // PanelSpecialFeatures
             // 
             this.PanelSpecialFeatures.BackColor = System.Drawing.Color.White;
+            this.PanelSpecialFeatures.Controls.Add(this.ButtonDeleteParotidSub);
             this.PanelSpecialFeatures.Controls.Add(this.CheckboxSegmentConstraints);
             this.PanelSpecialFeatures.Controls.Add(this.Button_DeleteSubsegments);
             this.PanelSpecialFeatures.Controls.Add(this.Button_StartSegmentation);
@@ -1056,7 +1058,7 @@ namespace Plan_n_Check
             this.Button_DeleteSubsegments.BackColor = System.Drawing.Color.DarkTurquoise;
             this.Button_DeleteSubsegments.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Button_DeleteSubsegments.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.Button_DeleteSubsegments.Location = new System.Drawing.Point(312, 177);
+            this.Button_DeleteSubsegments.Location = new System.Drawing.Point(335, 177);
             this.Button_DeleteSubsegments.Name = "Button_DeleteSubsegments";
             this.Button_DeleteSubsegments.Size = new System.Drawing.Size(75, 32);
             this.Button_DeleteSubsegments.TabIndex = 33;
@@ -1069,7 +1071,7 @@ namespace Plan_n_Check
             this.Button_StartSegmentation.BackColor = System.Drawing.Color.DarkTurquoise;
             this.Button_StartSegmentation.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Button_StartSegmentation.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.Button_StartSegmentation.Location = new System.Drawing.Point(231, 177);
+            this.Button_StartSegmentation.Location = new System.Drawing.Point(254, 177);
             this.Button_StartSegmentation.Name = "Button_StartSegmentation";
             this.Button_StartSegmentation.Size = new System.Drawing.Size(75, 32);
             this.Button_StartSegmentation.TabIndex = 32;
@@ -1159,7 +1161,7 @@ namespace Plan_n_Check
             this.Checkbox_OrganSeg.BackColor = System.Drawing.Color.DarkTurquoise;
             this.Checkbox_OrganSeg.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Checkbox_OrganSeg.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.Checkbox_OrganSeg.Location = new System.Drawing.Point(35, 178);
+            this.Checkbox_OrganSeg.Location = new System.Drawing.Point(36, 177);
             this.Checkbox_OrganSeg.Name = "Checkbox_OrganSeg";
             this.Checkbox_OrganSeg.Size = new System.Drawing.Size(190, 27);
             this.Checkbox_OrganSeg.TabIndex = 23;
@@ -1171,7 +1173,7 @@ namespace Plan_n_Check
             this.PriorityLabel.AutoSize = true;
             this.PriorityLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.PriorityLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
-            this.PriorityLabel.Location = new System.Drawing.Point(39, 146);
+            this.PriorityLabel.Location = new System.Drawing.Point(40, 124);
             this.PriorityLabel.Name = "PriorityLabel";
             this.PriorityLabel.Size = new System.Drawing.Size(100, 19);
             this.PriorityLabel.TabIndex = 22;
@@ -1181,7 +1183,7 @@ namespace Plan_n_Check
             // 
             this.PriorityRatio_TextBox.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.PriorityRatio_TextBox.ForeColor = System.Drawing.Color.DarkTurquoise;
-            this.PriorityRatio_TextBox.Location = new System.Drawing.Point(140, 143);
+            this.PriorityRatio_TextBox.Location = new System.Drawing.Point(141, 121);
             this.PriorityRatio_TextBox.Name = "PriorityRatio_TextBox";
             this.PriorityRatio_TextBox.Size = new System.Drawing.Size(34, 27);
             this.PriorityRatio_TextBox.TabIndex = 21;
@@ -1217,7 +1219,7 @@ namespace Plan_n_Check
             this.CheckBox_ChopParotid.BackColor = System.Drawing.Color.DarkTurquoise;
             this.CheckBox_ChopParotid.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CheckBox_ChopParotid.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.CheckBox_ChopParotid.Location = new System.Drawing.Point(36, 113);
+            this.CheckBox_ChopParotid.Location = new System.Drawing.Point(37, 91);
             this.CheckBox_ChopParotid.Name = "CheckBox_ChopParotid";
             this.CheckBox_ChopParotid.Size = new System.Drawing.Size(224, 27);
             this.CheckBox_ChopParotid.TabIndex = 1;
@@ -1678,12 +1680,25 @@ namespace Plan_n_Check
             this.CheckboxSegmentConstraints.BackColor = System.Drawing.Color.DarkTurquoise;
             this.CheckboxSegmentConstraints.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CheckboxSegmentConstraints.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.CheckboxSegmentConstraints.Location = new System.Drawing.Point(35, 210);
+            this.CheckboxSegmentConstraints.Location = new System.Drawing.Point(36, 210);
             this.CheckboxSegmentConstraints.Name = "CheckboxSegmentConstraints";
             this.CheckboxSegmentConstraints.Size = new System.Drawing.Size(374, 27);
             this.CheckboxSegmentConstraints.TabIndex = 34;
             this.CheckboxSegmentConstraints.Text = "Apply whole-organ constraints to segments";
             this.CheckboxSegmentConstraints.UseVisualStyleBackColor = false;
+            // 
+            // ButtonDeleteParotidSub
+            // 
+            this.ButtonDeleteParotidSub.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.ButtonDeleteParotidSub.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ButtonDeleteParotidSub.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.ButtonDeleteParotidSub.Location = new System.Drawing.Point(270, 89);
+            this.ButtonDeleteParotidSub.Name = "ButtonDeleteParotidSub";
+            this.ButtonDeleteParotidSub.Size = new System.Drawing.Size(186, 32);
+            this.ButtonDeleteParotidSub.TabIndex = 35;
+            this.ButtonDeleteParotidSub.Text = "Delete Subsegments";
+            this.ButtonDeleteParotidSub.UseVisualStyleBackColor = false;
+            this.ButtonDeleteParotidSub.Click += new System.EventHandler(this.ButtonDeleteParotidSub_Click);
             // 
             // MainForm
             // 
@@ -1868,5 +1883,6 @@ namespace Plan_n_Check
         private Button Button_StartSegmentation;
         private Button Button_DeleteSubsegments;
         private CheckBox CheckboxSegmentConstraints;
+        private Button ButtonDeleteParotidSub;
     }
 }

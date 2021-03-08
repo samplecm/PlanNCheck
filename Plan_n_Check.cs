@@ -537,7 +537,7 @@ namespace VMS.TPS
                     for (int i = 0; i < ROIs[s].Constraints.Count; i++)                //first go one by one through the constraints.
                     {
                         //Get DVH data for structure: 
-                        DVHData dvhData = p.GetDVHCumulativeData(matchingStructures[s][match], DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, 0.001);
+                        DVHData dvhData = p.GetDVHCumulativeData(matchingStructures[s][match], DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, 0.01);
 
                         //Get type of constraint
                         string type = ROIs[s].Constraints[i].Type;
@@ -1282,7 +1282,8 @@ namespace VMS.TPS
                                     if (hnPlan.ROIs[i].HasSubsegments)
                                     {
                                         //replace whole organ constraint with subsegment constraints
-                                        plan.OptimizationSetup.RemoveObjective(objective);
+
+                                        //plan.OptimizationSetup.RemoveObjective(objective); //uncomment if don't also want the whole organ constraint
                                         foreach (Structure structure in ss.Structures)
                                         {
                                             if ((structure.Name.Contains(optimizedStructures[i][match].Name.Substring(0,5)))&& (structure.Name.ToLower().Contains("subseg"))){
@@ -1301,7 +1302,7 @@ namespace VMS.TPS
                                     if (hnPlan.ROIs[i].HasSubsegments)
                                     {
                                         //replace whole organ constraint with subsegment constraints
-                                        plan.OptimizationSetup.RemoveObjective(objective);
+                                        //plan.OptimizationSetup.RemoveObjective(objective); //uncomment if don't also want the whole organ constraint
                                         foreach (Structure structure in ss.Structures)
                                         {
                                             if ((structure.Name.Contains(optimizedStructures[i][match].Name.Substring(0, 5))) && (structure.Name.Contains("subseg"))){
@@ -1320,7 +1321,7 @@ namespace VMS.TPS
                                     if (hnPlan.ROIs[i].HasSubsegments)
                                     {
                                         //replace whole organ constraint with subsegment constraints
-                                        plan.OptimizationSetup.RemoveObjective(objective);
+                                        //plan.OptimizationSetup.RemoveObjective(objective); //uncomment if don't also want the whole organ constraint
                                         foreach (Structure structure in ss.Structures)
                                         {
                                             if ((structure.Name.Contains(optimizedStructures[i][match].Name.Substring(0, 5))) && (structure.Name.Contains("subseg"))){
@@ -1343,7 +1344,7 @@ namespace VMS.TPS
                                     //Need to convert to relative volume. 
                                     volume = value / volume * 100;
                                     volume*=0.9; //Make it an even harsher constraint
-                                    if (volume < 0.1)
+                                    if (volume <= 0.2)
                                     {
                                         volume = 0;
                                     }
@@ -1638,6 +1639,20 @@ namespace VMS.TPS
                 {
                     double extraLength = (xMax - xMin) - 220;
                     xMax -= extraLength + 5;
+                }
+            }
+            if (yMax - yMin > 220)
+            {
+                //trim the largest one down to meet the size restriction:
+                if (Math.Abs(yMin) > yMax)
+                {
+                    double extraLength = (yMax - yMin) - 220;
+                    yMin += extraLength + 5;
+                }
+                else if (yMax > Math.Abs(yMin))
+                {
+                    double extraLength = (yMax - yMin) - 220;
+                    yMax -= extraLength + 5;
                 }
             }
             return new VRect<double>(xMin, yMin, xMax, yMax);
