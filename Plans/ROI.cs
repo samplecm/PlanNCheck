@@ -16,6 +16,7 @@ namespace Plan_n_Check.Plans
             this.Constraints = constraints;
             this.Type = "";
             this.Critical = false;
+            this.HasSubsegments = false;
         } 
 
 
@@ -23,6 +24,7 @@ namespace Plan_n_Check.Plans
         public string Name { get; set; }
         public List<Constraint> Constraints { get; set;}
         public string Type { get; set; }
+        public bool HasSubsegments { get; set; }
 
     }
 }
