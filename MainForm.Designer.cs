@@ -39,9 +39,16 @@ namespace Plan_n_Check
         {
             System.Windows.Forms.Button CustomizeButton;
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -112,6 +119,8 @@ namespace Plan_n_Check
             this.DeleteButton = new System.Windows.Forms.Button();
             this.OkButton = new System.Windows.Forms.Button();
             this.PanelSpecialFeatures = new System.Windows.Forms.Panel();
+            this.ButtonDeleteParotidSub = new System.Windows.Forms.Button();
+            this.CheckboxSegmentConstraints = new System.Windows.Forms.CheckBox();
             this.Button_DeleteSubsegments = new System.Windows.Forms.Button();
             this.Button_StartSegmentation = new System.Windows.Forms.Button();
             this.Label_Sagittal = new System.Windows.Forms.Label();
@@ -168,8 +177,6 @@ namespace Plan_n_Check
             this.PlotButton = new System.Windows.Forms.Button();
             this.PlotCombobox = new System.Windows.Forms.ComboBox();
             this.PlotDoneButton = new System.Windows.Forms.Button();
-            this.CheckboxSegmentConstraints = new System.Windows.Forms.CheckBox();
-            this.ButtonDeleteParotidSub = new System.Windows.Forms.Button();
             CustomizeButton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.AssigningPanel.SuspendLayout();
@@ -187,7 +194,7 @@ namespace Plan_n_Check
             // 
             // CustomizeButton
             // 
-            CustomizeButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            CustomizeButton.BackColor = System.Drawing.Color.SteelBlue;
             CustomizeButton.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             CustomizeButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             CustomizeButton.Location = new System.Drawing.Point(271, 325);
@@ -201,7 +208,7 @@ namespace Plan_n_Check
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.label2.BackColor = System.Drawing.Color.SteelBlue;
             this.label2.Font = new System.Drawing.Font("Tahoma", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.label2.Location = new System.Drawing.Point(249, 0);
@@ -246,7 +253,7 @@ namespace Plan_n_Check
             // 
             this.checkBox19.AutoSize = true;
             this.checkBox19.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox19.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox19.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox19.Location = new System.Drawing.Point(304, 228);
             this.checkBox19.Name = "checkBox19";
             this.checkBox19.Size = new System.Drawing.Size(312, 27);
@@ -259,7 +266,7 @@ namespace Plan_n_Check
             // 
             this.checkBox18.AutoSize = true;
             this.checkBox18.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox18.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox18.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox18.Location = new System.Drawing.Point(304, 202);
             this.checkBox18.Name = "checkBox18";
             this.checkBox18.Size = new System.Drawing.Size(138, 27);
@@ -272,7 +279,7 @@ namespace Plan_n_Check
             // 
             this.checkBox17.AutoSize = true;
             this.checkBox17.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox17.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox17.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox17.Location = new System.Drawing.Point(304, 176);
             this.checkBox17.Name = "checkBox17";
             this.checkBox17.Size = new System.Drawing.Size(97, 27);
@@ -285,7 +292,7 @@ namespace Plan_n_Check
             // 
             this.checkBox16.AutoSize = true;
             this.checkBox16.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox16.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox16.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox16.Location = new System.Drawing.Point(304, 150);
             this.checkBox16.Name = "checkBox16";
             this.checkBox16.Size = new System.Drawing.Size(342, 27);
@@ -298,7 +305,7 @@ namespace Plan_n_Check
             // 
             this.checkBox15.AutoSize = true;
             this.checkBox15.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox15.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox15.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox15.Location = new System.Drawing.Point(304, 124);
             this.checkBox15.Name = "checkBox15";
             this.checkBox15.Size = new System.Drawing.Size(252, 27);
@@ -311,7 +318,7 @@ namespace Plan_n_Check
             // 
             this.checkBox14.AutoSize = true;
             this.checkBox14.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox14.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox14.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox14.Location = new System.Drawing.Point(304, 98);
             this.checkBox14.Name = "checkBox14";
             this.checkBox14.Size = new System.Drawing.Size(96, 27);
@@ -324,7 +331,7 @@ namespace Plan_n_Check
             // 
             this.checkBox13.AutoSize = true;
             this.checkBox13.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox13.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox13.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox13.Location = new System.Drawing.Point(304, 72);
             this.checkBox13.Name = "checkBox13";
             this.checkBox13.Size = new System.Drawing.Size(172, 27);
@@ -337,7 +344,7 @@ namespace Plan_n_Check
             // 
             this.checkBox12.AutoSize = true;
             this.checkBox12.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox12.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox12.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox12.Location = new System.Drawing.Point(304, 46);
             this.checkBox12.Name = "checkBox12";
             this.checkBox12.Size = new System.Drawing.Size(165, 27);
@@ -350,7 +357,7 @@ namespace Plan_n_Check
             // 
             this.checkBox11.AutoSize = true;
             this.checkBox11.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox11.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox11.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox11.Location = new System.Drawing.Point(304, 20);
             this.checkBox11.Name = "checkBox11";
             this.checkBox11.Size = new System.Drawing.Size(143, 27);
@@ -364,7 +371,7 @@ namespace Plan_n_Check
             this.checkBox10.AutoSize = true;
             this.checkBox10.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
             this.checkBox10.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox10.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox10.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox10.Location = new System.Drawing.Point(19, 254);
             this.checkBox10.Name = "checkBox10";
             this.checkBox10.Size = new System.Drawing.Size(66, 27);
@@ -378,7 +385,7 @@ namespace Plan_n_Check
             this.checkBox9.AutoSize = true;
             this.checkBox9.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
             this.checkBox9.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox9.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox9.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox9.Location = new System.Drawing.Point(19, 228);
             this.checkBox9.Name = "checkBox9";
             this.checkBox9.Size = new System.Drawing.Size(231, 27);
@@ -392,7 +399,7 @@ namespace Plan_n_Check
             this.checkBox8.AutoSize = true;
             this.checkBox8.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
             this.checkBox8.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox8.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox8.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox8.Location = new System.Drawing.Point(19, 202);
             this.checkBox8.Name = "checkBox8";
             this.checkBox8.Size = new System.Drawing.Size(147, 27);
@@ -406,7 +413,7 @@ namespace Plan_n_Check
             this.checkBox7.AutoSize = true;
             this.checkBox7.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
             this.checkBox7.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox7.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox7.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox7.Location = new System.Drawing.Point(19, 176);
             this.checkBox7.Name = "checkBox7";
             this.checkBox7.Size = new System.Drawing.Size(79, 27);
@@ -420,7 +427,7 @@ namespace Plan_n_Check
             this.checkBox6.AutoSize = true;
             this.checkBox6.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
             this.checkBox6.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox6.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox6.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox6.Location = new System.Drawing.Point(19, 150);
             this.checkBox6.Name = "checkBox6";
             this.checkBox6.Size = new System.Drawing.Size(85, 27);
@@ -434,7 +441,7 @@ namespace Plan_n_Check
             this.checkBox5.AutoSize = true;
             this.checkBox5.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
             this.checkBox5.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox5.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox5.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox5.Location = new System.Drawing.Point(19, 124);
             this.checkBox5.Name = "checkBox5";
             this.checkBox5.Size = new System.Drawing.Size(215, 27);
@@ -448,7 +455,7 @@ namespace Plan_n_Check
             this.checkBox4.AutoSize = true;
             this.checkBox4.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
             this.checkBox4.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox4.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox4.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox4.Location = new System.Drawing.Point(19, 98);
             this.checkBox4.Name = "checkBox4";
             this.checkBox4.Size = new System.Drawing.Size(175, 27);
@@ -462,7 +469,7 @@ namespace Plan_n_Check
             this.checkBox3.AutoSize = true;
             this.checkBox3.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
             this.checkBox3.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox3.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox3.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox3.Location = new System.Drawing.Point(19, 72);
             this.checkBox3.Name = "checkBox3";
             this.checkBox3.Size = new System.Drawing.Size(131, 27);
@@ -476,7 +483,7 @@ namespace Plan_n_Check
             this.checkBox2.AutoSize = true;
             this.checkBox2.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
             this.checkBox2.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox2.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox2.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox2.Location = new System.Drawing.Point(19, 46);
             this.checkBox2.Name = "checkBox2";
             this.checkBox2.Size = new System.Drawing.Size(168, 27);
@@ -490,7 +497,7 @@ namespace Plan_n_Check
             this.checkBox1.AutoSize = true;
             this.checkBox1.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
             this.checkBox1.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox1.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.checkBox1.ForeColor = System.Drawing.Color.SteelBlue;
             this.checkBox1.Location = new System.Drawing.Point(19, 20);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(112, 27);
@@ -547,7 +554,7 @@ namespace Plan_n_Check
             // 
             // AddStructureButton
             // 
-            this.AddStructureButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.AddStructureButton.BackColor = System.Drawing.Color.SteelBlue;
             this.AddStructureButton.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.AddStructureButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.AddStructureButton.Location = new System.Drawing.Point(373, 289);
@@ -560,7 +567,7 @@ namespace Plan_n_Check
             // 
             // removeAssignedButton
             // 
-            this.removeAssignedButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.removeAssignedButton.BackColor = System.Drawing.Color.SteelBlue;
             this.removeAssignedButton.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.removeAssignedButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.removeAssignedButton.Location = new System.Drawing.Point(373, 244);
@@ -574,7 +581,7 @@ namespace Plan_n_Check
             // AssigningLabel
             // 
             this.AssigningLabel.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.AssigningLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.AssigningLabel.ForeColor = System.Drawing.Color.SteelBlue;
             this.AssigningLabel.Location = new System.Drawing.Point(313, 18);
             this.AssigningLabel.Name = "AssigningLabel";
             this.AssigningLabel.Size = new System.Drawing.Size(424, 51);
@@ -584,12 +591,36 @@ namespace Plan_n_Check
             // AssignStructGridView
             // 
             this.AssignStructGridView.BackgroundColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.AssignStructGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.AssignStructGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.AssignStructGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn2});
-            this.AssignStructGridView.GridColor = System.Drawing.SystemColors.HotTrack;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlLight;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.AssignStructGridView.DefaultCellStyle = dataGridViewCellStyle3;
+            this.AssignStructGridView.GridColor = System.Drawing.Color.DodgerBlue;
             this.AssignStructGridView.Location = new System.Drawing.Point(373, 132);
             this.AssignStructGridView.Name = "AssignStructGridView";
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.AssignStructGridView.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
             this.AssignStructGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.AssignStructGridView.Size = new System.Drawing.Size(307, 106);
             this.AssignStructGridView.TabIndex = 3;
@@ -597,8 +628,8 @@ namespace Plan_n_Check
             // dataGridViewTextBoxColumn2
             // 
             this.dataGridViewTextBoxColumn2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewTextBoxColumn2.HeaderText = "Assigned Structure";
             this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
             // 
@@ -606,12 +637,36 @@ namespace Plan_n_Check
             // 
             this.conStructGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCellsExceptHeader;
             this.conStructGridView.BackgroundColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.conStructGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.conStructGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.conStructGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn1});
-            this.conStructGridView.GridColor = System.Drawing.SystemColors.HotTrack;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlLight;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.conStructGridView.DefaultCellStyle = dataGridViewCellStyle6;
+            this.conStructGridView.GridColor = System.Drawing.Color.DodgerBlue;
             this.conStructGridView.Location = new System.Drawing.Point(35, 26);
             this.conStructGridView.Name = "conStructGridView";
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.conStructGridView.RowHeadersDefaultCellStyle = dataGridViewCellStyle7;
             this.conStructGridView.Size = new System.Drawing.Size(266, 345);
             this.conStructGridView.TabIndex = 2;
             this.conStructGridView.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.conStructGridView_CellClick);
@@ -625,7 +680,7 @@ namespace Plan_n_Check
             // 
             // FinishedEdtingButton
             // 
-            this.FinishedEdtingButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.FinishedEdtingButton.BackColor = System.Drawing.Color.SteelBlue;
             this.FinishedEdtingButton.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FinishedEdtingButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.FinishedEdtingButton.Location = new System.Drawing.Point(601, 339);
@@ -638,7 +693,7 @@ namespace Plan_n_Check
             // 
             // panel2
             // 
-            this.panel2.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.panel2.BackColor = System.Drawing.Color.SteelBlue;
             this.panel2.Controls.Add(this.label24);
             this.panel2.Controls.Add(this.label3);
             this.panel2.Controls.Add(this.label2);
@@ -650,7 +705,7 @@ namespace Plan_n_Check
             // label24
             // 
             this.label24.AutoSize = true;
-            this.label24.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.label24.BackColor = System.Drawing.Color.SteelBlue;
             this.label24.Font = new System.Drawing.Font("Tahoma", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label24.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.label24.Location = new System.Drawing.Point(340, 20);
@@ -662,7 +717,7 @@ namespace Plan_n_Check
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.label3.BackColor = System.Drawing.Color.SteelBlue;
             this.label3.Font = new System.Drawing.Font("Tahoma", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.label3.Location = new System.Drawing.Point(362, 20);
@@ -686,7 +741,7 @@ namespace Plan_n_Check
             // 
             this.ErrorLabel.AutoSize = true;
             this.ErrorLabel.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ErrorLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.ErrorLabel.ForeColor = System.Drawing.Color.SteelBlue;
             this.ErrorLabel.Location = new System.Drawing.Point(75, 361);
             this.ErrorLabel.Name = "ErrorLabel";
             this.ErrorLabel.Size = new System.Drawing.Size(520, 15);
@@ -698,10 +753,18 @@ namespace Plan_n_Check
             // 
             // ConstraintGridView
             // 
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ConstraintGridView.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle2;
-            this.ConstraintGridView.BackgroundColor = System.Drawing.Color.DarkTurquoise;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ConstraintGridView.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle8;
+            this.ConstraintGridView.BackgroundColor = System.Drawing.Color.SteelBlue;
             this.ConstraintGridView.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.ConstraintGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
             this.ConstraintGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.ConstraintGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Structure,
@@ -710,19 +773,19 @@ namespace Plan_n_Check
             this.Relation,
             this.Value,
             this.Format});
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlLight;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.DarkTurquoise;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.ConstraintGridView.DefaultCellStyle = dataGridViewCellStyle3;
-            this.ConstraintGridView.GridColor = System.Drawing.Color.DarkTurquoise;
+            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.ControlLight;
+            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.ConstraintGridView.DefaultCellStyle = dataGridViewCellStyle10;
+            this.ConstraintGridView.GridColor = System.Drawing.Color.SteelBlue;
             this.ConstraintGridView.Location = new System.Drawing.Point(26, 12);
             this.ConstraintGridView.Name = "ConstraintGridView";
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ConstraintGridView.RowsDefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle11.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ConstraintGridView.RowsDefaultCellStyle = dataGridViewCellStyle11;
             this.ConstraintGridView.Size = new System.Drawing.Size(683, 231);
             this.ConstraintGridView.TabIndex = 1;
             // 
@@ -813,7 +876,7 @@ namespace Plan_n_Check
             // 
             // PlotFormButton
             // 
-            this.PlotFormButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.PlotFormButton.BackColor = System.Drawing.Color.SteelBlue;
             this.PlotFormButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.PlotFormButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.PlotFormButton.Location = new System.Drawing.Point(8, 263);
@@ -826,7 +889,7 @@ namespace Plan_n_Check
             // 
             // helpButtonConstraints
             // 
-            this.helpButtonConstraints.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.helpButtonConstraints.BackColor = System.Drawing.Color.SteelBlue;
             this.helpButtonConstraints.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.helpButtonConstraints.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.helpButtonConstraints.Location = new System.Drawing.Point(674, 355);
@@ -865,7 +928,7 @@ namespace Plan_n_Check
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.label5.ForeColor = System.Drawing.Color.SteelBlue;
             this.label5.Location = new System.Drawing.Point(359, 251);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(74, 19);
@@ -874,7 +937,7 @@ namespace Plan_n_Check
             // 
             // LoadFeaturesButton
             // 
-            this.LoadFeaturesButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.LoadFeaturesButton.BackColor = System.Drawing.Color.SteelBlue;
             this.LoadFeaturesButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LoadFeaturesButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.LoadFeaturesButton.Location = new System.Drawing.Point(8, 293);
@@ -887,7 +950,7 @@ namespace Plan_n_Check
             // 
             // EditAssignedButton
             // 
-            this.EditAssignedButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.EditAssignedButton.BackColor = System.Drawing.Color.SteelBlue;
             this.EditAssignedButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.EditAssignedButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.EditAssignedButton.Location = new System.Drawing.Point(6, 324);
@@ -902,7 +965,7 @@ namespace Plan_n_Check
             // 
             this.AddLabel.AutoSize = true;
             this.AddLabel.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.AddLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.AddLabel.ForeColor = System.Drawing.Color.SteelBlue;
             this.AddLabel.Location = new System.Drawing.Point(390, 334);
             this.AddLabel.Name = "AddLabel";
             this.AddLabel.Size = new System.Drawing.Size(336, 14);
@@ -923,7 +986,7 @@ namespace Plan_n_Check
             // 
             this.FormatLabel.AutoSize = true;
             this.FormatLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FormatLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.FormatLabel.ForeColor = System.Drawing.Color.SteelBlue;
             this.FormatLabel.Location = new System.Drawing.Point(586, 304);
             this.FormatLabel.Name = "FormatLabel";
             this.FormatLabel.Size = new System.Drawing.Size(58, 19);
@@ -934,7 +997,7 @@ namespace Plan_n_Check
             // 
             this.ValueLabel.AutoSize = true;
             this.ValueLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ValueLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.ValueLabel.ForeColor = System.Drawing.Color.SteelBlue;
             this.ValueLabel.Location = new System.Drawing.Point(586, 278);
             this.ValueLabel.Name = "ValueLabel";
             this.ValueLabel.Size = new System.Drawing.Size(46, 19);
@@ -945,7 +1008,7 @@ namespace Plan_n_Check
             // 
             this.RelationLabel.AutoSize = true;
             this.RelationLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.RelationLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.RelationLabel.ForeColor = System.Drawing.Color.SteelBlue;
             this.RelationLabel.Location = new System.Drawing.Point(586, 252);
             this.RelationLabel.Name = "RelationLabel";
             this.RelationLabel.Size = new System.Drawing.Size(65, 19);
@@ -956,7 +1019,7 @@ namespace Plan_n_Check
             // 
             this.SubscriptLabel.AutoSize = true;
             this.SubscriptLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.SubscriptLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.SubscriptLabel.ForeColor = System.Drawing.Color.SteelBlue;
             this.SubscriptLabel.Location = new System.Drawing.Point(360, 302);
             this.SubscriptLabel.Name = "SubscriptLabel";
             this.SubscriptLabel.Size = new System.Drawing.Size(73, 19);
@@ -967,7 +1030,7 @@ namespace Plan_n_Check
             // 
             this.TypeLabel.AutoSize = true;
             this.TypeLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TypeLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.TypeLabel.ForeColor = System.Drawing.Color.SteelBlue;
             this.TypeLabel.Location = new System.Drawing.Point(362, 276);
             this.TypeLabel.Name = "TypeLabel";
             this.TypeLabel.Size = new System.Drawing.Size(42, 19);
@@ -988,7 +1051,7 @@ namespace Plan_n_Check
             // 
             // button3
             // 
-            this.button3.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.button3.BackColor = System.Drawing.Color.SteelBlue;
             this.button3.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button3.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.button3.Location = new System.Drawing.Point(380, 354);
@@ -1001,7 +1064,7 @@ namespace Plan_n_Check
             // 
             // DeleteButton
             // 
-            this.DeleteButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.DeleteButton.BackColor = System.Drawing.Color.SteelBlue;
             this.DeleteButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.DeleteButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.DeleteButton.Location = new System.Drawing.Point(527, 354);
@@ -1014,7 +1077,7 @@ namespace Plan_n_Check
             // 
             // OkButton
             // 
-            this.OkButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.OkButton.BackColor = System.Drawing.Color.SteelBlue;
             this.OkButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.OkButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.OkButton.Location = new System.Drawing.Point(6, 354);
@@ -1053,9 +1116,35 @@ namespace Plan_n_Check
             this.PanelSpecialFeatures.TabIndex = 19;
             this.PanelSpecialFeatures.Visible = false;
             // 
+            // ButtonDeleteParotidSub
+            // 
+            this.ButtonDeleteParotidSub.BackColor = System.Drawing.Color.SteelBlue;
+            this.ButtonDeleteParotidSub.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ButtonDeleteParotidSub.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.ButtonDeleteParotidSub.Location = new System.Drawing.Point(270, 89);
+            this.ButtonDeleteParotidSub.Name = "ButtonDeleteParotidSub";
+            this.ButtonDeleteParotidSub.Size = new System.Drawing.Size(186, 32);
+            this.ButtonDeleteParotidSub.TabIndex = 35;
+            this.ButtonDeleteParotidSub.Text = "Delete Subsegments";
+            this.ButtonDeleteParotidSub.UseVisualStyleBackColor = false;
+            this.ButtonDeleteParotidSub.Click += new System.EventHandler(this.ButtonDeleteParotidSub_Click);
+            // 
+            // CheckboxSegmentConstraints
+            // 
+            this.CheckboxSegmentConstraints.AutoSize = true;
+            this.CheckboxSegmentConstraints.BackColor = System.Drawing.Color.SteelBlue;
+            this.CheckboxSegmentConstraints.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CheckboxSegmentConstraints.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.CheckboxSegmentConstraints.Location = new System.Drawing.Point(36, 210);
+            this.CheckboxSegmentConstraints.Name = "CheckboxSegmentConstraints";
+            this.CheckboxSegmentConstraints.Size = new System.Drawing.Size(374, 27);
+            this.CheckboxSegmentConstraints.TabIndex = 34;
+            this.CheckboxSegmentConstraints.Text = "Apply whole-organ constraints to segments";
+            this.CheckboxSegmentConstraints.UseVisualStyleBackColor = false;
+            // 
             // Button_DeleteSubsegments
             // 
-            this.Button_DeleteSubsegments.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.Button_DeleteSubsegments.BackColor = System.Drawing.Color.SteelBlue;
             this.Button_DeleteSubsegments.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Button_DeleteSubsegments.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.Button_DeleteSubsegments.Location = new System.Drawing.Point(335, 177);
@@ -1068,7 +1157,7 @@ namespace Plan_n_Check
             // 
             // Button_StartSegmentation
             // 
-            this.Button_StartSegmentation.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.Button_StartSegmentation.BackColor = System.Drawing.Color.SteelBlue;
             this.Button_StartSegmentation.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Button_StartSegmentation.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.Button_StartSegmentation.Location = new System.Drawing.Point(254, 177);
@@ -1083,7 +1172,7 @@ namespace Plan_n_Check
             // 
             this.Label_Sagittal.AutoSize = true;
             this.Label_Sagittal.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label_Sagittal.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.Label_Sagittal.ForeColor = System.Drawing.Color.SteelBlue;
             this.Label_Sagittal.Location = new System.Drawing.Point(6, 349);
             this.Label_Sagittal.Name = "Label_Sagittal";
             this.Label_Sagittal.Size = new System.Drawing.Size(101, 19);
@@ -1102,7 +1191,7 @@ namespace Plan_n_Check
             // 
             this.Label_Coronal.AutoSize = true;
             this.Label_Coronal.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label_Coronal.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.Label_Coronal.ForeColor = System.Drawing.Color.SteelBlue;
             this.Label_Coronal.Location = new System.Drawing.Point(6, 318);
             this.Label_Coronal.Name = "Label_Coronal";
             this.Label_Coronal.Size = new System.Drawing.Size(103, 19);
@@ -1121,7 +1210,7 @@ namespace Plan_n_Check
             // 
             this.Label_AxialSlice.AutoSize = true;
             this.Label_AxialSlice.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label_AxialSlice.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.Label_AxialSlice.ForeColor = System.Drawing.Color.SteelBlue;
             this.Label_AxialSlice.Location = new System.Drawing.Point(26, 283);
             this.Label_AxialSlice.Name = "Label_AxialSlice";
             this.Label_AxialSlice.Size = new System.Drawing.Size(83, 19);
@@ -1132,7 +1221,7 @@ namespace Plan_n_Check
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.label1.ForeColor = System.Drawing.Color.SteelBlue;
             this.label1.Location = new System.Drawing.Point(58, 246);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(51, 19);
@@ -1158,7 +1247,7 @@ namespace Plan_n_Check
             // Checkbox_OrganSeg
             // 
             this.Checkbox_OrganSeg.AutoSize = true;
-            this.Checkbox_OrganSeg.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.Checkbox_OrganSeg.BackColor = System.Drawing.Color.SteelBlue;
             this.Checkbox_OrganSeg.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Checkbox_OrganSeg.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.Checkbox_OrganSeg.Location = new System.Drawing.Point(36, 177);
@@ -1172,7 +1261,7 @@ namespace Plan_n_Check
             // 
             this.PriorityLabel.AutoSize = true;
             this.PriorityLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PriorityLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.PriorityLabel.ForeColor = System.Drawing.Color.SteelBlue;
             this.PriorityLabel.Location = new System.Drawing.Point(40, 124);
             this.PriorityLabel.Name = "PriorityLabel";
             this.PriorityLabel.Size = new System.Drawing.Size(100, 19);
@@ -1182,7 +1271,7 @@ namespace Plan_n_Check
             // PriorityRatio_TextBox
             // 
             this.PriorityRatio_TextBox.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PriorityRatio_TextBox.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.PriorityRatio_TextBox.ForeColor = System.Drawing.Color.SteelBlue;
             this.PriorityRatio_TextBox.Location = new System.Drawing.Point(141, 121);
             this.PriorityRatio_TextBox.Name = "PriorityRatio_TextBox";
             this.PriorityRatio_TextBox.Size = new System.Drawing.Size(34, 27);
@@ -1193,7 +1282,7 @@ namespace Plan_n_Check
             // 
             this.LabelSpecialFeatures.AutoSize = true;
             this.LabelSpecialFeatures.Font = new System.Drawing.Font("Calibri", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LabelSpecialFeatures.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.LabelSpecialFeatures.ForeColor = System.Drawing.Color.SteelBlue;
             this.LabelSpecialFeatures.Location = new System.Drawing.Point(30, 35);
             this.LabelSpecialFeatures.Name = "LabelSpecialFeatures";
             this.LabelSpecialFeatures.Size = new System.Drawing.Size(197, 33);
@@ -1202,7 +1291,7 @@ namespace Plan_n_Check
             // 
             // ButtonDoneFeatures
             // 
-            this.ButtonDoneFeatures.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.ButtonDoneFeatures.BackColor = System.Drawing.Color.SteelBlue;
             this.ButtonDoneFeatures.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ButtonDoneFeatures.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.ButtonDoneFeatures.Location = new System.Drawing.Point(645, 355);
@@ -1216,7 +1305,7 @@ namespace Plan_n_Check
             // CheckBox_ChopParotid
             // 
             this.CheckBox_ChopParotid.AutoSize = true;
-            this.CheckBox_ChopParotid.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.CheckBox_ChopParotid.BackColor = System.Drawing.Color.SteelBlue;
             this.CheckBox_ChopParotid.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CheckBox_ChopParotid.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.CheckBox_ChopParotid.Location = new System.Drawing.Point(37, 91);
@@ -1228,7 +1317,7 @@ namespace Plan_n_Check
             // 
             // panel3
             // 
-            this.panel3.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.panel3.BackColor = System.Drawing.Color.SteelBlue;
             this.panel3.Location = new System.Drawing.Point(0, 553);
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(737, 39);
@@ -1462,7 +1551,7 @@ namespace Plan_n_Check
             // textBox1
             // 
             this.textBox1.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox1.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.textBox1.ForeColor = System.Drawing.Color.SteelBlue;
             this.textBox1.Location = new System.Drawing.Point(111, 498);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(174, 22);
@@ -1472,7 +1561,7 @@ namespace Plan_n_Check
             // 
             // BrowseButton
             // 
-            this.BrowseButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.BrowseButton.BackColor = System.Drawing.Color.SteelBlue;
             this.BrowseButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.BrowseButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.BrowseButton.Location = new System.Drawing.Point(111, 524);
@@ -1485,7 +1574,7 @@ namespace Plan_n_Check
             // 
             // StartButton
             // 
-            this.StartButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.StartButton.BackColor = System.Drawing.Color.SteelBlue;
             this.StartButton.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.StartButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.StartButton.Location = new System.Drawing.Point(579, 519);
@@ -1498,7 +1587,7 @@ namespace Plan_n_Check
             // 
             // button2
             // 
-            this.button2.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.button2.BackColor = System.Drawing.Color.SteelBlue;
             this.button2.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button2.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
             this.button2.Location = new System.Drawing.Point(655, 519);
@@ -1514,7 +1603,7 @@ namespace Plan_n_Check
             this.label4.AutoSize = true;
             this.label4.BackColor = System.Drawing.Color.Snow;
             this.label4.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.label4.ForeColor = System.Drawing.Color.SteelBlue;
             this.label4.Location = new System.Drawing.Point(0, 499);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(104, 19);
@@ -1525,7 +1614,7 @@ namespace Plan_n_Check
             // 
             this.StartErrorLabel.AutoSize = true;
             this.StartErrorLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.StartErrorLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.StartErrorLabel.ForeColor = System.Drawing.Color.SteelBlue;
             this.StartErrorLabel.Location = new System.Drawing.Point(365, 526);
             this.StartErrorLabel.Name = "StartErrorLabel";
             this.StartErrorLabel.Size = new System.Drawing.Size(208, 19);
@@ -1538,7 +1627,7 @@ namespace Plan_n_Check
             // 
             this.IterationsLabel.AutoSize = true;
             this.IterationsLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.IterationsLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.IterationsLabel.ForeColor = System.Drawing.Color.SteelBlue;
             this.IterationsLabel.Location = new System.Drawing.Point(538, 471);
             this.IterationsLabel.Name = "IterationsLabel";
             this.IterationsLabel.Size = new System.Drawing.Size(162, 19);
@@ -1548,7 +1637,7 @@ namespace Plan_n_Check
             // IterationsTextBox
             // 
             this.IterationsTextBox.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.IterationsTextBox.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.IterationsTextBox.ForeColor = System.Drawing.Color.SteelBlue;
             this.IterationsTextBox.Location = new System.Drawing.Point(706, 468);
             this.IterationsTextBox.Name = "IterationsTextBox";
             this.IterationsTextBox.Size = new System.Drawing.Size(16, 27);
@@ -1570,7 +1659,7 @@ namespace Plan_n_Check
             // 
             this.LabelSaveCheck.AutoSize = true;
             this.LabelSaveCheck.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LabelSaveCheck.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.LabelSaveCheck.ForeColor = System.Drawing.Color.SteelBlue;
             this.LabelSaveCheck.Location = new System.Drawing.Point(8, 469);
             this.LabelSaveCheck.Name = "LabelSaveCheck";
             this.LabelSaveCheck.Size = new System.Drawing.Size(96, 19);
@@ -1581,7 +1670,7 @@ namespace Plan_n_Check
             // 
             this.LocationLabel.AutoSize = true;
             this.LocationLabel.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LocationLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.LocationLabel.ForeColor = System.Drawing.Color.SteelBlue;
             this.LocationLabel.Location = new System.Drawing.Point(185, 531);
             this.LocationLabel.Name = "LocationLabel";
             this.LocationLabel.Size = new System.Drawing.Size(174, 15);
@@ -1604,7 +1693,7 @@ namespace Plan_n_Check
             // 
             // DoneLatexButton
             // 
-            this.DoneLatexButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.DoneLatexButton.BackColor = System.Drawing.Color.SteelBlue;
             this.DoneLatexButton.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.DoneLatexButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.DoneLatexButton.Location = new System.Drawing.Point(624, 544);
@@ -1633,7 +1722,7 @@ namespace Plan_n_Check
             this.DVHLabel.AutoSize = true;
             this.DVHLabel.BackColor = System.Drawing.Color.Snow;
             this.DVHLabel.Font = new System.Drawing.Font("Calibri", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DVHLabel.ForeColor = System.Drawing.Color.DarkTurquoise;
+            this.DVHLabel.ForeColor = System.Drawing.Color.SteelBlue;
             this.DVHLabel.Location = new System.Drawing.Point(12, 25);
             this.DVHLabel.Name = "DVHLabel";
             this.DVHLabel.Size = new System.Drawing.Size(173, 39);
@@ -1642,7 +1731,7 @@ namespace Plan_n_Check
             // 
             // PlotButton
             // 
-            this.PlotButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.PlotButton.BackColor = System.Drawing.Color.SteelBlue;
             this.PlotButton.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.PlotButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.PlotButton.Location = new System.Drawing.Point(8, 437);
@@ -1663,7 +1752,7 @@ namespace Plan_n_Check
             // 
             // PlotDoneButton
             // 
-            this.PlotDoneButton.BackColor = System.Drawing.Color.DarkTurquoise;
+            this.PlotDoneButton.BackColor = System.Drawing.Color.SteelBlue;
             this.PlotDoneButton.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.PlotDoneButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.PlotDoneButton.Location = new System.Drawing.Point(549, 437);
@@ -1674,47 +1763,22 @@ namespace Plan_n_Check
             this.PlotDoneButton.UseVisualStyleBackColor = false;
             this.PlotDoneButton.Click += new System.EventHandler(this.PlotDoneButton_Click);
             // 
-            // CheckboxSegmentConstraints
-            // 
-            this.CheckboxSegmentConstraints.AutoSize = true;
-            this.CheckboxSegmentConstraints.BackColor = System.Drawing.Color.DarkTurquoise;
-            this.CheckboxSegmentConstraints.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CheckboxSegmentConstraints.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.CheckboxSegmentConstraints.Location = new System.Drawing.Point(36, 210);
-            this.CheckboxSegmentConstraints.Name = "CheckboxSegmentConstraints";
-            this.CheckboxSegmentConstraints.Size = new System.Drawing.Size(374, 27);
-            this.CheckboxSegmentConstraints.TabIndex = 34;
-            this.CheckboxSegmentConstraints.Text = "Apply whole-organ constraints to segments";
-            this.CheckboxSegmentConstraints.UseVisualStyleBackColor = false;
-            // 
-            // ButtonDeleteParotidSub
-            // 
-            this.ButtonDeleteParotidSub.BackColor = System.Drawing.Color.DarkTurquoise;
-            this.ButtonDeleteParotidSub.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ButtonDeleteParotidSub.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ButtonDeleteParotidSub.Location = new System.Drawing.Point(270, 89);
-            this.ButtonDeleteParotidSub.Name = "ButtonDeleteParotidSub";
-            this.ButtonDeleteParotidSub.Size = new System.Drawing.Size(186, 32);
-            this.ButtonDeleteParotidSub.TabIndex = 35;
-            this.ButtonDeleteParotidSub.Text = "Delete Subsegments";
-            this.ButtonDeleteParotidSub.UseVisualStyleBackColor = false;
-            this.ButtonDeleteParotidSub.Click += new System.EventHandler(this.ButtonDeleteParotidSub_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(734, 591);
-            this.Controls.Add(this.PanelSpecialFeatures);
             this.Controls.Add(this.panel1);
+            this.Controls.Add(this.panel5);
+            this.Controls.Add(this.panel3);
+            this.Controls.Add(this.panel2);
             this.Controls.Add(this.AssigningPanel);
+            this.Controls.Add(this.PanelSpecialFeatures);
             this.Controls.Add(this.LocationLabel);
             this.Controls.Add(this.LabelSaveCheck);
-            this.Controls.Add(this.panel3);
             this.Controls.Add(this.IterationsTextBox);
             this.Controls.Add(this.IterationsLabel);
-            this.Controls.Add(this.panel2);
             this.Controls.Add(this.StartErrorLabel);
             this.Controls.Add(this.SaveCheck);
             this.Controls.Add(this.textBox1);
@@ -1724,7 +1788,6 @@ namespace Plan_n_Check
             this.Controls.Add(this.StartButton);
             this.Controls.Add(this.PlotPanel);
             this.Controls.Add(this.LatexPanel);
-            this.Controls.Add(this.panel5);
             this.ForeColor = System.Drawing.SystemColors.ControlLight;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
