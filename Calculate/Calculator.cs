@@ -430,7 +430,7 @@ namespace Plan_n_Check.Calculate
         {
             PlotView pv = new OxyPlot.WindowsForms.PlotView();
             pv.Location = new System.Drawing.Point(30, 60);
-            pv.Size = new System.Drawing.Size(650, 380);
+            pv.Size = new System.Drawing.Size(550, 340);
             pv.Model = new OxyPlot.PlotModel { Title = "DVH" };
             pv.Model.Axes.Add(new LinearAxis
             {
