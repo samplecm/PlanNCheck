@@ -26,7 +26,7 @@ namespace Plan_n_Check
     public partial class MainForm : Form
     {
         public string SavePath { get; set; }
-        public List<Plan> Plans { get; set;}
+        public List<Plan> Plans { get; set; }
         public HNPlan HnPlan { get; set; }
         public List<List<Structure>> MatchingStructures { get; set; }
         public ScriptContext context { get; set; }
@@ -37,6 +37,8 @@ namespace Plan_n_Check
         public OxyPlot.WindowsForms.PlotView PV { get; set; }
         public Stopwatch TotalTime { get; set; }
         public Stopwatch OptimTime { get; set; }
+
+        public List<ROI> DVH_ReportStructures {get; set;}
 
 
 
@@ -55,6 +57,7 @@ namespace Plan_n_Check
             this.TotalTime = new Stopwatch();
             this.TotalTime.Start();
             this.OptimTime = new Stopwatch();
+            this.DVH_ReportStructures = new List<ROI>();
             
 
 
@@ -194,7 +197,7 @@ namespace Plan_n_Check
                 List<List<string>> updateLog = structureLists.Item3;
                 if (SaveCheck.Checked)
                 {
-                    Calculator.RunReport(this.context, this.HnPlan, this.SavePath, optimizedStructures, this.MatchingStructures, updateLog);
+                    Calculator.RunReport(this.context, this.HnPlan, this.SavePath, optimizedStructures, this.MatchingStructures, updateLog, this.DVH_ReportStructures);
                 }
                 this.StartErrorLabel.Visible = false;
                 this.TotalTime.Stop();
@@ -824,34 +827,124 @@ namespace Plan_n_Check
         {
             this.PanelSpecialFeatures.Visible = true;
             this.PanelSpecialFeatures.BringToFront();
-            //populate the combo boxes
-            this.OrganSeg_OrgansCombo.DataSource = new List<string>();
-            List<string> organNames = new List<string>();
-            foreach (Structure s in this.context.StructureSet.Structures)
+            //First see if this is first time that special features panel has been opened:
+            if (!SpecialFeatures_Clicked.Checked) //If it hasn't been selected
             {
-                organNames.Add(s.Name);
-            }
-            this.OrganSeg_OrgansCombo.DataSource = organNames;
+                SpecialFeatures_Clicked.CheckState = CheckState.Checked;
+                //populate the combo boxes
+                this.OrganSeg_OrgansCombo.DataSource = new List<string>();
+                List<string> organNames = new List<string>();
+                foreach (Structure s in this.context.StructureSet.Structures)
+                {
+                    organNames.Add(s.Name);
+                }
+                this.OrganSeg_OrgansCombo.DataSource = organNames;
 
-            List<int> axial_sliceNums = new List<int>();
-            List<int> coronal_sliceNums = new List<int>();
-            List<int> sagittal_sliceNums = new List<int>();
-            //Get options 0 through 10
-            for (int i = 0; i <= 10; i++)
-            {
-                axial_sliceNums.Add(i);
-                coronal_sliceNums.Add(i);
-                sagittal_sliceNums.Add(i);
+                List<int> axial_sliceNums = new List<int>();
+                List<int> coronal_sliceNums = new List<int>();
+                List<int> sagittal_sliceNums = new List<int>();
+                //Get options 0 through 10
+                for (int i = 0; i <= 10; i++)
+                {
+                    axial_sliceNums.Add(i);
+                    coronal_sliceNums.Add(i);
+                    sagittal_sliceNums.Add(i);
+                }
+                this.Axial_Combobox.DataSource = axial_sliceNums;
+                this.Sagittal_Combobox.DataSource = sagittal_sliceNums;
+                this.Coronal_Combobox.DataSource = coronal_sliceNums;
+                this.panel1.Visible = false;
+                this.panel1.SendToBack();
+
+                //Populate the dvh grid and combobox
+
+
+
+
+                //Delete all grid rows and add the headers: 
+                int numRows = this.DVH_gridView.Rows.Count;
+                if (numRows > 1)
+                {
+                    for (int i = numRows - 1; i > 0; i--)
+                    {
+                        try
+                        {
+                            this.DVH_gridView.Rows.RemoveAt(i);
+                        }
+                        catch
+                        {
+                        }
+
+                    }
+                    this.DVH_gridView.Rows.Clear();
+                }
+                this.DVH_gridView.ForeColor = System.Drawing.Color.Black;
+                DataTable dt = new DataTable();
+                dt.Columns.Add("Structure");
+                dt.Columns.Add("Volume Bounds");
+                dt.Columns.Add("Dose Bounds");
+                //By default include the PTV DVHs in the report:
+
+                for (int j = 0; j < this.HnPlan.ROIs.Count; j++)
+                {
+                    string name = this.HnPlan.ROIs[j].Name;
+                    if (name.ToLower().Contains("ptv"))
+                    {
+                        DataRow row = dt.NewRow();
+                        row["Structure"] = name;
+                        row["Volume Bounds"] = "[0,100]";
+                        row["Dose Bounds"] = "[0,100]";
+                        dt.Rows.Add(row);
+                    }                  
+                }
+
+                //Add these rows to the view.
+                foreach (DataRow DRow in dt.Rows)
+                {
+                    int num = this.DVH_gridView.Rows.Add();
+                    this.DVH_gridView.Rows[num].Cells[0].Value = DRow["Structure"].ToString();
+                    this.DVH_gridView.Rows[num].Cells[1].Value = DRow["Volume Bounds"].ToString();
+                    this.DVH_gridView.Rows[num].Cells[2].Value = DRow["Dose bounds"].ToString();
+                    
+                }
+
+                //Now make a list of all planning structures and then add to combobox
+                List<string> tempList = new List<string>();
+                for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
+                {
+                    tempList.Add(this.HnPlan.ROIs[i].Name);
+
+                }
+                this.Combobox_dvhReport.DataSource = tempList;
+                this.Combobox_dvhReport.SelectedIndex = -1;
+
+              
             }
-            this.Axial_Combobox.DataSource = axial_sliceNums;
-            this.Sagittal_Combobox.DataSource = sagittal_sliceNums;
-            this.Coronal_Combobox.DataSource = coronal_sliceNums;
-            this.panel1.Visible = false;
-            this.panel1.SendToBack();
+
+            
         }
 
         private void ButtonDoneFeatures_Click(object sender, EventArgs e)
         {
+            //Check the DVH report list and add all desired DVHs to list
+            foreach (DataGridViewRow row in this.DVH_gridView.Rows)
+            {
+                if (row.Cells[0].Value == null)
+                {
+                    break;
+                }
+                string structureName = row.Cells[0].Value.ToString().ToLower();       
+                for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
+                {
+                    string tempName = this.HnPlan.ROIs[i].Name.ToLower();
+                    if (tempName == structureName)
+                    {
+                        this.DVH_ReportStructures.Add(this.HnPlan.ROIs[i]);
+                    }
+                }
+
+                
+            }
             this.PanelSpecialFeatures.Visible = false;
             this.PanelSpecialFeatures.SendToBack();
             this.panel1.Visible = true;
@@ -1079,6 +1172,53 @@ namespace Plan_n_Check
             {
                 System.Windows.MessageBox.Show("Deleted " + numDeleted + " subsegment structures");
             }
+        }
+
+        private void Button_AddDVH_Report_Click(object sender, EventArgs e)
+        {
+            string newDVH = this.Combobox_dvhReport.SelectedItem.ToString();
+            //First check if it's already in the list: 
+            foreach (DataGridViewRow r in this.DVH_gridView.Rows)
+            {
+                if (r.Cells[0].Value == null)
+                {
+                    break;
+                }
+                string tempName = r.Cells[0].Value.ToString().ToLower();
+                if (newDVH.ToLower() == tempName)
+                {
+                    System.Windows.MessageBox.Show("DVH has already been included in the list.");
+                    return;
+                }
+            }
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Structure");
+            dt.Columns.Add("Volume bounds");
+            dt.Columns.Add("Dose Bounds");
+            DataRow row = dt.NewRow();
+            row["Structure"] = newDVH;
+            row["Volume Bounds"] = "[0,0]";
+            row["Dose Bounds"] = "[0,0]";
+            dt.Rows.Add(row);
+
+            //Add to the gridview
+            int num = this.DVH_gridView.Rows.Add();
+            this.DVH_gridView.Rows[num].Cells[0].Value = dt.Rows[0]["Structure"].ToString();
+            this.DVH_gridView.Rows[num].Cells[1].Value = dt.Rows[0]["Volume Bounds"].ToString();
+            this.DVH_gridView.Rows[num].Cells[2].Value = dt.Rows[0]["Dose Bounds"].ToString();
+
+
+            ////Add these rows to the view.
+            //foreach (DataRow DRow in dt.Rows)
+            //{
+            //    int num = ConstraintGridView.Rows.Add();
+            //    ConstraintGridView.Rows[num].Cells[0].Value = DRow["Structure"].ToString();
+            //    ConstraintGridView.Rows[num].Cells[1].Value = DRow["Type"].ToString();
+            //    ConstraintGridView.Rows[num].Cells[2].Value = DRow["Subscript"].ToString();
+            //    ConstraintGridView.Rows[num].Cells[3].Value = DRow["Relation"].ToString();
+            //    ConstraintGridView.Rows[num].Cells[4].Value = DRow["Value"].ToString();
+            //    ConstraintGridView.Rows[num].Cells[5].Value = DRow["Format"].ToString();
+            //}
         }
     }
 }

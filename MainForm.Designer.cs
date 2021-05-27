@@ -38,18 +38,20 @@ namespace Plan_n_Check
         private void InitializeComponent()
         {
             System.Windows.Forms.Button CustomizeButton;
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle40 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle42 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle43 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle41 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle44 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle45 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle46 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle47 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle48 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle49 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle50 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle51 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle52 = new System.Windows.Forms.DataGridViewCellStyle();
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.checkBox19 = new System.Windows.Forms.CheckBox();
@@ -119,6 +121,13 @@ namespace Plan_n_Check
             this.DeleteButton = new System.Windows.Forms.Button();
             this.OkButton = new System.Windows.Forms.Button();
             this.PanelSpecialFeatures = new System.Windows.Forms.Panel();
+            this.SpecialFeatures_Clicked = new System.Windows.Forms.CheckBox();
+            this.Combobox_dvhReport = new System.Windows.Forms.ComboBox();
+            this.DVH_gridView = new System.Windows.Forms.DataGridView();
+            this.Button_AddDVH_Report = new System.Windows.Forms.Button();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
             this.ButtonDeleteParotidSub = new System.Windows.Forms.Button();
             this.CheckboxSegmentConstraints = new System.Windows.Forms.CheckBox();
             this.Button_DeleteSubsegments = new System.Windows.Forms.Button();
@@ -131,7 +140,6 @@ namespace Plan_n_Check
             this.label1 = new System.Windows.Forms.Label();
             this.Axial_Combobox = new System.Windows.Forms.ComboBox();
             this.OrganSeg_OrgansCombo = new System.Windows.Forms.ComboBox();
-            this.Checkbox_OrganSeg = new System.Windows.Forms.CheckBox();
             this.PriorityLabel = new System.Windows.Forms.Label();
             this.PriorityRatio_TextBox = new System.Windows.Forms.TextBox();
             this.LabelSpecialFeatures = new System.Windows.Forms.Label();
@@ -177,6 +185,9 @@ namespace Plan_n_Check
             this.PlotButton = new System.Windows.Forms.Button();
             this.PlotCombobox = new System.Windows.Forms.ComboBox();
             this.PlotDoneButton = new System.Windows.Forms.Button();
+            this.DVHcolumn_Structure = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DVHcolumn_VolumeBounds = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DVHcolumn_DoseBounds = new System.Windows.Forms.DataGridViewTextBoxColumn();
             CustomizeButton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.AssigningPanel.SuspendLayout();
@@ -187,6 +198,7 @@ namespace Plan_n_Check
             ((System.ComponentModel.ISupportInitialize)(this.ConstraintGridView)).BeginInit();
             this.panel1.SuspendLayout();
             this.PanelSpecialFeatures.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DVH_gridView)).BeginInit();
             this.panel7.SuspendLayout();
             this.LatexPanel.SuspendLayout();
             this.PlotPanel.SuspendLayout();
@@ -591,36 +603,36 @@ namespace Plan_n_Check
             // AssignStructGridView
             // 
             this.AssignStructGridView.BackgroundColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.SteelBlue;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.AssignStructGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle40.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle40.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle40.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle40.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle40.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle40.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle40.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.AssignStructGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle40;
             this.AssignStructGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.AssignStructGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn2});
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlLight;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.SteelBlue;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.AssignStructGridView.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle42.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle42.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle42.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle42.ForeColor = System.Drawing.SystemColors.ControlLight;
+            dataGridViewCellStyle42.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle42.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle42.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.AssignStructGridView.DefaultCellStyle = dataGridViewCellStyle42;
             this.AssignStructGridView.GridColor = System.Drawing.Color.DodgerBlue;
             this.AssignStructGridView.Location = new System.Drawing.Point(373, 132);
             this.AssignStructGridView.Name = "AssignStructGridView";
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.SteelBlue;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.AssignStructGridView.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle43.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle43.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle43.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle43.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle43.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle43.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle43.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.AssignStructGridView.RowHeadersDefaultCellStyle = dataGridViewCellStyle43;
             this.AssignStructGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.AssignStructGridView.Size = new System.Drawing.Size(307, 106);
             this.AssignStructGridView.TabIndex = 3;
@@ -628,8 +640,8 @@ namespace Plan_n_Check
             // dataGridViewTextBoxColumn2
             // 
             this.dataGridViewTextBoxColumn2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle41.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle41;
             this.dataGridViewTextBoxColumn2.HeaderText = "Assigned Structure";
             this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
             // 
@@ -637,36 +649,36 @@ namespace Plan_n_Check
             // 
             this.conStructGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCellsExceptHeader;
             this.conStructGridView.BackgroundColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.SteelBlue;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.conStructGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle44.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle44.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle44.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle44.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle44.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle44.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle44.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.conStructGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle44;
             this.conStructGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.conStructGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn1});
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlLight;
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.Color.SteelBlue;
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.conStructGridView.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle45.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle45.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle45.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle45.ForeColor = System.Drawing.SystemColors.ControlLight;
+            dataGridViewCellStyle45.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle45.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle45.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.conStructGridView.DefaultCellStyle = dataGridViewCellStyle45;
             this.conStructGridView.GridColor = System.Drawing.Color.DodgerBlue;
             this.conStructGridView.Location = new System.Drawing.Point(35, 26);
             this.conStructGridView.Name = "conStructGridView";
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle7.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.Color.SteelBlue;
-            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.conStructGridView.RowHeadersDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle46.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle46.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle46.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle46.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle46.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle46.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle46.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.conStructGridView.RowHeadersDefaultCellStyle = dataGridViewCellStyle46;
             this.conStructGridView.Size = new System.Drawing.Size(266, 345);
             this.conStructGridView.TabIndex = 2;
             this.conStructGridView.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.conStructGridView_CellClick);
@@ -753,18 +765,18 @@ namespace Plan_n_Check
             // 
             // ConstraintGridView
             // 
-            dataGridViewCellStyle8.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ConstraintGridView.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle47.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ConstraintGridView.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle47;
             this.ConstraintGridView.BackgroundColor = System.Drawing.Color.SteelBlue;
             this.ConstraintGridView.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.Color.SteelBlue;
-            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.ConstraintGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle48.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle48.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle48.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle48.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle48.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle48.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle48.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.ConstraintGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle48;
             this.ConstraintGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.ConstraintGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Structure,
@@ -773,19 +785,19 @@ namespace Plan_n_Check
             this.Relation,
             this.Value,
             this.Format});
-            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.ControlLight;
-            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.Color.SteelBlue;
-            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.ConstraintGridView.DefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle49.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle49.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle49.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle49.ForeColor = System.Drawing.SystemColors.ControlLight;
+            dataGridViewCellStyle49.SelectionBackColor = System.Drawing.Color.SteelBlue;
+            dataGridViewCellStyle49.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle49.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.ConstraintGridView.DefaultCellStyle = dataGridViewCellStyle49;
             this.ConstraintGridView.GridColor = System.Drawing.Color.SteelBlue;
             this.ConstraintGridView.Location = new System.Drawing.Point(26, 12);
             this.ConstraintGridView.Name = "ConstraintGridView";
-            dataGridViewCellStyle11.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ConstraintGridView.RowsDefaultCellStyle = dataGridViewCellStyle11;
+            dataGridViewCellStyle50.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ConstraintGridView.RowsDefaultCellStyle = dataGridViewCellStyle50;
             this.ConstraintGridView.Size = new System.Drawing.Size(683, 231);
             this.ConstraintGridView.TabIndex = 1;
             // 
@@ -1091,6 +1103,13 @@ namespace Plan_n_Check
             // PanelSpecialFeatures
             // 
             this.PanelSpecialFeatures.BackColor = System.Drawing.Color.White;
+            this.PanelSpecialFeatures.Controls.Add(this.SpecialFeatures_Clicked);
+            this.PanelSpecialFeatures.Controls.Add(this.Combobox_dvhReport);
+            this.PanelSpecialFeatures.Controls.Add(this.DVH_gridView);
+            this.PanelSpecialFeatures.Controls.Add(this.Button_AddDVH_Report);
+            this.PanelSpecialFeatures.Controls.Add(this.label9);
+            this.PanelSpecialFeatures.Controls.Add(this.label8);
+            this.PanelSpecialFeatures.Controls.Add(this.label7);
             this.PanelSpecialFeatures.Controls.Add(this.ButtonDeleteParotidSub);
             this.PanelSpecialFeatures.Controls.Add(this.CheckboxSegmentConstraints);
             this.PanelSpecialFeatures.Controls.Add(this.Button_DeleteSubsegments);
@@ -1103,7 +1122,6 @@ namespace Plan_n_Check
             this.PanelSpecialFeatures.Controls.Add(this.label1);
             this.PanelSpecialFeatures.Controls.Add(this.Axial_Combobox);
             this.PanelSpecialFeatures.Controls.Add(this.OrganSeg_OrgansCombo);
-            this.PanelSpecialFeatures.Controls.Add(this.Checkbox_OrganSeg);
             this.PanelSpecialFeatures.Controls.Add(this.PriorityLabel);
             this.PanelSpecialFeatures.Controls.Add(this.PriorityRatio_TextBox);
             this.PanelSpecialFeatures.Controls.Add(this.LabelSpecialFeatures);
@@ -1116,16 +1134,93 @@ namespace Plan_n_Check
             this.PanelSpecialFeatures.TabIndex = 19;
             this.PanelSpecialFeatures.Visible = false;
             // 
+            // SpecialFeatures_Clicked
+            // 
+            this.SpecialFeatures_Clicked.AutoSize = true;
+            this.SpecialFeatures_Clicked.Location = new System.Drawing.Point(619, 64);
+            this.SpecialFeatures_Clicked.Name = "SpecialFeatures_Clicked";
+            this.SpecialFeatures_Clicked.Size = new System.Drawing.Size(104, 23);
+            this.SpecialFeatures_Clicked.TabIndex = 42;
+            this.SpecialFeatures_Clicked.Text = "beenclicked";
+            this.SpecialFeatures_Clicked.UseVisualStyleBackColor = true;
+            this.SpecialFeatures_Clicked.Visible = false;
+            // 
+            // Combobox_dvhReport
+            // 
+            this.Combobox_dvhReport.FormattingEnabled = true;
+            this.Combobox_dvhReport.Location = new System.Drawing.Point(398, 236);
+            this.Combobox_dvhReport.Name = "Combobox_dvhReport";
+            this.Combobox_dvhReport.Size = new System.Drawing.Size(121, 27);
+            this.Combobox_dvhReport.TabIndex = 41;
+            // 
+            // DVH_gridView
+            // 
+            this.DVH_gridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.DVH_gridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.DVHcolumn_Structure,
+            this.DVHcolumn_VolumeBounds,
+            this.DVHcolumn_DoseBounds});
+            this.DVH_gridView.Location = new System.Drawing.Point(393, 101);
+            this.DVH_gridView.Name = "DVH_gridView";
+            this.DVH_gridView.Size = new System.Drawing.Size(333, 124);
+            this.DVH_gridView.TabIndex = 40;
+            // 
+            // Button_AddDVH_Report
+            // 
+            this.Button_AddDVH_Report.BackColor = System.Drawing.Color.SteelBlue;
+            this.Button_AddDVH_Report.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Button_AddDVH_Report.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.Button_AddDVH_Report.Location = new System.Drawing.Point(527, 236);
+            this.Button_AddDVH_Report.Name = "Button_AddDVH_Report";
+            this.Button_AddDVH_Report.Size = new System.Drawing.Size(83, 22);
+            this.Button_AddDVH_Report.TabIndex = 39;
+            this.Button_AddDVH_Report.Text = "Include DVH";
+            this.Button_AddDVH_Report.UseVisualStyleBackColor = false;
+            this.Button_AddDVH_Report.Click += new System.EventHandler(this.Button_AddDVH_Report_Click);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Calibri", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.ForeColor = System.Drawing.Color.SteelBlue;
+            this.label9.Location = new System.Drawing.Point(376, 49);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(219, 21);
+            this.label9.TabIndex = 38;
+            this.label9.Text = "3. Save DVH images to report";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Calibri", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label8.ForeColor = System.Drawing.Color.SteelBlue;
+            this.label8.Location = new System.Drawing.Point(15, 154);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(252, 21);
+            this.label8.TabIndex = 37;
+            this.label8.Text = "2. Organ sub-structure constraints";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Calibri", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.ForeColor = System.Drawing.Color.SteelBlue;
+            this.label7.Location = new System.Drawing.Point(12, 49);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(275, 21);
+            this.label7.TabIndex = 36;
+            this.label7.Text = "1. Heterogeneous parotid constraints";
+            // 
             // ButtonDeleteParotidSub
             // 
             this.ButtonDeleteParotidSub.BackColor = System.Drawing.Color.SteelBlue;
-            this.ButtonDeleteParotidSub.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ButtonDeleteParotidSub.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ButtonDeleteParotidSub.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ButtonDeleteParotidSub.Location = new System.Drawing.Point(270, 89);
+            this.ButtonDeleteParotidSub.Location = new System.Drawing.Point(203, 71);
             this.ButtonDeleteParotidSub.Name = "ButtonDeleteParotidSub";
-            this.ButtonDeleteParotidSub.Size = new System.Drawing.Size(186, 32);
+            this.ButtonDeleteParotidSub.Size = new System.Drawing.Size(135, 22);
             this.ButtonDeleteParotidSub.TabIndex = 35;
-            this.ButtonDeleteParotidSub.Text = "Delete Subsegments";
+            this.ButtonDeleteParotidSub.Text = "Delete sub-structures";
             this.ButtonDeleteParotidSub.UseVisualStyleBackColor = false;
             this.ButtonDeleteParotidSub.Click += new System.EventHandler(this.ButtonDeleteParotidSub_Click);
             // 
@@ -1133,11 +1228,11 @@ namespace Plan_n_Check
             // 
             this.CheckboxSegmentConstraints.AutoSize = true;
             this.CheckboxSegmentConstraints.BackColor = System.Drawing.Color.SteelBlue;
-            this.CheckboxSegmentConstraints.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CheckboxSegmentConstraints.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CheckboxSegmentConstraints.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.CheckboxSegmentConstraints.Location = new System.Drawing.Point(36, 210);
+            this.CheckboxSegmentConstraints.Location = new System.Drawing.Point(41, 187);
             this.CheckboxSegmentConstraints.Name = "CheckboxSegmentConstraints";
-            this.CheckboxSegmentConstraints.Size = new System.Drawing.Size(374, 27);
+            this.CheckboxSegmentConstraints.Size = new System.Drawing.Size(263, 19);
             this.CheckboxSegmentConstraints.TabIndex = 34;
             this.CheckboxSegmentConstraints.Text = "Apply whole-organ constraints to segments";
             this.CheckboxSegmentConstraints.UseVisualStyleBackColor = false;
@@ -1145,11 +1240,11 @@ namespace Plan_n_Check
             // Button_DeleteSubsegments
             // 
             this.Button_DeleteSubsegments.BackColor = System.Drawing.Color.SteelBlue;
-            this.Button_DeleteSubsegments.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Button_DeleteSubsegments.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Button_DeleteSubsegments.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.Button_DeleteSubsegments.Location = new System.Drawing.Point(335, 177);
+            this.Button_DeleteSubsegments.Location = new System.Drawing.Point(106, 210);
             this.Button_DeleteSubsegments.Name = "Button_DeleteSubsegments";
-            this.Button_DeleteSubsegments.Size = new System.Drawing.Size(75, 32);
+            this.Button_DeleteSubsegments.Size = new System.Drawing.Size(75, 22);
             this.Button_DeleteSubsegments.TabIndex = 33;
             this.Button_DeleteSubsegments.Text = "Delete";
             this.Button_DeleteSubsegments.UseVisualStyleBackColor = false;
@@ -1158,11 +1253,11 @@ namespace Plan_n_Check
             // Button_StartSegmentation
             // 
             this.Button_StartSegmentation.BackColor = System.Drawing.Color.SteelBlue;
-            this.Button_StartSegmentation.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Button_StartSegmentation.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Button_StartSegmentation.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.Button_StartSegmentation.Location = new System.Drawing.Point(254, 177);
+            this.Button_StartSegmentation.Location = new System.Drawing.Point(41, 210);
             this.Button_StartSegmentation.Name = "Button_StartSegmentation";
-            this.Button_StartSegmentation.Size = new System.Drawing.Size(75, 32);
+            this.Button_StartSegmentation.Size = new System.Drawing.Size(56, 22);
             this.Button_StartSegmentation.TabIndex = 32;
             this.Button_StartSegmentation.Text = "Create";
             this.Button_StartSegmentation.UseVisualStyleBackColor = false;
@@ -1171,110 +1266,101 @@ namespace Plan_n_Check
             // Label_Sagittal
             // 
             this.Label_Sagittal.AutoSize = true;
-            this.Label_Sagittal.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_Sagittal.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label_Sagittal.ForeColor = System.Drawing.Color.SteelBlue;
-            this.Label_Sagittal.Location = new System.Drawing.Point(6, 349);
+            this.Label_Sagittal.Location = new System.Drawing.Point(9, 331);
             this.Label_Sagittal.Name = "Label_Sagittal";
-            this.Label_Sagittal.Size = new System.Drawing.Size(101, 19);
+            this.Label_Sagittal.Size = new System.Drawing.Size(78, 15);
             this.Label_Sagittal.TabIndex = 31;
             this.Label_Sagittal.Text = "Sagittal Slices";
             // 
             // Sagittal_Combobox
             // 
+            this.Sagittal_Combobox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Sagittal_Combobox.FormattingEnabled = true;
-            this.Sagittal_Combobox.Location = new System.Drawing.Point(129, 349);
+            this.Sagittal_Combobox.Location = new System.Drawing.Point(96, 330);
             this.Sagittal_Combobox.Name = "Sagittal_Combobox";
-            this.Sagittal_Combobox.Size = new System.Drawing.Size(56, 27);
+            this.Sagittal_Combobox.Size = new System.Drawing.Size(56, 23);
             this.Sagittal_Combobox.TabIndex = 30;
             // 
             // Label_Coronal
             // 
             this.Label_Coronal.AutoSize = true;
-            this.Label_Coronal.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_Coronal.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label_Coronal.ForeColor = System.Drawing.Color.SteelBlue;
-            this.Label_Coronal.Location = new System.Drawing.Point(6, 318);
+            this.Label_Coronal.Location = new System.Drawing.Point(3, 303);
             this.Label_Coronal.Name = "Label_Coronal";
-            this.Label_Coronal.Size = new System.Drawing.Size(103, 19);
+            this.Label_Coronal.Size = new System.Drawing.Size(81, 15);
             this.Label_Coronal.TabIndex = 29;
             this.Label_Coronal.Text = "Coronal Slices";
             // 
             // Coronal_Combobox
             // 
+            this.Coronal_Combobox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Coronal_Combobox.FormattingEnabled = true;
-            this.Coronal_Combobox.Location = new System.Drawing.Point(129, 316);
+            this.Coronal_Combobox.Location = new System.Drawing.Point(96, 302);
             this.Coronal_Combobox.Name = "Coronal_Combobox";
-            this.Coronal_Combobox.Size = new System.Drawing.Size(56, 27);
+            this.Coronal_Combobox.Size = new System.Drawing.Size(56, 23);
             this.Coronal_Combobox.TabIndex = 28;
             // 
             // Label_AxialSlice
             // 
             this.Label_AxialSlice.AutoSize = true;
-            this.Label_AxialSlice.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_AxialSlice.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label_AxialSlice.ForeColor = System.Drawing.Color.SteelBlue;
-            this.Label_AxialSlice.Location = new System.Drawing.Point(26, 283);
+            this.Label_AxialSlice.Location = new System.Drawing.Point(25, 273);
             this.Label_AxialSlice.Name = "Label_AxialSlice";
-            this.Label_AxialSlice.Size = new System.Drawing.Size(83, 19);
+            this.Label_AxialSlice.Size = new System.Drawing.Size(65, 15);
             this.Label_AxialSlice.TabIndex = 27;
             this.Label_AxialSlice.Text = "Axial Slices";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.SteelBlue;
-            this.label1.Location = new System.Drawing.Point(58, 246);
+            this.label1.Location = new System.Drawing.Point(50, 244);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(51, 19);
+            this.label1.Size = new System.Drawing.Size(40, 15);
             this.label1.TabIndex = 26;
             this.label1.Text = "Organ";
             // 
             // Axial_Combobox
             // 
+            this.Axial_Combobox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Axial_Combobox.FormattingEnabled = true;
-            this.Axial_Combobox.Location = new System.Drawing.Point(129, 283);
+            this.Axial_Combobox.Location = new System.Drawing.Point(96, 273);
             this.Axial_Combobox.Name = "Axial_Combobox";
-            this.Axial_Combobox.Size = new System.Drawing.Size(56, 27);
+            this.Axial_Combobox.Size = new System.Drawing.Size(56, 23);
             this.Axial_Combobox.TabIndex = 25;
             // 
             // OrganSeg_OrgansCombo
             // 
+            this.OrganSeg_OrgansCombo.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.OrganSeg_OrgansCombo.FormattingEnabled = true;
-            this.OrganSeg_OrgansCombo.Location = new System.Drawing.Point(129, 243);
+            this.OrganSeg_OrgansCombo.Location = new System.Drawing.Point(96, 245);
             this.OrganSeg_OrgansCombo.Name = "OrganSeg_OrgansCombo";
-            this.OrganSeg_OrgansCombo.Size = new System.Drawing.Size(142, 27);
+            this.OrganSeg_OrgansCombo.Size = new System.Drawing.Size(142, 23);
             this.OrganSeg_OrgansCombo.TabIndex = 24;
-            // 
-            // Checkbox_OrganSeg
-            // 
-            this.Checkbox_OrganSeg.AutoSize = true;
-            this.Checkbox_OrganSeg.BackColor = System.Drawing.Color.SteelBlue;
-            this.Checkbox_OrganSeg.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Checkbox_OrganSeg.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.Checkbox_OrganSeg.Location = new System.Drawing.Point(36, 177);
-            this.Checkbox_OrganSeg.Name = "Checkbox_OrganSeg";
-            this.Checkbox_OrganSeg.Size = new System.Drawing.Size(190, 27);
-            this.Checkbox_OrganSeg.TabIndex = 23;
-            this.Checkbox_OrganSeg.Text = "Organ segmentation";
-            this.Checkbox_OrganSeg.UseVisualStyleBackColor = false;
             // 
             // PriorityLabel
             // 
             this.PriorityLabel.AutoSize = true;
-            this.PriorityLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.PriorityLabel.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.PriorityLabel.ForeColor = System.Drawing.Color.SteelBlue;
-            this.PriorityLabel.Location = new System.Drawing.Point(40, 124);
+            this.PriorityLabel.Location = new System.Drawing.Point(50, 103);
             this.PriorityLabel.Name = "PriorityLabel";
-            this.PriorityLabel.Size = new System.Drawing.Size(100, 19);
+            this.PriorityLabel.Size = new System.Drawing.Size(79, 15);
             this.PriorityLabel.TabIndex = 22;
             this.PriorityLabel.Text = "Priority Ratio";
             // 
             // PriorityRatio_TextBox
             // 
-            this.PriorityRatio_TextBox.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.PriorityRatio_TextBox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.PriorityRatio_TextBox.ForeColor = System.Drawing.Color.SteelBlue;
-            this.PriorityRatio_TextBox.Location = new System.Drawing.Point(141, 121);
+            this.PriorityRatio_TextBox.Location = new System.Drawing.Point(135, 98);
             this.PriorityRatio_TextBox.Name = "PriorityRatio_TextBox";
-            this.PriorityRatio_TextBox.Size = new System.Drawing.Size(34, 27);
+            this.PriorityRatio_TextBox.Size = new System.Drawing.Size(25, 23);
             this.PriorityRatio_TextBox.TabIndex = 21;
             this.PriorityRatio_TextBox.Text = "0.5";
             // 
@@ -1283,7 +1369,7 @@ namespace Plan_n_Check
             this.LabelSpecialFeatures.AutoSize = true;
             this.LabelSpecialFeatures.Font = new System.Drawing.Font("Calibri", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LabelSpecialFeatures.ForeColor = System.Drawing.Color.SteelBlue;
-            this.LabelSpecialFeatures.Location = new System.Drawing.Point(30, 35);
+            this.LabelSpecialFeatures.Location = new System.Drawing.Point(250, 1);
             this.LabelSpecialFeatures.Name = "LabelSpecialFeatures";
             this.LabelSpecialFeatures.Size = new System.Drawing.Size(197, 33);
             this.LabelSpecialFeatures.TabIndex = 0;
@@ -1306,11 +1392,11 @@ namespace Plan_n_Check
             // 
             this.CheckBox_ChopParotid.AutoSize = true;
             this.CheckBox_ChopParotid.BackColor = System.Drawing.Color.SteelBlue;
-            this.CheckBox_ChopParotid.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CheckBox_ChopParotid.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CheckBox_ChopParotid.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.CheckBox_ChopParotid.Location = new System.Drawing.Point(37, 91);
+            this.CheckBox_ChopParotid.Location = new System.Drawing.Point(35, 73);
             this.CheckBox_ChopParotid.Name = "CheckBox_ChopParotid";
-            this.CheckBox_ChopParotid.Size = new System.Drawing.Size(224, 27);
+            this.CheckBox_ChopParotid.Size = new System.Drawing.Size(162, 19);
             this.CheckBox_ChopParotid.TabIndex = 1;
             this.CheckBox_ChopParotid.Text = "Sub-parotid optimization";
             this.CheckBox_ChopParotid.UseVisualStyleBackColor = false;
@@ -1640,7 +1726,7 @@ namespace Plan_n_Check
             this.IterationsTextBox.ForeColor = System.Drawing.Color.SteelBlue;
             this.IterationsTextBox.Location = new System.Drawing.Point(706, 468);
             this.IterationsTextBox.Name = "IterationsTextBox";
-            this.IterationsTextBox.Size = new System.Drawing.Size(16, 27);
+            this.IterationsTextBox.Size = new System.Drawing.Size(20, 27);
             this.IterationsTextBox.TabIndex = 20;
             this.IterationsTextBox.Text = "2";
             // 
@@ -1763,6 +1849,26 @@ namespace Plan_n_Check
             this.PlotDoneButton.UseVisualStyleBackColor = false;
             this.PlotDoneButton.Click += new System.EventHandler(this.PlotDoneButton_Click);
             // 
+            // DVHcolumn_Structure
+            // 
+            this.DVHcolumn_Structure.HeaderText = "Structure";
+            this.DVHcolumn_Structure.Name = "DVHcolumn_Structure";
+            // 
+            // DVHcolumn_VolumeBounds
+            // 
+            dataGridViewCellStyle51.Font = new System.Drawing.Font("Calibri", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.DVHcolumn_VolumeBounds.DefaultCellStyle = dataGridViewCellStyle51;
+            this.DVHcolumn_VolumeBounds.HeaderText = "Volume Bounds";
+            this.DVHcolumn_VolumeBounds.Name = "DVHcolumn_VolumeBounds";
+            // 
+            // DVHcolumn_DoseBounds
+            // 
+            dataGridViewCellStyle52.Font = new System.Drawing.Font("Calibri", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle52.ForeColor = System.Drawing.Color.Black;
+            this.DVHcolumn_DoseBounds.DefaultCellStyle = dataGridViewCellStyle52;
+            this.DVHcolumn_DoseBounds.HeaderText = "Dose bounds";
+            this.DVHcolumn_DoseBounds.Name = "DVHcolumn_DoseBounds";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1770,11 +1876,11 @@ namespace Plan_n_Check
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(734, 591);
             this.Controls.Add(this.panel1);
+            this.Controls.Add(this.PanelSpecialFeatures);
             this.Controls.Add(this.panel5);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.AssigningPanel);
-            this.Controls.Add(this.PanelSpecialFeatures);
             this.Controls.Add(this.LocationLabel);
             this.Controls.Add(this.LabelSaveCheck);
             this.Controls.Add(this.IterationsTextBox);
@@ -1809,6 +1915,7 @@ namespace Plan_n_Check
             this.panel1.PerformLayout();
             this.PanelSpecialFeatures.ResumeLayout(false);
             this.PanelSpecialFeatures.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DVH_gridView)).EndInit();
             this.panel7.ResumeLayout(false);
             this.panel7.PerformLayout();
             this.LatexPanel.ResumeLayout(false);
@@ -1942,10 +2049,19 @@ namespace Plan_n_Check
         private Label label1;
         private ComboBox Axial_Combobox;
         private ComboBox OrganSeg_OrgansCombo;
-        private CheckBox Checkbox_OrganSeg;
         private Button Button_StartSegmentation;
         private Button Button_DeleteSubsegments;
         private CheckBox CheckboxSegmentConstraints;
         private Button ButtonDeleteParotidSub;
+        private Label label8;
+        private Label label7;
+        private Button Button_AddDVH_Report;
+        private Label label9;
+        private ComboBox Combobox_dvhReport;
+        private DataGridView DVH_gridView;
+        private CheckBox SpecialFeatures_Clicked;
+        private DataGridViewTextBoxColumn DVHcolumn_Structure;
+        private DataGridViewTextBoxColumn DVHcolumn_VolumeBounds;
+        private DataGridViewTextBoxColumn DVHcolumn_DoseBounds;
     }
 }
