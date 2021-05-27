@@ -13,6 +13,12 @@ using VMS.TPS.Common.Model.Types;
 using Plan_n_Check;
 using Plan_n_Check.Plans;
 using TheArtOfDev.HtmlRenderer.PdfSharp;
+using OxyPlot.WindowsForms;
+using OxyPlot.Series;
+using OxyPlot;
+using OxyPlot.Axes;
+
+
 
 
 namespace Plan_n_Check.Calculate
@@ -294,7 +300,7 @@ namespace Plan_n_Check.Calculate
             return returnString;
         }
 
-        public static void RunReport(ScriptContext context, HNPlan hnplan, string path, List<List<Structure>> matchingStructures, List<List<Structure>> optimizedStructures, List<List<string>> updateLog)
+        public static void RunReport(ScriptContext context, HNPlan hnplan, string path, List<List<Structure>> matchingStructures, List<List<Structure>> optimizedStructures, List<List<string>> updateLog, List<ROI> DVH_ReportStructures)
         {
             //Need to go one by one and check constraints. 
 
@@ -342,7 +348,7 @@ namespace Plan_n_Check.Calculate
                 }
                 else
                 {
-                    outputFile += "<h5>DICOM Structure(s) (" + matchingStructures[i].Count + ") matching</h5>";
+                    outputFile += "<h5>DICOM Structure(s): " + matchingStructures[i].Count + " matching</h5>";
                
                         for (int ms = 0; ms < matchingStructures[i].Count; ms++)
                     {
@@ -358,6 +364,33 @@ namespace Plan_n_Check.Calculate
                     }
                 outputFile += ReportStrings[i];
                 }
+                //Now need to add the DVH plot if wanted:
+                bool includeDVH = false;
+                foreach (ROI dvhROI in DVH_ReportStructures)
+                {
+                    if (roi.Name == dvhROI.Name)
+                    {
+                        includeDVH = true;
+                        break;
+                    }
+                }
+                if (includeDVH)
+                {
+                    for (int d = 0; d < matchingStructures[i].Count; d++)
+                    {
+                        PlotView pv = DVH_Maker(context, matchingStructures[i][d]);
+                        //Now need to add this as an image to the report. 
+                        
+                        var pngExporter = new PngExporter { Width = 600, Height = 400, Background = OxyColors.White };
+                        int indexPeriod = path.LastIndexOf(".");
+                        string imageSaveLocation = path.Substring(0,indexPeriod) + roi.Name + "_" + d + ".png";
+                        pngExporter.ExportToFile(pv.Model, imageSaveLocation);
+                        //Now add this html:
+                        outputFile += "<img src=\"" + imageSaveLocation + " />";
+                    }
+                    
+                }
+                
                 outputFile += "</p>";
             }
            
@@ -393,7 +426,56 @@ namespace Plan_n_Check.Calculate
             
         }
 
-            public static List<Structure> AssignStructure(StructureSet ss, ROI roi) //return a list containing a list of structures matching the ROI for each constrained ROI
+        public static PlotView DVH_Maker(ScriptContext context, Structure structure)
+        {
+            PlotView pv = new OxyPlot.WindowsForms.PlotView();
+            pv.Location = new System.Drawing.Point(30, 60);
+            pv.Size = new System.Drawing.Size(650, 380);
+            pv.Model = new OxyPlot.PlotModel { Title = "DVH" };
+            pv.Model.Axes.Add(new LinearAxis
+            {
+                Title = "Dose (cGy)",
+                Position = AxisPosition.Bottom
+            }
+                );
+            pv.Model.Axes.Add(new LinearAxis
+            {
+                Title = "Volume (cc)",
+                Position = AxisPosition.Left
+            } );
+            var dvh = CalculateDVH(context.PlanSetup, structure);
+            var series = CreateDVHSeries(dvh);
+            pv.Model.Series.Add(series);
+            return pv;
+        }
+        public static DVHData CalculateDVH(PlanSetup plan, Structure structure)
+        {
+            return plan.GetDVHCumulativeData(structure, DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, 0.01);
+        }
+        public static OxyPlot.Series.Series CreateDVHSeries(DVHData dvh)
+        {
+            var series = new LineSeries();
+            var points = CreateDataPoints(dvh);
+            series.Points.AddRange(points);
+            return series;
+        }
+
+        public static List<DataPoint> CreateDataPoints(DVHData dvh)
+        {
+            var points = new List<DataPoint>();
+            foreach (var dvhPoint in dvh.CurveData)
+            {
+                var point = CreateDataPoint(dvhPoint);
+                points.Add(point);
+            }
+            return points;
+        }
+        public static DataPoint CreateDataPoint(DVHPoint dvhPoint)
+        {
+            return new DataPoint(dvhPoint.DoseValue.Dose, dvhPoint.Volume);
+        }
+
+        public static List<Structure> AssignStructure(StructureSet ss, ROI roi) //return a list containing a list of structures matching the ROI for each constrained ROI
         {
             string name = roi.Name;
             List<Structure> dicomStructures = new List<Structure>();
