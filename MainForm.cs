@@ -38,7 +38,7 @@ namespace Plan_n_Check
         public Stopwatch TotalTime { get; set; }
         public Stopwatch OptimTime { get; set; }
 
-        public List<ROI> DVH_ReportStructures {get; set;}
+        public List<Tuple<ROI, int, int, int, int>> DVH_ReportStructures {get; set;} //Structure, lowerDoseBound, upperDoseBound, lowerVolumeBound, upperVolumeBound 
 
 
 
@@ -57,7 +57,7 @@ namespace Plan_n_Check
             this.TotalTime = new Stopwatch();
             this.TotalTime.Start();
             this.OptimTime = new Stopwatch();
-            this.DVH_ReportStructures = new List<ROI>();
+            this.DVH_ReportStructures = new List<Tuple<ROI, int, int, int, int>>();
             
 
 
@@ -920,31 +920,31 @@ namespace Plan_n_Check
 
               
             }
-
-            
-        }
-
-        private void ButtonDoneFeatures_Click(object sender, EventArgs e)
-        {
-            //Check the DVH report list and add all desired DVHs to list
-            foreach (DataGridViewRow row in this.DVH_gridView.Rows)
+            foreach (DataGridViewRow row in this.DVH_gridView.Rows) //Add the default PTV DVHs to the DVH list
             {
                 if (row.Cells[0].Value == null)
                 {
                     break;
                 }
-                string structureName = row.Cells[0].Value.ToString().ToLower();       
+                string structureName = row.Cells[0].Value.ToString().ToLower();
                 for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
                 {
                     string tempName = this.HnPlan.ROIs[i].Name.ToLower();
                     if (tempName == structureName)
                     {
-                        this.DVH_ReportStructures.Add(this.HnPlan.ROIs[i]);
+                        this.DVH_ReportStructures.Add(Tuple.Create(this.HnPlan.ROIs[i], 0, 100, 0, 100));
                     }
                 }
 
-                
+
             }
+        
+        }
+
+        private void ButtonDoneFeatures_Click(object sender, EventArgs e)
+        {
+            //Check the DVH report list and add all desired DVHs to list
+            
             this.PanelSpecialFeatures.Visible = false;
             this.PanelSpecialFeatures.SendToBack();
             this.panel1.Visible = true;
@@ -1176,11 +1176,44 @@ namespace Plan_n_Check
 
         private void Button_AddDVH_Report_Click(object sender, EventArgs e)
         {
-            string newDVH = this.Combobox_dvhReport.SelectedItem.ToString();
+            string newDVH = this.Combobox_dvhReport.SelectedItem.ToString().ToLower();
+            //Now get all the DVH bounds
+            int doseLowerBound;
+            int doseUpperBound;
+            int volumeUpperBound;
+            int volumeLowerBound;
+            if (!int.TryParse(this.TextBox_Dose_lb.Text, out doseLowerBound))
+            {
+                System.Windows.MessageBox.Show("Please ensure that all DVH bounds are integers");
+                return;
+            }
+            if (!int.TryParse(this.TextBox_Dose_ub.Text, out doseUpperBound))
+            {
+                System.Windows.MessageBox.Show("Please ensure that all DVH bounds are integers");
+                return;
+            }
+            if (!int.TryParse(this.TextBox_Volume_lb.Text, out volumeLowerBound))
+            {
+                System.Windows.MessageBox.Show("Please ensure that all DVH bounds are integers");
+                return;
+            }
+            if (!int.TryParse(this.TextBox_Volume_ub.Text, out volumeUpperBound))
+            {
+                System.Windows.MessageBox.Show("Please ensure that all DVH bounds are integers");
+                return;
+            }
+
+
+            //Make sure upper bounds greater than lower bounds: 
+            if ((doseLowerBound > doseUpperBound)||(volumeLowerBound > volumeUpperBound))
+            {
+                System.Windows.MessageBox.Show("Please ensure that upper DVH bounds exceed lower bounds");
+            }
+
             //First check if it's already in the list: 
             foreach (DataGridViewRow r in this.DVH_gridView.Rows)
             {
-                if (r.Cells[0].Value == null)
+                if (r.Cells[0].Value == null) //avoid error of checking last blank cell 
                 {
                     break;
                 }
@@ -1197,8 +1230,8 @@ namespace Plan_n_Check
             dt.Columns.Add("Dose Bounds");
             DataRow row = dt.NewRow();
             row["Structure"] = newDVH;
-            row["Volume Bounds"] = "[0,0]";
-            row["Dose Bounds"] = "[0,0]";
+            row["Volume Bounds"] = "[" + volumeLowerBound + "," + volumeUpperBound + "]";
+            row["Dose Bounds"] = "[" + doseLowerBound + "," + doseUpperBound + "]";
             dt.Rows.Add(row);
 
             //Add to the gridview
@@ -1219,6 +1252,23 @@ namespace Plan_n_Check
             //    ConstraintGridView.Rows[num].Cells[4].Value = DRow["Value"].ToString();
             //    ConstraintGridView.Rows[num].Cells[5].Value = DRow["Format"].ToString();
             //}
+            for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
+            {
+                string tempName = this.HnPlan.ROIs[i].Name.ToLower();
+                if (tempName == newDVH)
+                {
+                    this.DVH_ReportStructures.Add(Tuple.Create(this.HnPlan.ROIs[i], doseLowerBound, doseUpperBound, volumeLowerBound, volumeUpperBound));
+                }
+            }
+            //Reset the bounds
+            this.TextBox_Dose_lb.Text = "0";
+            this.TextBox_Dose_ub.Text = "100";
+            this.TextBox_Volume_lb.Text = "0";
+            this.TextBox_Volume_ub.Text = "100";
+
+
         }
+
+
     }
 }
