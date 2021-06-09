@@ -300,7 +300,7 @@ namespace Plan_n_Check.Calculate
             return returnString;
         }
 
-        public static void RunReport(ScriptContext context, HNPlan hnplan, string path, List<List<Structure>> matchingStructures, List<List<Structure>> optimizedStructures, List<List<string>> updateLog, List<ROI> DVH_ReportStructures)
+        public static void RunReport(ScriptContext context, HNPlan hnplan, string path, List<List<Structure>> matchingStructures, List<List<Structure>> optimizedStructures, List<List<string>> updateLog, List<Tuple<ROI, int, int, int, int>> DVH_ReportStructures)
         {
             //Need to go one by one and check constraints. 
 
@@ -366,9 +366,11 @@ namespace Plan_n_Check.Calculate
                 }
                 //Now need to add the DVH plot if wanted:
                 bool includeDVH = false;
-                foreach (ROI dvhROI in DVH_ReportStructures)
+                Tuple<ROI, int, int, int, int> dvhTuple = DVH_ReportStructures[0]; //Declare first so that the variable saves after loop
+                for (int r = 0; r< DVH_ReportStructures.Count; r++)
                 {
-                    if (roi.Name == dvhROI.Name)
+                    dvhTuple = DVH_ReportStructures[r];
+                    if (roi.Name == dvhTuple.Item1.Name)
                     {
                         includeDVH = true;
                         break;
@@ -378,15 +380,15 @@ namespace Plan_n_Check.Calculate
                 {
                     for (int d = 0; d < matchingStructures[i].Count; d++)
                     {
-                        PlotView pv = DVH_Maker(context, matchingStructures[i][d]);
+                        PlotView pv = DVH_Maker(context, matchingStructures[i][d], dvhTuple.Item2, dvhTuple.Item3, dvhTuple.Item4, dvhTuple.Item5);
                         //Now need to add this as an image to the report. 
-                        
-                        var pngExporter = new PngExporter { Width = 600, Height = 400, Background = OxyColors.White };
+                       
+                        var pngExporter = new PngExporter { Width = 400, Height = 300, Background = OxyColors.White };
                         int indexPeriod = path.LastIndexOf(".");
                         string imageSaveLocation = path.Substring(0,indexPeriod) + roi.Name + "_" + d + ".png";
                         pngExporter.ExportToFile(pv.Model, imageSaveLocation);
                         //Now add this html:
-                        outputFile += "<img src=\"" + imageSaveLocation + " />";
+                        outputFile += "<img src=\"" + imageSaveLocation + "/>";
                     }
                     
                 }
@@ -426,22 +428,25 @@ namespace Plan_n_Check.Calculate
             
         }
 
-        public static PlotView DVH_Maker(ScriptContext context, Structure structure)
+        public static PlotView DVH_Maker(ScriptContext context, Structure structure, int dlb, int dub, int vlb, int vub) //dose lower bound, dose upperbound... etc
         {
             PlotView pv = new OxyPlot.WindowsForms.PlotView();
             pv.Location = new System.Drawing.Point(30, 60);
-            pv.Size = new System.Drawing.Size(550, 340);
+            pv.Size = new System.Drawing.Size(400, 300);
             pv.Model = new OxyPlot.PlotModel { Title = "DVH" };
             pv.Model.Axes.Add(new LinearAxis
             {
                 Title = "Dose (cGy)",
-                Position = AxisPosition.Bottom
-            }
-                );
+                Position = AxisPosition.Bottom,
+                Minimum = dlb,
+                Maximum = dub
+            } ) ;
             pv.Model.Axes.Add(new LinearAxis
             {
                 Title = "Volume (cc)",
-                Position = AxisPosition.Left
+                Position = AxisPosition.Left,
+                Minimum = vlb,
+                Maximum = vub
             } );
             var dvh = CalculateDVH(context.PlanSetup, structure);
             var series = CreateDVHSeries(dvh);
@@ -450,7 +455,7 @@ namespace Plan_n_Check.Calculate
         }
         public static DVHData CalculateDVH(PlanSetup plan, Structure structure)
         {
-            return plan.GetDVHCumulativeData(structure, DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, 0.01);
+            return plan.GetDVHCumulativeData(structure, DoseValuePresentation.Relative, VolumePresentation.Relative, 0.01);
         }
         public static OxyPlot.Series.Series CreateDVHSeries(DVHData dvh)
         {
