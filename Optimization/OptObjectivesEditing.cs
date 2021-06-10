@@ -287,6 +287,8 @@ namespace Plan_n_Check.Optimization
                         double value = ROIs[s].Constraints[i].Value;
                         string format = ROIs[s].Constraints[i].Format;
                         int priority = ROIs[s].Constraints[i].Priority;
+                        int priorityLower = ROIs[s].Constraints[i].PriorityRange[0];
+                        int priorityUpper = ROIs[s].Constraints[i].PriorityRange[1];
 
 
                         if (type.ToLower() == "d")//now subscript can be mean, max, min, median? 
@@ -317,7 +319,11 @@ namespace Plan_n_Check.Optimization
                                         //If an OAR, loosen priority if its satisfied by over 7Gy
                                         if ((ROIs[s].Type == "OAR") && (value - doseQuant > 1000))
                                         {
-                                            hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * 0.8);
+                                            priority = (int)(priority * 0.8);                                           
+                                            //Make sure the priority is within the priority range:
+                                            priority = Math.Min(priorityUpper, priority);
+                                            priority = Math.Max(priorityLower, priority);
+                                            hnPlan.ROIs[s].Constraints[i].Priority = priority;
                                             log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED. Dose (" + doseQuant.ToString() + "cGy) not within 10Gy of constraint - adjusted priority from " + string.Format("{0}", priority) + " to " + ((int)(priority * 0.8)).ToString() + ".");
                                         }
                                         else
@@ -331,10 +337,9 @@ namespace Plan_n_Check.Optimization
                                         double percentageOff = 1 + (doseQuant - value) / value;
 
                                         int newPriority = Math.Max((int)(priority * percentageOff), priority + 10);
-                                        if ((ROIs[s].Type == "OAR") && (ROIs[s].Critical == false))
-                                        {
-                                            newPriority = Math.Min(newPriority, 70);
-                                        }
+
+                                        newPriority = Math.Min(priorityUpper, newPriority);
+                                        newPriority = Math.Max(priorityLower, newPriority);
                                         hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
                                         log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " FAILED- Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(newPriority)));
                                     }
@@ -353,10 +358,9 @@ namespace Plan_n_Check.Optimization
                                         double percentageOff = 1 - (doseQuant - value) / value; //minus because its negative numerator
 
                                         int newPriority = Math.Max((int)(priority * percentageOff), priority + 10);
-                                        if ((ROIs[s].Type == "OAR") && (ROIs[s].Critical == false))
-                                        {
-                                            newPriority = Math.Min(newPriority, 70);
-                                        }
+
+                                        newPriority = Math.Min(priorityUpper, newPriority);
+                                        newPriority = Math.Max(priorityLower, newPriority);
                                         hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
                                         log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " FAILED. Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
 
@@ -409,7 +413,10 @@ namespace Plan_n_Check.Optimization
                                         if ((ROIs[s].Type == "OAR") && (value - dose > 1000))
                                         {
                                             log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED by over 10Gy. Decreasing priority to " + string.Format("{0}", (int)(priority * 0.8)));
-                                            hnPlan.ROIs[s].Constraints[i].Priority = (int)(priority * 0.8);
+                                            priority = (int)(priority * 0.8);
+                                            priority = Math.Min(priorityUpper, priority);
+                                            priority = Math.Max(priorityLower, priority);
+                                            hnPlan.ROIs[s].Constraints[i].Priority = priority;
                                         }
                                         else
                                         {
@@ -437,11 +444,10 @@ namespace Plan_n_Check.Optimization
                                         else
                                         {
                                             log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1)));
+                                            newPriority = Math.Min(priorityUpper, newPriority);
+                                            newPriority = Math.Max(priorityLower, newPriority);
                                             hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
                                         }
-
-
-
 
                                     }
                                 }
@@ -458,10 +464,8 @@ namespace Plan_n_Check.Optimization
                                         double percentageOff = 1 - (dose - value) / value; //negative because negative numerator
 
                                         int newPriority = Math.Max((int)(priority * percentageOff), priority + 10);
-                                        if ((ROIs[s].Type == "OAR") && (ROIs[s].Critical == false))
-                                        {
-                                            newPriority = Math.Min(newPriority, 70);
-                                        }
+                                        newPriority = Math.Min(priorityUpper, newPriority);
+                                        newPriority = Math.Max(priorityLower, newPriority);
                                         log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
                                         hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
                                     }
@@ -515,10 +519,8 @@ namespace Plan_n_Check.Optimization
                                         int newPriority = Math.Max((int)(priority * percentageOff), priority + 10);
                                         //Also don't want to adjust any constraint by more than 20 at a time:
                                         newPriority = Math.Min(newPriority, priority + 20);
-                                        if ((ROIs[s].Type == "OAR") && (ROIs[s].Critical == false))
-                                        {
-                                            newPriority = Math.Min(newPriority, 70);
-                                        }
+                                        newPriority = Math.Min(priorityUpper, newPriority);
+                                        newPriority = Math.Max(priorityLower, newPriority);
                                         hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
                                         log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
 
@@ -535,10 +537,8 @@ namespace Plan_n_Check.Optimization
                                         double percentageOff = 1 - (volumeQuant - value) / value;
 
                                         int newPriority = Math.Max((int)(priority * percentageOff), priority + 10);
-                                        if ((ROIs[s].Type == "OAR") && (ROIs[s].Critical == false))
-                                        {
-                                            newPriority = Math.Min(newPriority, 70);
-                                        }
+                                        newPriority = Math.Min(priorityUpper, newPriority);
+                                        newPriority = Math.Max(priorityLower, newPriority);
                                         hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
                                         log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
                                     }

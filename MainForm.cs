@@ -198,7 +198,7 @@ namespace Plan_n_Check
                 List<List<string>> updateLog = structureLists.Item3;
                 if (SaveCheck.Checked)
                 {
-                    Calculator.RunReport(this.context, this.HnPlan, this.SavePath, optimizedStructures, this.MatchingStructures, updateLog, this.DVH_ReportStructures);
+                    Check.RunReport(this.context, this.HnPlan, this.SavePath, optimizedStructures, this.MatchingStructures, updateLog, this.DVH_ReportStructures);
                 }
                 this.StartErrorLabel.Visible = false;
                 this.TotalTime.Stop();

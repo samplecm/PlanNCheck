@@ -79,7 +79,7 @@ namespace Plan_n_Check.Features
 
                     }
 
-                    Tuple<double, int> overlapData = Calculator.RatioOverlapWithPTV(choppedContours[subsegment], ss);
+                    Tuple<double, int> overlapData = Check.RatioOverlapWithPTV(choppedContours[subsegment], ss);
                     //First element is overlap ratio, second is prescription dose of overlapping ptv
                     double overlapRatio = overlapData.Item1;
 
@@ -292,7 +292,7 @@ namespace Plan_n_Check.Features
             {
                 contours.Add(StructureContours(parotids[i], plan, context, ss));
                 //get the overlap ratio for the parotid 
-                overlap = Calculator.RatioOverlapWithPTV(contours[contours.Count - 1], ss).Item1;
+                overlap = Check.RatioOverlapWithPTV(contours[contours.Count - 1], ss).Item1;
                 overlapRatios.Add(overlap);
             }
 

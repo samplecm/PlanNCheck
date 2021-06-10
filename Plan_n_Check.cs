@@ -183,7 +183,7 @@ namespace VMS.TPS
             OptimizationOptionsVMAT oov;
             ;
             List<List<string>> updateLog = new List<List<string>>();
-            for (int iter = 0; iter < numIterations - 1; iter++)
+            for (int iter = 0; iter < numIterations; iter++)
             {
                 mlcID = plan.Beams.FirstOrDefault<Beam>().MLC.Id;
                 oov = new OptimizationOptionsVMAT(1, mlcID);
