@@ -100,13 +100,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Calculate\Calculator.cs" />
+    <Compile Include="Calculate\StringOperations.cs" />
     <Compile Include="Constraint.cs" />
+    <Compile Include="Features\DVHMaker.cs" />
+    <Compile Include="Features\Segmentation.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Optimization\OptObjectivesEditing.cs" />
     <Compile Include="Plans\HNPlan.cs" />
     <Compile Include="Plans\Plan.cs" />
     <Compile Include="Plans\ROI.cs" />

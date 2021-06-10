@@ -383,7 +383,7 @@ namespace Plan_n_Check.Calculate
                         PlotView pv = DVH_Maker(context, matchingStructures[i][d], dvhTuple.Item2, dvhTuple.Item3, dvhTuple.Item4, dvhTuple.Item5);
                         //Now need to add this as an image to the report. 
                        
-                        var pngExporter = new PngExporter { Width = 400, Height = 300, Background = OxyColors.White };
+                        var pngExporter = new PngExporter { Width = 450, Height = 300, Background = OxyColors.White };
                         int indexPeriod = path.LastIndexOf(".");
                         string imageSaveLocation = path.Substring(0,indexPeriod) + roi.Name + "_" + d + ".png";
                         pngExporter.ExportToFile(pv.Model, imageSaveLocation);
@@ -432,7 +432,7 @@ namespace Plan_n_Check.Calculate
         {
             PlotView pv = new OxyPlot.WindowsForms.PlotView();
             pv.Location = new System.Drawing.Point(30, 60);
-            pv.Size = new System.Drawing.Size(400, 300);
+            pv.Size = new System.Drawing.Size(450, 300);
             pv.Model = new OxyPlot.PlotModel { Title = "DVH" };
             pv.Model.Axes.Add(new LinearAxis
             {
@@ -800,9 +800,55 @@ namespace Plan_n_Check.Calculate
             
 
         }
-        public static void DVHPlot(Structure structure, ScriptContext scriptContext)
+        
+        public static Tuple<double, int> RatioOverlapWithPTV(List<double[,]> contours, StructureSet ss)
         {
-            var model = new OxyPlot.PlotModel { Title = $"DVH Plot" };
+            //returns a tuple with the overlap ratio and also the PTV dose in Gy found to overlap with it (not necessarily the only one that overlaps though)
+            //right now consider 3 or more points for a given subsegment inside a ptv means it is overlapping.
+            double x, y, z;
+            VVector point;
+            int overlapNum = 0;
+            int totalPoints = 0;
+            int ptvDose = 0;
+
+            //get list of ptvs
+            List<Structure> ptvs = new List<Structure>();
+            foreach (Structure structure in ss.Structures)
+            {
+                if (structure.Name.ToLower().Contains("ptv"))
+                {
+                    ptvs.Add(structure);
+                }
+            }
+            for (int j = 0; j < contours.Count; j++) //loop over axial plane contours
+            {
+                for (int k = 0; k < contours[j].GetLength(0); k++)
+                {
+                    x = contours[j][k, 0];
+                    y = contours[j][k, 1];
+                    z = contours[j][k, 2];
+                    totalPoints++;
+                    point = new VVector(x, y, z);
+
+                    for (int ptv = 0; ptv < ptvs.Count; ptv++)
+                    {
+                        if (ptvs[ptv].IsPointInsideSegment(point))
+                        {
+                            overlapNum++;
+                            if (overlapNum < 2)
+                            { //only do once
+                                ptvDose = StringOperations.FindPTVNumber(ptvs[ptv].Name) * 100; //Just taking the first ptv found to overlap with it
+                            }
+
+                            break;
+                        }
+                    }
+
+                }
+            }
+            double overlapRatio = (double)overlapNum / (double)totalPoints;
+
+            return Tuple.Create(overlapRatio, ptvDose);
         }
     }
 }

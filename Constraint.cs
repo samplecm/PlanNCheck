@@ -34,7 +34,9 @@ namespace Plan_n_Check
         { get; set; }
         public int Priority
         { get; set; }
-        public Constraint(string type, string subscript, string equalityType, double value, string format, int priority = 0, string status = "ON")
+        public List<int> PriorityRange //minimum and maximum priority that the constraint can set
+        { get; set; }
+        public Constraint(string type, string subscript, string equalityType, double value, string format, int priority, List<int> priorityRange, string status = "ON")
         {
             Type = type;
             Subscript = subscript;
@@ -42,6 +44,7 @@ namespace Plan_n_Check
             Value = value;
             Format = format;
             Priority = priority;
+            PriorityRange = priorityRange;
             Status = "ON";
 
         }

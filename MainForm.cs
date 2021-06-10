@@ -17,6 +17,7 @@ using VMS.TPS;
 using Plan_n_Check;
 using Plan_n_Check.Plans;
 using Plan_n_Check.Calculate;
+using Plan_n_Check.Features;
 using OxyPlot.Series;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -161,14 +162,14 @@ namespace Plan_n_Check
             
             
             //Call method for starting report. 
-            if (this.SavePath == "")
+            if ((this.SavePath == "")&&(this.SaveCheck.Checked))
             {
                 StartErrorLabel.Text = "Please select a save destination.";
                 StartErrorLabel.Visible = true;
             }
             else if (this.Plans.Count == 0)
             {
-                StartErrorLabel.Text = "Please select a type of plan to report on.";
+                StartErrorLabel.Text = "Please select a type of plan to create.";
             }
             //else if ((!int.TryParse(this.IterationsTextBox.Text, out int value))||(this.IterationsTextBox.Text == "0")) //if numints is not an integer or 0
             //{
@@ -246,14 +247,16 @@ namespace Plan_n_Check
             {
                
                 List<Plan> plans = new List<Plan>();
-                HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
+                double prescriptionDose = (double)context.PlanSetup.TotalDose.Dose;
+                int numFractions = (int)context.PlanSetup.NumberOfFractions;
+                HNPlan hnPlan = new HNPlan(prescriptionDose, numFractions);
                 plans.Add(hnPlan);
                 this.Plans = plans;
                 this.HnPlan = hnPlan;
                 this.MatchingStructures.Clear();
                 for (int i = 0; i < hnPlan.ROIs.Count; i++)
                 {
-                    List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
+                    List<Structure> assignedStructures = StringOperations.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
                     this.MatchingStructures.Add(assignedStructures);
                 }
                 //Also check for special prescription PTVs (not 56, 63, or 70 for HNPlan) and find maximum PTV prescription, which if less than the prescription dose
@@ -264,7 +267,7 @@ namespace Plan_n_Check
                 {
                     if (structure.Name.ToLower().Contains("ptv"))
                     {
-                        ptvType = VMS.TPS.Script.FindPTVNumber(structure.Name.ToLower());
+                        ptvType = StringOperations.FindPTVNumber(structure.Name.ToLower());
                         if (ptvType > maxPTV_Dose)
                         {
                             maxPTV_Dose = ptvType;
@@ -277,8 +280,8 @@ namespace Plan_n_Check
                             string Name = "PTV" + maxPTV_Dose.ToString();
                             ROI newPTV = new ROI();
                             newPTV.Name = Name;
-                            newPTV.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110));
-                            newPTV.Constraints.Add(new Constraint("D", "max", "<", ptvType * 100, "abs", 100));
+                            newPTV.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110, new List<int> {80, 120}));
+                            newPTV.Constraints.Add(new Constraint("D", "max", "<", ptvType * 100, "abs", 100, new List<int> { 80, 120 }));
                             this.HnPlan.ROIs.Add(newPTV);
                             this.MatchingStructures.Add(new List<Structure>() { structure }); //Constraints will be updated according to this
                         }
@@ -326,49 +329,22 @@ namespace Plan_n_Check
             this.panel5.Visible = true;
             this.panel1.Visible = false;
             this.panel1.SendToBack();
-            
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, this.HnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
-            //Also check for special prescription PTVs (not 56, 63, or 70 for HNPlan)
-            int ptvType;
-            foreach (Structure structure in context.StructureSet.Structures)
-            {
-                if (structure.Name.ToLower().Contains("ptv"))
-                {
-                    ptvType = VMS.TPS.Script.FindPTVNumber(structure.Name.ToLower());
-                    //Check if standard prescription dose type;
-                    bool isStandard = this.HnPlan.PTV_Types.IndexOf(ptvType) != -1;
-                    if (!isStandard)
-                    {
-                        //Make a new constraint
-                        string Name = "PTV" + ptvType.ToString();
-                        ROI newPTV = new ROI();
-                        newPTV.Name = Name;
-                        newPTV.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110));
-                        newPTV.Constraints.Add(new Constraint("D", "max", "<", 1.1 * this.HnPlan.PrescriptionDose, "abs", 100));
-                        this.HnPlan.ROIs.Add(newPTV);
-                        this.MatchingStructures.Add(new List<Structure>() { structure });
-                    }
-                }
-            }
-            
+                       
         }
 
         private void checkBox8_CheckedChanged(object sender, EventArgs e)
         {
             List<Plan> plans = new List<Plan>();
-            HNPlan hnPlan = new HNPlan(context.PlanSetup.TotalDose.Dose);
+            double prescriptionDose = (double)context.PlanSetup.TotalDose.Dose;
+            int numfractions = (int)context.PlanSetup.NumberOfFractions;
+            HNPlan hnPlan = new HNPlan(prescriptionDose, numfractions);
             plans.Add(hnPlan);
             this.HnPlan = hnPlan;
             this.Plans = plans;
             this.MatchingStructures.Clear();
             for (int i = 0; i < hnPlan.ROIs.Count; i++)
             {
-                List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
+                List<Structure> assignedStructures = StringOperations.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
                 this.MatchingStructures.Add(assignedStructures);
             }
         }
@@ -406,7 +382,21 @@ namespace Plan_n_Check
                 
                 this.AddLabel.Text = "Constraint Added";
                 this.AddLabel.Visible = true;
-                
+
+                bool isOAR = this.checkBox_OAR.Checked;
+                int priority = 50; //start with a priority of 50 for OARs and shift it to 100 if it is a target volume
+                List<int> priorityRange = new List<int>() { 0, 70 };
+                if (!isOAR)
+                {
+                    priority = 100;
+                    priorityRange = new List<int>() { 70, 120 };
+                }
+                var type = this.Combobox_Type.SelectedItem.ToString();
+                var subscript = SubscriptTB.Text.ToString();
+                var relation = this.Combobox_Relation.SelectedItem.ToString();
+                var value = Convert.ToDouble(ValueTB.Text.ToString());
+                var format = this.Combobox_Format.SelectedItem.ToString();
+
                 //First check if structure exists: 
                 bool structExists = false;
                 for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
@@ -414,7 +404,7 @@ namespace Plan_n_Check
                     if (this.HnPlan.ROIs[i].Name == StructureTB.Text.ToString()) //if structure already exists
                     {
                         structExists = true;
-                        Constraint newConstraint = new Constraint(this.Combobox_Type.SelectedItem.ToString(), SubscriptTB.Text.ToString(), this.Combobox_Relation.SelectedItem.ToString(), Convert.ToDouble(ValueTB.Text.ToString()), this.Combobox_Format.SelectedItem.ToString());
+                        Constraint newConstraint = new Constraint(type, subscript, relation, value, format, priority, priorityRange);
                         this.HnPlan.ROIs[i].Constraints.Add(newConstraint);
                         break;
                     }
@@ -423,11 +413,11 @@ namespace Plan_n_Check
                 {
                     ROI NewROI = new ROI();
                     NewROI.Name = StructureTB.Text.ToString();
-                    NewROI.Constraints.Add(new Constraint(this.Combobox_Type.SelectedItem.ToString(), SubscriptTB.Text.ToString(), this.Combobox_Relation.SelectedItem.ToString(), Convert.ToDouble(ValueTB.Text.ToString()), this.Combobox_Format.SelectedItem.ToString()));
+                    NewROI.Constraints.Add(new Constraint(type, subscript, relation, value, format, priority, priorityRange));
 
                     this.HnPlan.ROIs.Add(NewROI);
                     //Need to also add assigned structure for this
-                    List<Structure> assignedStructures = VMS.TPS.Script.AssignStructure(context.StructureSet, NewROI); //find structures that match the constraint structure
+                    List<Structure> assignedStructures = StringOperations.AssignStructure(context.StructureSet, NewROI); //find structures that match the constraint structure
                     this.MatchingStructures.Add(assignedStructures);
                 }
 
@@ -932,7 +922,7 @@ namespace Plan_n_Check
                     string tempName = this.HnPlan.ROIs[i].Name.ToLower();
                     if (tempName == structureName)
                     {
-                        this.DVH_ReportStructures.Add(Tuple.Create(this.HnPlan.ROIs[i], 0, 100, 0, 100));
+                        this.DVH_ReportStructures.Add(Tuple.Create(this.HnPlan.ROIs[i], 0, 110, 0, 100));
                     }
                 }
 
@@ -1059,8 +1049,8 @@ namespace Plan_n_Check
                     plotStructure = structure;
                 }
             }
-            var dvh = CalculateDVH(this.context.PlanSetup, plotStructure);
-            var series = CreateDVHSeries(dvh);
+            var dvh = DVHMaker.CalculateDVH(this.context.PlanSetup, plotStructure);
+            var series = DVHMaker.CreateDVHSeries(dvh);
             this.PV.Model.Series.Add(series);
             this.Controls.Add(this.PV);
             this.PlotPanel.Controls.Add(this.PV);
@@ -1072,33 +1062,6 @@ namespace Plan_n_Check
 
         }
         
-        private DVHData CalculateDVH(PlanSetup plan, Structure structure)
-        {
-            return plan.GetDVHCumulativeData(structure, DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, 0.01);
-        }
-        private OxyPlot.Series.Series CreateDVHSeries(DVHData dvh)
-        {
-            var series = new LineSeries();
-            var points = CreateDataPoints(dvh);
-            series.Points.AddRange(points);
-            return series;
-        }
-
-        private List<DataPoint> CreateDataPoints(DVHData dvh)
-        {
-            var points = new List<DataPoint>();
-            foreach (var dvhPoint in dvh.CurveData)
-            {
-                var point = CreateDataPoint(dvhPoint);
-                points.Add(point);
-            }
-            return points;
-        }
-        private DataPoint CreateDataPoint(DVHPoint dvhPoint)
-        {
-            return new DataPoint(dvhPoint.DoseValue.Dose, dvhPoint.Volume);
-        }
-
         private void Button_StartSegmentation_Click(object sender, EventArgs e)
         {
             ExternalPlanSetup plan = this.context.ExternalPlanSetup;
@@ -1123,7 +1086,7 @@ namespace Plan_n_Check
             this.Features.Add(Tuple.Create(true, organSegOptions, organName));
             //Need to update the hnplan structure so it knows that the structure has subsegments:
             HNPlan hnPlan = this.HnPlan;
-            VMS.TPS.Script.MakeSubsegmentStructures(organ, organSegOptions, ref plan, ref ss, this.context, applyConstraints, this.MatchingStructures, ref hnPlan);
+            Segmentation.MakeSubsegmentStructures(organ, organSegOptions, ref plan, ref ss, this.context, applyConstraints, this.MatchingStructures, ref hnPlan);
             //update the hnplan property of the class
             this.HnPlan = hnPlan;
 
@@ -1268,7 +1231,6 @@ namespace Plan_n_Check
 
 
         }
-
 
     }
 }
