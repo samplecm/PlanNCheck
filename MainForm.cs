@@ -198,7 +198,7 @@ namespace Plan_n_Check
                 List<List<string>> updateLog = structureLists.Item3;
                 if (SaveCheck.Checked)
                 {
-                    Check.RunReport(this.context, this.HnPlan, this.SavePath, optimizedStructures, this.MatchingStructures, updateLog, this.DVH_ReportStructures);
+                    Check.RunReport(this.context, this.HnPlan, this.SavePath, this.MatchingStructures, optimizedStructures, updateLog, this.DVH_ReportStructures);
                 }
                 this.StartErrorLabel.Visible = false;
                 this.TotalTime.Stop();
@@ -354,85 +354,169 @@ namespace Plan_n_Check
 
         }
 
-        private void button3_Click(object sender, EventArgs e) //add constraint
+        private void button3_Click(object sender, EventArgs e) //add constraint. First click (if dialog result no) brings up constraint parameter boxes, second click (dialog result yes) adds the constraint
         {
-            if ((String.IsNullOrEmpty(this.StructureTB.Text)) || (String.IsNullOrEmpty(this.SubscriptTB.Text)) || 
-                (String.IsNullOrEmpty(this.ValueTB.Text))) 
-            {               
-                this.AddLabel.Visible = true;
 
-            }else if ((this.Combobox_Type.SelectedIndex == -1)||(this.Combobox_Relation.SelectedIndex == -1) ||(this.Combobox_Format.SelectedIndex == -1))
+            if (this.button3.DialogResult == DialogResult.No)
             {
-
-            }
-            else if (!Double.TryParse(ValueTB.Text, out double _))
-            {
-                this.AddLabel.Text = "Invalid value, must be a number.";
-                this.AddLabel.Visible = true;
-                
-            }
-            else if ((SubscriptTB.Text.ToLower() != "max")&& (SubscriptTB.Text.ToLower() != "min")&& (SubscriptTB.Text.ToLower() != "mean") && 
-                !(Double.TryParse(SubscriptTB.Text, out double _)))
-            {
-                this.AddLabel.Text = "Invalid subscript.";
-                this.AddLabel.Visible = true;
+                //add all parameter labels/entry ports
+                this.label5.Visible = true;
+                this.TypeLabel.Visible = true;
+                this.SubscriptLabel.Visible = true;
+                this.RelationLabel.Visible = true;
+                this.FormatLabel.Visible = true;
+                this.ValueLabel.Visible = true;
+                this.StructureTB.Visible = true;
+                this.Combobox_Type.Visible = true;
+                this.Combobox_Relation.Visible = true;
+                this.Combobox_Format.Visible = true;
+                this.SubscriptTB.Visible = true;
+                this.checkBox_OAR.Visible = true;
+                //update the add button
+                this.button3.BackColor = System.Drawing.Color.MediumSeaGreen;
+                this.button3.Text = "Add";
+                this.button3.DialogResult = DialogResult.Yes;
+                //update the cancel button
+                this.DeleteButton.Text = "Cancel";
+                this.DeleteButton.BackColor = System.Drawing.Color.DarkRed;
+                this.DeleteButton.DialogResult = DialogResult.Yes;
+                return;
             }
             else
             {
-                
-                this.AddLabel.Text = "Constraint Added";
-                this.AddLabel.Visible = true;
 
-                bool isOAR = this.checkBox_OAR.Checked;
-                int priority = 50; //start with a priority of 50 for OARs and shift it to 100 if it is a target volume
-                List<int> priorityRange = new List<int>() { 0, 70 };
-                if (!isOAR)
+                if ((String.IsNullOrEmpty(this.StructureTB.Text)) || (String.IsNullOrEmpty(this.SubscriptTB.Text)) ||
+                    (String.IsNullOrEmpty(this.ValueTB.Text)))
                 {
-                    priority = 100;
-                    priorityRange = new List<int>() { 70, 120 };
+                    this.AddLabel.Visible = true;
+                    return;
+
                 }
-                var type = this.Combobox_Type.SelectedItem.ToString();
-                var subscript = SubscriptTB.Text.ToString();
-                var relation = this.Combobox_Relation.SelectedItem.ToString();
-                var value = Convert.ToDouble(ValueTB.Text.ToString());
-                var format = this.Combobox_Format.SelectedItem.ToString();
-
-                //First check if structure exists: 
-                bool structExists = false;
-                for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
+                else if ((this.Combobox_Type.SelectedIndex == -1) || (this.Combobox_Relation.SelectedIndex == -1) || (this.Combobox_Format.SelectedIndex == -1))
                 {
-                    if (this.HnPlan.ROIs[i].Name == StructureTB.Text.ToString()) //if structure already exists
+                    return;
+                }
+                else if (!Double.TryParse(ValueTB.Text, out double _))
+                {
+                    this.AddLabel.Text = "Invalid value, must be a number.";
+                    this.AddLabel.Visible = true;
+                    return;
+
+                }
+                else if ((SubscriptTB.Text.ToLower() != "max") && (SubscriptTB.Text.ToLower() != "min") && (SubscriptTB.Text.ToLower() != "mean") &&
+                    !(Double.TryParse(SubscriptTB.Text, out double _)))
+                {
+                    this.AddLabel.Text = "Invalid subscript.";
+                    this.AddLabel.Visible = true;
+                    return;
+                }
+                else
+                {
+
+
+                    this.AddLabel.Text = "Constraint Added";
+                    this.AddLabel.Visible = true;
+
+                    bool isOAR = this.checkBox_OAR.Checked;
+                    int priority = 50; //start with a priority of 50 for OARs and shift it to 100 if it is a target volume
+                    List<int> priorityRange = new List<int>() { 0, 70 };
+                    if (!isOAR)
                     {
-                        structExists = true;
-                        Constraint newConstraint = new Constraint(type, subscript, relation, value, format, priority, priorityRange);
-                        this.HnPlan.ROIs[i].Constraints.Add(newConstraint);
-                        break;
+                        priority = 100;
+                        priorityRange = new List<int>() { 70, 120 };
                     }
+                    var type = this.Combobox_Type.SelectedItem.ToString();
+                    var subscript = SubscriptTB.Text.ToString();
+                    var relation = this.Combobox_Relation.SelectedItem.ToString();
+                    var value = Convert.ToDouble(ValueTB.Text.ToString());
+                    var format = this.Combobox_Format.SelectedItem.ToString();
+
+                    //First check if structure exists: 
+                    bool structExists = false;
+                    for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
+                    {
+                        if (this.HnPlan.ROIs[i].Name == StructureTB.Text.ToString()) //if structure already exists
+                        {
+                            structExists = true;
+                            Constraint newConstraint = new Constraint(type, subscript, relation, value, format, priority, priorityRange);
+                            this.HnPlan.ROIs[i].Constraints.Add(newConstraint);
+                            break;
+                        }
+                    }
+                    if (structExists == false)
+                    {
+                        ROI NewROI = new ROI();
+                        NewROI.Name = StructureTB.Text.ToString();
+                        NewROI.Constraints.Add(new Constraint(type, subscript, relation, value, format, priority, priorityRange));
+
+                        this.HnPlan.ROIs.Add(NewROI);
+                        //Need to also add assigned structure for this
+                        List<Structure> assignedStructures = StringOperations.AssignStructure(context.StructureSet, NewROI); //find structures that match the constraint structure
+                        this.MatchingStructures.Add(assignedStructures);
+                    }
+
+
                 }
-                if (structExists == false)
-                {
-                    ROI NewROI = new ROI();
-                    NewROI.Name = StructureTB.Text.ToString();
-                    NewROI.Constraints.Add(new Constraint(type, subscript, relation, value, format, priority, priorityRange));
+                PopulateGrid();
+                this.Combobox_Type.SelectedIndex = -1;
+                this.ValueTB.Text = "";
+                this.Combobox_Relation.SelectedIndex = -1;
+                this.Combobox_Format.SelectedIndex = -1;
+                this.Combobox_Type.SelectedIndex = -1;
 
-                    this.HnPlan.ROIs.Add(NewROI);
-                    //Need to also add assigned structure for this
-                    List<Structure> assignedStructures = StringOperations.AssignStructure(context.StructureSet, NewROI); //find structures that match the constraint structure
-                    this.MatchingStructures.Add(assignedStructures);
-                }
+                //update the add button
+                this.button3.BackColor = System.Drawing.Color.SteelBlue;
+                this.button3.Text = "New Constraint";
+                this.button3.DialogResult = DialogResult.No;
+                //update the cancel button
+                this.DeleteButton.Text = "Delete Selection";
+                this.DeleteButton.BackColor = System.Drawing.Color.SteelBlue;
+                this.DeleteButton.DialogResult = DialogResult.No;
 
-
+                this.label5.Visible = false;
+                this.TypeLabel.Visible = false;
+                this.SubscriptLabel.Visible = false;
+                this.RelationLabel.Visible = false;
+                this.FormatLabel.Visible = false;
+                this.ValueLabel.Visible = false;
+                this.StructureTB.Visible = false;
+                this.Combobox_Type.Visible = false;
+                this.Combobox_Relation.Visible = false;
+                this.Combobox_Format.Visible = false;
+                this.SubscriptTB.Visible = false;
+                this.checkBox_OAR.Visible = false;
             }
-            PopulateGrid();
-            this.Combobox_Type.SelectedIndex = -1;
-            this.ValueTB.Text = "";
-            this.Combobox_Relation.SelectedIndex = -1;
-            this.Combobox_Format.SelectedIndex = -1;
-            this.Combobox_Type.SelectedIndex = -1;
+
+
         }
 
         private void DeleteButton_Click(object sender, EventArgs e)
         {
+            if (this.DeleteButton.DialogResult == DialogResult.Yes)
+            {
+                //update the add button
+                this.button3.BackColor = System.Drawing.Color.SteelBlue;
+                this.button3.Text = "New Constraint";
+                this.button3.DialogResult = DialogResult.No;
+                //update the cancel button
+                this.DeleteButton.Text = "Delete Selection";
+                this.DeleteButton.BackColor = System.Drawing.Color.SteelBlue;
+                this.DeleteButton.DialogResult = DialogResult.No;
+
+                this.label5.Visible = false;
+                this.TypeLabel.Visible = false;
+                this.SubscriptLabel.Visible = false;
+                this.RelationLabel.Visible = false;
+                this.FormatLabel.Visible = false;
+                this.ValueLabel.Visible = false;
+                this.StructureTB.Visible = false;
+                this.Combobox_Type.Visible = false;
+                this.Combobox_Relation.Visible = false;
+                this.Combobox_Format.Visible = false;
+                this.SubscriptTB.Visible = false;
+                this.checkBox_OAR.Visible = false;
+                return;
+            }
 
             foreach (DataGridViewRow item in this.ConstraintGridView.SelectedRows)
             {
@@ -882,8 +966,8 @@ namespace Plan_n_Check
                     {
                         DataRow row = dt.NewRow();
                         row["Structure"] = name;
-                        row["Volume Bounds"] = "[0,100]";
-                        row["Dose Bounds"] = "[0,100]";
+                        row["Volume Bounds"] = "[0,115]";
+                        row["Dose Bounds"] = "[0,115]";
                         dt.Rows.Add(row);
                     }                  
                 }
@@ -922,7 +1006,7 @@ namespace Plan_n_Check
                     string tempName = this.HnPlan.ROIs[i].Name.ToLower();
                     if (tempName == structureName)
                     {
-                        this.DVH_ReportStructures.Add(Tuple.Create(this.HnPlan.ROIs[i], 0, 110, 0, 100));
+                        this.DVH_ReportStructures.Add(Tuple.Create(this.HnPlan.ROIs[i], 0, 115, 0, 115));
                     }
                 }
 

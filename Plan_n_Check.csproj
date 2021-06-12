@@ -99,7 +99,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Calculate\Calculator.cs" />
+    <Compile Include="Calculate\Check.cs" />
     <Compile Include="Calculate\StringOperations.cs" />
     <Compile Include="Constraint.cs" />
     <Compile Include="Features\DVHMaker.cs" />

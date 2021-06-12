@@ -22,7 +22,7 @@ namespace Plan_n_Check.Features
 
         public static DVHData CalculateDVH(PlanSetup plan, Structure structure)
         {
-            return plan.GetDVHCumulativeData(structure, DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, 0.01);
+            return plan.GetDVHCumulativeData(structure, DoseValuePresentation.Relative, VolumePresentation.Relative, 0.01);
         }
         public static OxyPlot.Series.Series CreateDVHSeries(DVHData dvh)
         {
