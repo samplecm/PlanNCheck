@@ -89,9 +89,12 @@ namespace VMS.TPS
            
             //Create two VMAT beams
             BeamMaker(ref plan, ss, plan.TotalDose.Dose);
-            plan.SetPrescription(35, new DoseValue(200, "cGy"), 1);
+            //set prescriptions dose 
+            int numFractions = hnPlan.Fractions;
+            int dosePerFraction = (int)hnPlan.PrescriptionDose / numFractions;
+            plan.SetPrescription(numFractions, new DoseValue(dosePerFraction, "cGy"), 1);
 
-            
+
             //matchingStructures is the same length as hnPlan.ROIs.count
             //Now set optimization constraints
             List<List<Structure>> optimizedStructures = OptObjectivesEditing.SetConstraints(ref plan, hnPlan, matchingStructures, true); //true to check for opti structures, returns new matching list of structures
@@ -99,7 +102,7 @@ namespace VMS.TPS
             List<double[]> planes;
             string contraParName;
               
-            if (features[0].Item1 == true)
+            if (features[0].Item1 == true) //parotid segmentation feature
             {
                 Tuple<List<List<double[,]>>, string, List<double[]>>  choppedAndName = ParotidChop(ref plan, hnPlan, matchingStructures, ss, context);
                 choppedContours = choppedAndName.Item1;
@@ -117,7 +120,49 @@ namespace VMS.TPS
             return Tuple.Create(optimizedStructures, matchingStructures, updatesLog);
 
         }
-        
+        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>> PrepareCheck(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, List<Tuple<bool, double[], string>> features) //Returns list of matching structures
+        {
+
+            // Check for patient plan loaded
+            ExternalPlanSetup plan = context.ExternalPlanSetup;
+
+
+            Patient patient = context.Patient;
+            StructureSet ss = context.StructureSet;
+            Course course = context.Course;
+            Image image3d = context.Image;
+            //Set prescription dose
+            int numFractions = hnPlan.Fractions;
+            int dosePerFraction = (int)hnPlan.PrescriptionDose / numFractions;
+            plan.SetPrescription(numFractions, new DoseValue(dosePerFraction, "cGy"), 1);
+
+
+            //matchingStructures is the same length as hnPlan.ROIs.count
+            //Now set optimization constraints
+            List<List<Structure>> optimizedStructures = OptObjectivesEditing.SetConstraints(ref plan, hnPlan, matchingStructures, true); //true to check for opti structures, returns new matching list of structures
+            List<List<double[,]>> choppedContours;
+            List<double[]> planes;
+            string contraParName;
+
+            if (features[0].Item1 == true) //parotid segmentation feature
+            {
+                Tuple<List<List<double[,]>>, string, List<double[]>> choppedAndName = ParotidChop(ref plan, hnPlan, matchingStructures, ss, context);
+                choppedContours = choppedAndName.Item1;
+                contraParName = choppedAndName.Item2;
+                planes = choppedAndName.Item3;
+            }
+            else
+            {
+                choppedContours = new List<List<double[,]>>();
+                contraParName = "";
+                planes = new List<double[]>();
+            }
+
+            List<List<string>> updatesLog = new List<List<string>>();
+            return Tuple.Create(optimizedStructures, matchingStructures, updatesLog);
+
+        }
+
         public static Tuple<List<List<double[,]>>, string, List<double[]>> ParotidChop(ref ExternalPlanSetup plan, HNPlan hnPlan, List<List<Structure>> matchingStructures, StructureSet ss, ScriptContext context)
         {
             /* 

@@ -14,6 +14,7 @@ using Plan_n_Check;
 using Plan_n_Check.Plans;
 using Plan_n_Check.Features;
 using TheArtOfDev.HtmlRenderer.PdfSharp;
+using TheArtOfDev.HtmlRenderer.Core;
 using OxyPlot.WindowsForms;
 using OxyPlot.Series;
 using OxyPlot;
@@ -27,10 +28,10 @@ namespace Plan_n_Check.Calculate
     public static class Check
     {       
         
-        public static Tuple<string, List<List<bool?>>> CheckConstraints(ScriptContext context, ROI ROI, List<Structure> dicomStructure, bool isParotid = false)
+        public static string CheckConstraints(ScriptContext context, ROI ROI, List<Structure> dicomStructure, bool isParotid = false)
             //This returns the HTML string for the full check report, as well as a list of boolean values corresponding to whether or not constraints were met. The list will be in the same order as the list of dicom structures supplied. 
         {
-            List<List<bool?>> constraintsMet = new List<List<bool?>>(); //nullable bool to have a third option, null, for when constraints can't be interpreted
+
             string returnString = "<p>";
             //Go through all plan types and check all constraints for report. 
             PlanSetup p = context.PlanSetup;
@@ -46,7 +47,6 @@ namespace Plan_n_Check.Calculate
             for (int match = 0; match < dicomStructure.Count; match++)
             {
                 returnString += "<h6>Matching Structure " + string.Format("{0}", match + 1) + ": </h6>";
-                constraintsMet.Add(new List<bool?>());
                 //first go one by one through the constraints.
                 for (int i = 0; i < ROI.Constraints.Count; i++)
                 {                  
@@ -114,12 +114,12 @@ namespace Plan_n_Check.Calculate
                                     if (doseQuant < value)
                                     {
                                         returnString += "Constraint SATISFIED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy <br>";
-                                        constraintsMet[match].Add(true);
+                                        ROI.Constraints[i].Status.Add(true);
                                     }
                                     else
                                     {
                                         returnString += "Constraint FAILED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy<br>";
-                                        constraintsMet[match].Add(false);
+                                        ROI.Constraints[i].Status.Add(false);
                                     }
                                 }
                                 else if (relation == ">")
@@ -127,18 +127,19 @@ namespace Plan_n_Check.Calculate
                                     if (doseQuant > value)
                                     {
                                         returnString += "Constraint SATISFIED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy <br>";
-                                        constraintsMet[match].Add(true);
+                                        ROI.Constraints[i].Status.Add(true);
 
                                     }
                                     else
                                     {
                                         returnString += "Constraint FAILED. The dose covering " + string.Format("{0:0.0}", (sub * 100 / volume)) + "% of the structure was " + string.Format("{0:00}", doseQuant) + " cGy<br>";
-                                        constraintsMet[match].Add(false);
+                                        ROI.Constraints[i].Status.Add(false);
                                     }
                                 }
                                 else
                                 {
-                                    returnString += "Could not understand the relation given in the constraint. \n";constraintsMet.Add(null);
+                                    returnString += "Could not understand the relation given in the constraint. \n";
+                                    ROI.Constraints[i].Status.Add(null);
                                 }
                             }
                         }
@@ -164,7 +165,7 @@ namespace Plan_n_Check.Calculate
                             else
                             {
                                 returnString += "Failed to interpret subscript given for this constraint. <br>";
-                                constraintsMet.Add(null);
+                                ROI.Constraints[i].Status.Add(null);
                                 break;
                             }
                             if (dvhData.MeanDose.Unit == DoseValue.DoseUnit.Gy) //convert to cgy if necessary
@@ -181,7 +182,7 @@ namespace Plan_n_Check.Calculate
                                 if (dose < value)
                                 {
                                     returnString += "Constraint SATISFIED. D = " + string.Format("{0:0.0}", dose) + "cGy <br>";
-                                    constraintsMet[match].Add(true);
+                                    ROI.Constraints[i].Status.Add(true);
                                 }
                                 
                                 else
@@ -193,7 +194,7 @@ namespace Plan_n_Check.Calculate
                                     else
                                     {
                                         returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "cGy <br>";
-                                        constraintsMet[match].Add(false);
+                                        ROI.Constraints[i].Status.Add(false);
                                     }
 
                                 }
@@ -203,19 +204,19 @@ namespace Plan_n_Check.Calculate
                                 if (dose > value)
                                 {
                                     returnString += "Constraint SATISFIED. D = " + string.Format("{0:0.0}", dose) + "cGy <br>";
-                                    constraintsMet[match].Add(true);
+                                    ROI.Constraints[i].Status.Add(true);
 
                                 }
                                 else
                                 {
                                     returnString += "Constraint FAILED. D = " + string.Format("{0:0.0}", dose) + "cGy <br>";
-                                    constraintsMet[match].Add(false);
+                                    ROI.Constraints[i].Status.Add(false);
                                 }
                             }
                             else
                             {
                                 returnString += "Could not understand the relation given in the constraint. <br>";
-                                constraintsMet[match].Add(null);
+                                ROI.Constraints[i].Status.Add(null);
                             }
                         }
                     }
@@ -256,13 +257,13 @@ namespace Plan_n_Check.Calculate
                                     {
                                         returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + 
                                             "cGy in the PTV was " + string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
-                                        constraintsMet[match].Add(true);
+                                        ROI.Constraints[i].Status.Add(true);
                                     }
                                     else
                                     {
                                         returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy was " + 
                                             string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
-                                        constraintsMet[match].Add(true);
+                                        ROI.Constraints[i].Status.Add(true);
                                     }
                                 }
                                 else
@@ -271,13 +272,13 @@ namespace Plan_n_Check.Calculate
                                     {
                                         returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy in the PTV was " + 
                                             string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
-                                        constraintsMet[match].Add(false);
+                                        ROI.Constraints[i].Status.Add(false);
                                     }
                                     else
                                     {
                                         returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "cGy was " + 
                                             string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
-                                        constraintsMet[match].Add(false);
+                                        ROI.Constraints[i].Status.Add(false);
                                     }
                                 }
                             }
@@ -289,13 +290,13 @@ namespace Plan_n_Check.Calculate
                                     {
                                         returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy in the PTV was " + 
                                             string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
-                                        constraintsMet[match].Add(true);
+                                        ROI.Constraints[i].Status.Add(true);
                                     }
                                     else
                                     {
                                         returnString += "Constraint SATISFIED. The volume receiving at least " + string.Format("{0:0.0}", sub ) + "cGy was  " + 
                                             string.Format("{0:0.0}", (volumeQuant )) + "% of the structure's total volume. <br>";
-                                        constraintsMet[match].Add(true);
+                                        ROI.Constraints[i].Status.Add(true);
                                     }
                                 }
                                 else
@@ -304,32 +305,32 @@ namespace Plan_n_Check.Calculate
                                     {
                                         returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy in the PTV was " + 
                                             string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
-                                        constraintsMet[match].Add(false);
+                                        ROI.Constraints[i].Status.Add(false);
                                     }
                                     else
                                     {
                                         returnString += "Constraint VIOLATED. The volume receiving at least " + string.Format("{0:0.0}", sub) + "cGy was " + 
                                             string.Format("{0:0.0}", (volumeQuant)) + "% of the structure's total volume. <br>";
-                                        constraintsMet[match].Add(false);
+                                        ROI.Constraints[i].Status.Add(false);
                                     }
                                 }
                             }
                             else
                             {
                                 returnString += "Could not understand the relation given in the constraint. <br>";
-                                constraintsMet.Add(null);
+                                ROI.Constraints[i].Status.Add(null);
                             }
                         }
                         catch
                         {
                             returnString += "Failed to interpret subscript given for this constraint. <br>";
-                            constraintsMet.Add(null);
+                            ROI.Constraints[i].Status.Add(null);
                         }
                     }
                 }
             }
             returnString += "</p>";
-            return Tuple.Create(returnString, constraintsMet);
+            return returnString;
         }
 
         public static void RunReport(ScriptContext context, HNPlan hnplan, string path, List<List<Structure>> matchingStructures, List<List<Structure>> optimizedStructures, List<List<string>> updateLog, List<Tuple<ROI, int, int, int, int>> DVH_ReportStructures)
@@ -347,11 +348,9 @@ namespace Plan_n_Check.Calculate
             {
                 if (matchingStructures[i].Count > 0)
                 {
-                    Tuple<string, List<List<bool?>>> constraintCheckingParams = CheckConstraints(context, hnplan.ROIs[i], matchingStructures[i]);
-                    string report = constraintCheckingParams.Item1;
-                    List<List<bool?>> constraintsMet = constraintCheckingParams.Item2;
+
+                    string report = CheckConstraints(context, hnplan.ROIs[i], matchingStructures[i]);
                     ReportStrings.Add(report);
-                    constraintsMetBools.Add(constraintsMet);
                 }
                 else
                 {
@@ -365,17 +364,22 @@ namespace Plan_n_Check.Calculate
             DateTime localDate = DateTime.Now;
 
             //Get html code for green, red checkmarks:
-            string greenCheck = "&#9989";
-            string redCheck = "&#10060";
-            string questionMark = "&#10067";
+            string greenCheck = @"<div style=""color:Green;""><p>Passed   </p></div>";
+            string redCheck = @"<div style=""color:Red;""><p>Failed   </p></div>";
+            string questionMark = @"<div style=""color:Orange;""><p>Constraint Issue   </p></div>";
 
             string outputFile = "<!DOCTYPE html> <html> <body>";
 
             //add table style
             outputFile += "<style>";
-            outputFile += "table {font-family: arial, sans-serif; border-collapse: collapse; width: 100%; }";
-            outputFile += "td, th { border: 1px solid #dddddd; text-align: left; passing: 8px; }";
-            outputFile += "tr:nth-child(even) {background-color: #dddddd;}";
+            outputFile += "table {font-family: arial, sans-serif; border-collapse: collapse; width: 100%; page-break-inside: avoid;}";
+            outputFile += "td, th { border: 1px solid #dddddd; text-align: left; passing: 8px; page-break-inside: avoid;}";
+            outputFile += "tr:nth-child(even) {background-color: #dddddd; page-break-inside: avoid;}";
+            outputFile += "h2 {page-break-inside: avoid;}";
+            outputFile += "h3 {page-break-inside: avoid;}";
+            outputFile += "h4 {page-break-inside: avoid;}";
+            outputFile += "hr {page-break-inside: avoid;}";
+            outputFile += "p {page-break-inside: avoid;}";
             outputFile += "</style>";
 
 
@@ -389,19 +393,21 @@ namespace Plan_n_Check.Calculate
             outputFile += "Last name: " + patient.LastName.ToString() + "<br>";
             outputFile += "First name: " + patient.FirstName.ToString() + "<br>";
             outputFile += "<hr>";
-
+             
             //Now have a checkbox summary table for constraints: 
             outputFile += "<table>";
             outputFile += "<tr>";//Headers
             outputFile += "<th>Region of Interest</th>";
             outputFile += "<th>DICOM Structure</th>";
-            outputFile += "<th>All Constraints Met</th>";
+            outputFile += "<th>Constraints Status</th>";
             outputFile += "</tr>";
             //Now add a row for each ROI:
             for (int i =0; i < hnplan.ROIs.Count; i++)
             {
                 outputFile += "<tr>";
                 outputFile += "<td>" + hnplan.ROIs[i].Name + "</td>";
+                int numMatches = matchingStructures[i].Count;
+                int constraint_idx = 0;
                 
                 if (matchingStructures[i].Count == 0)
                 {
@@ -415,13 +421,13 @@ namespace Plan_n_Check.Calculate
                     {
                         outputFile += "<td>" + matchingStructures[i][d].Name + "</td>";
                         outputFile += "<td>";
-                        for (int c = 0; c < constraintsMetBools[i][d].Count; c++)
+                        for (int c = constraint_idx; c < hnplan.ROIs[i].Constraints.Count; c++)
                         {
-                            if (constraintsMetBools[i][d][c] == true)
+                            if (hnplan.ROIs[i].Constraints[c].Status[d] == true)
                             {
                                 outputFile += greenCheck;
                             }
-                            else if (constraintsMetBools[i][d][c] == false)
+                            else if (hnplan.ROIs[i].Constraints[c].Status[d] == false)
                             {
                                 outputFile += redCheck;
                             }
@@ -429,7 +435,9 @@ namespace Plan_n_Check.Calculate
                             {
                                 outputFile += questionMark;
                             }
+                            constraint_idx = c;
                         }
+                        
                         
                         outputFile += "</td>";
                         outputFile += "</tr>";
@@ -539,12 +547,106 @@ namespace Plan_n_Check.Calculate
 
             //Now convert this html to a pdf
            
-           
+            
             var pdf = PdfGenerator.GeneratePdf(outputFile, PdfSharp.PageSize.Letter);
             pdf.Save(path);
                 
             
         }
+        //public static PdfSharp.Pdf.PdfDocument GetPDF(string html, PdfSharp.PageSize pageSize)
+        //{
+        //    var config = new PdfGenerateConfig();
+        //    config.PageSize = pageSize;
+        //    config.SetMargins(20);
+        //    var document = new PdfSharp.Pdf.PdfDocument();
+        //    document.Info.Author = "Plan n Check";
+            
+
+        //    PdfSharp.Drawing.XSize orgPageSize;
+        //    if (config.PageSize != PdfSharp.PageSize.Undefined)
+        //        orgPageSize = PdfSharp.PageSizeConverter.ToSize(config.PageSize);
+        //    else
+        //        orgPageSize = config.ManualPageSize;
+        //    var finalSize = new PdfSharp.Drawing.XSize(orgPageSize.Width - config.MarginLeft - config.MarginRight, orgPageSize.Height - config.MarginTop - config.MarginBottom);
+        //    if (!string.IsNullOrEmpty(html))
+        //    {
+        //        using (var container = new HtmlContainer())
+        //        {
+        //            container.Location = new PdfSharp.Drawing.XPoint(config.MarginLeft, config.MarginTop);
+        //            container.MaxSize = new PdfSharp.Drawing.XSize(finalSize.Width, 0);
+        //            container.SetHtml(html, null);
+                    
+        //            //container.PageSize = finalSize;
+        //            //container.MarginBottom = config.MarginBottom;
+        //            //container.MarginLeft = config.MarginLeft;
+        //            //container.MarginRight = config.MarginRight;
+        //            //container.MarginTop = config.MarginTop;
+
+        //            // layout the HTML with the page width restriction to know how many pages are required
+        //            using (var measure = PdfSharp.Drawing.XGraphics.CreateMeasureContext(finalSize, PdfSharp.Drawing.XGraphicsUnit.Point, PdfSharp.Drawing.XPageDirection.Downwards))
+        //            {
+        //                container.PerformLayout(measure);
+        //            }
+
+        //            // while there is un-rendered HTML, create another PDF page and render with proper offset for the next page
+        //            double scrollOffset = 0;
+        //            while (scrollOffset > -container.ActualSize.Height)
+        //            {
+        //                var page = document.AddPage();
+        //                page.Height = orgPageSize.Height;
+        //                page.Width = orgPageSize.Width;
+                        
+
+        //                using (var g = PdfSharp.Drawing.XGraphics.FromPdfPage(page))
+        //                {
+        //                    //g.IntersectClip(new XRect(config.MarginLeft, config.MarginTop, pageSize.Width, pageSize.Height));
+        //                    g.IntersectClip(new PdfSharp.Drawing.XRect(0, 0, page.Width, page.Height));
+
+        //                    container.ScrollOffset = new PdfSharp.Drawing.XPoint(0, scrollOffset);
+        //                    container.PerformPaint(g);
+        //                }
+        //                scrollOffset -= finalSize.Height;
+        //            }
+
+        //            // add web links and anchors
+        //            HandleLinks(document, container, orgPageSize, finalSize);
+        //        }
+        //    }
+
+        //        return document;
+        //}
+        //private static void HandleLinks(PdfSharp.Pdf.PdfDocument document, HtmlContainer container, PdfSharp.Drawing.XSize orgPageSize, PdfSharp.Drawing.XSize pageSize)
+        //{
+        //    foreach (var link in container.GetLinks())
+        //    {
+        //        int i = (int)(link.Rectangle.Top / pageSize.Height);
+        //        for (; i < document.Pages.Count && pageSize.Height * i < link.Rectangle.Bottom; i++)
+        //        {
+        //            var offset = pageSize.Height * i;
+
+        //            // fucking position is from the bottom of the page
+        //            var xRect = new PdfSharp.Drawing.XRect(link.Rectangle.Left, orgPageSize.Height - (link.Rectangle.Height + link.Rectangle.Top - offset), link.Rectangle.Width, link.Rectangle.Height);
+
+        //            if (link.IsAnchor)
+        //            {
+        //                // create link to another page in the document
+        //                var anchorRect = container.GetElementRectangle(link.AnchorId);
+        //                if (anchorRect.HasValue)
+        //                {
+        //                    // document links to the same page as the link is not allowed
+        //                    int anchorPageIdx = (int)(anchorRect.Value.Top / pageSize.Height);
+        //                    if (i != anchorPageIdx)
+        //                        document.Pages[i].AddDocumentLink(new PdfSharp.Pdf.PdfRectangle(xRect), anchorPageIdx);
+        //                }
+        //            }
+        //            else
+        //            {
+        //                // create link to URL
+        //                document.Pages[i].AddWebLink(new PdfSharp.Pdf.PdfRectangle(xRect), link.Href);
+        //            }
+        //        }
+        //    }
+        //}
 
         public static PlotView DVH_Maker(ScriptContext context, Structure structure, int dlb, int dub, int vlb, int vub) //dose lower bound, dose upperbound... etc
         {

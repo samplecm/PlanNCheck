@@ -211,7 +211,7 @@ namespace Plan_n_Check
                 double optimMins = this.OptimTime.Elapsed.TotalMinutes;
                 double optimSeconds = this.OptimTime.Elapsed.TotalSeconds;
                 System.Windows.MessageBox.Show("Total time elapsed: " + totalSeconds.ToString() + " seconds");
-                System.Windows.MessageBox.Show("Optimization time elapsed: " + optimSeconds.ToString() + " seconds");
+                //System.Windows.MessageBox.Show("Optimization time elapsed: " + optimSeconds.ToString() + " seconds");
 
             }
                      
@@ -731,8 +731,51 @@ namespace Plan_n_Check
 
         private void button2_Click(object sender, EventArgs e)
         {
-            this.DialogResult = DialogResult.Cancel;
-            this.Close();
+            //Call method for starting report. 
+            if ((this.SavePath == "") && (this.SaveCheck.Checked))
+            {
+                StartErrorLabel.Text = "Please select a save destination.";
+                StartErrorLabel.Visible = true;
+            }
+            else if (this.Plans.Count == 0)
+            {
+                StartErrorLabel.Text = "Please select what type of plan you wish to create a report for.";
+            }
+            else
+            {
+                int iterations = Convert.ToInt32(this.IterationsTextBox.Text);
+                //Check which special optimization features to include
+
+                //Parotid Seg:
+                if (CheckBox_ChopParotid.Checked)
+                {
+                    this.Features.Add(Tuple.Create(true, new double[1] { Convert.ToDouble(this.PriorityRatio_TextBox.Text) }, ""));
+                }
+                else
+                {
+                    this.Features.Add(Tuple.Create(false, new double[1] { Convert.ToDouble(this.PriorityRatio_TextBox.Text) }, ""));
+                }
+
+                this.StartErrorLabel.Text = "In progress";
+                this.StartErrorLabel.Visible = true;
+                this.OptimTime.Start();
+                var structureLists = VMS.TPS.Script.PrepareCheck(this.context, this.HnPlan, this.MatchingStructures, this.Features);
+                List<List<Structure>> optimizedStructures = structureLists.Item1;
+                List<List<Structure>> matchingStructures = structureLists.Item2;
+                List<List<string>> updateLog = structureLists.Item3;
+                if (SaveCheck.Checked)
+                {
+                    Check.RunReport(this.context, this.HnPlan, this.SavePath, this.MatchingStructures, optimizedStructures, updateLog, this.DVH_ReportStructures);
+                }
+                this.StartErrorLabel.Visible = false;
+                this.TotalTime.Stop();
+                this.OptimTime.Stop();
+
+                this.PlotPanel.Visible = true;
+                this.PlotPanel.BringToFront();
+                System.Windows.MessageBox.Show("Report Saved");
+               
+            }
         }
 
         private void EditAssignedButton_Click(object sender, EventArgs e)
