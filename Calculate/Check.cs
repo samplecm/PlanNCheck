@@ -28,7 +28,7 @@ namespace Plan_n_Check.Calculate
     public static class Check
     {       
         
-        public static string CheckConstraints(ScriptContext context, ROI ROI, List<Structure> dicomStructure, bool isParotid = false)
+        public static string CheckConstraints_Report(ScriptContext context, ROI ROI, List<Structure> dicomStructure, bool isParotid = false)
             //This returns the HTML string for the full check report, as well as a list of boolean values corresponding to whether or not constraints were met. The list will be in the same order as the list of dicom structures supplied. 
         {
 
@@ -333,29 +333,316 @@ namespace Plan_n_Check.Calculate
             return returnString;
         }
 
+        public static Tuple<bool, List<List<double>>> CheckConstraints(ScriptContext context, ROI ROI, List<Structure> dicomStructure)
+        //This returns the HTML string for the full check report, as well as a list of boolean values corresponding to whether or not constraints were met. The list will be in the same order as the list of dicom structures supplied. 
+        {
+            bool passed = true; //if any constraints are failed this will be changed to false
+            List<List<double>> constraintValues = new List<List<double>>(); //list is for each matching structure, then each constraint
+
+            //Go through all plan types and check all constraints for report. 
+            PlanSetup p = context.PlanSetup;
+            p.DoseValuePresentation = DoseValuePresentation.Absolute;
+
+
+            double prescriptionDose = p.TotalDose.Dose;
+            if (p.TotalDose.Unit == DoseValue.DoseUnit.Gy)
+            {
+                prescriptionDose *= 100; //Convert to Gy
+
+            }
+            for (int match = 0; match < dicomStructure.Count; match++)
+            {
+                constraintValues.Add(new List<double>());
+                //first go one by one through the constraints.
+                for (int i = 0; i < ROI.Constraints.Count; i++)
+                {
+                    //Get DVH data for structure: 
+                    DVHData dvhData = p.GetDVHCumulativeData(dicomStructure[match], DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, 0.01);
+
+                    //Get type of constraint
+                    string type = ROI.Constraints[i].Type;
+                    string subscript = ROI.Constraints[i].Subscript;
+                    string relation = ROI.Constraints[i].EqualityType;
+                    double value = ROI.Constraints[i].Value;
+                    string format = ROI.Constraints[i].Format;                  
+
+                    if (type == "D")//now subscript can be mean, max, min, median? 
+                    {
+                        try
+                        {
+                            double sub = Convert.ToInt32(subscript); //need to analyze DVH data if a number.
+                            VolumePresentation vp = VolumePresentation.AbsoluteCm3;
+                            DoseValuePresentation dp = new DoseValuePresentation();
+                            dp = DoseValuePresentation.Absolute;
+                            double volume = dicomStructure[match].Volume;
+                            if (format.ToLower() == "rel")
+                            {
+                                sub = volume * sub / 100;
+                                value = value * prescriptionDose / 100;
+
+                                double doseQuant = p.GetDoseAtVolume(dicomStructure[match], sub, vp, dp).Dose;
+                                //if (p.GetDoseAtVolume(dicomStructure[match], sub, vp, dp).Unit == DoseValue.DoseUnit.cGy) //convert to gy if necessary
+                                //{
+                                //    doseQuant /= 100;
+                                //}
+                                //now check the inequality: 
+                                if (relation == "<")
+                                {
+                                    if (doseQuant < value)
+                                    {
+
+                                        constraintValues[constraintValues.Count - 1].Add(doseQuant);
+                                    }
+                                    else
+                                    {
+                                        passed = false;
+                                        constraintValues[constraintValues.Count - 1].Add(doseQuant);
+                                    }
+                                }
+                                else if (relation == ">")
+                                {
+                                    if (doseQuant > value)
+                                    {
+                                        constraintValues[constraintValues.Count - 1].Add(doseQuant);
+                                    }
+                                    else
+                                    {
+
+                                        constraintValues[constraintValues.Count - 1].Add(doseQuant);
+                                        passed = false;
+                                    }
+                                }
+                                else //constraint not understood
+                                {
+
+                                    constraintValues[constraintValues.Count - 1].Add(0);
+                                    passed = false;
+                                }
+                            }
+                        }
+                        catch //mean median...
+                        {
+                            double dose;
+                            if (subscript.ToLower() == "mean")
+                            {
+                                dose = dvhData.MeanDose.Dose;
+                            }
+                            else if (subscript.ToLower() == "max")
+                            {
+                                dose = dvhData.MaxDose.Dose;
+                            }
+                            else if (subscript.ToLower() == "median")
+                            {
+                                dose = dvhData.MedianDose.Dose;
+                            }
+                            else if (subscript.ToLower() == "min")
+                            {
+                                dose = dvhData.MinDose.Dose;
+                            }
+                            else //not understood
+                            {
+                                constraintValues[constraintValues.Count - 1].Add(0);
+                                passed = false;
+                                break;
+                            }
+                            if (dvhData.MeanDose.Unit == DoseValue.DoseUnit.Gy) //convert to cgy if necessary
+                            {
+                                dose *= 100;
+                            }
+                            if (format.ToLower() == "rel")
+                            {
+                                value *= prescriptionDose / 100;
+                            }
+                            //Now check the relation
+                            if (relation == "<")
+                            {
+                                if (dose < value)
+                                {
+                                    constraintValues[constraintValues.Count-1].Add(dose);
+                                }
+
+                                else
+                                {
+
+                                    constraintValues[constraintValues.Count - 1].Add(dose);
+                                    passed = false;
+
+                                }
+                            }
+                            else if (relation == ">")
+                            {
+                                if (dose > value)
+                                {
+
+                                    constraintValues[constraintValues.Count - 1].Add(dose);
+
+                                }
+                                else
+                                {
+                                    constraintValues[constraintValues.Count - 1].Add(dose);
+                                    passed = false;
+                                }
+                            }
+                            else //not understood
+                            {
+                                constraintValues[constraintValues.Count - 1].Add(0);
+                                passed = false;
+                            }
+                        }
+                    }
+                    else if (type == "V")
+                    {
+
+                        try
+                        {
+                            double sub = Convert.ToDouble(subscript); //need to analyze DVH data if a number.
+                            double frac = prescriptionDose; //ad hoc fix for ptv string output
+                            VolumePresentation vp = VolumePresentation.Relative;
+                            double volume = dicomStructure[match].Volume;
+     
+          
+                            if (format.ToLower() == "abs")
+                            {
+                                value = (value / volume) * 100;
+                                sub = Convert.ToDouble(subscript);
+                            }
+                            //But if PTV, then this is not relative to the prescription dose.
+                            if (ROI.Name.ToLower().Contains("ptv"))
+                            {
+
+                                frac = StringOperations.FindPTVNumber(ROI.Name.ToLower()) * 100;
+                                sub = Convert.ToDouble(subscript) * frac / 100;
+                                vp = VolumePresentation.Relative;
+                            }
+
+                            DoseValue dose = new DoseValue(sub, "cGy");
+                            //Need dose in cGy for calculation:
+                            double volumeQuant = p.GetVolumeAtDose(dicomStructure[match], dose, vp);
+                            //Now check the inequality: 
+                            if (relation == "<")
+                            {
+                                if (volumeQuant < value)
+                                {
+
+                                      constraintValues[constraintValues.Count - 1].Add(volumeQuant);
+
+
+                                }
+                                else
+                                {
+                                    constraintValues[constraintValues.Count - 1].Add(volumeQuant);
+                                    passed = false;
+                                }
+                            }
+                            else if (relation == ">")
+                            {
+                                if (volumeQuant > value)
+                                {
+                                    constraintValues[constraintValues.Count - 1].Add(volumeQuant);
+                                }
+                                else
+                                {
+                                    constraintValues[constraintValues.Count - 1].Add(volumeQuant);
+                                }
+                            }
+                            else //not understood
+                            {
+                                constraintValues[constraintValues.Count - 1].Add(0);
+                                passed = false;
+                            }
+                        }
+                        catch //not understood 
+                        {
+                            constraintValues[constraintValues.Count - 1].Add(0);
+                            passed = false;
+                        }
+                    }
+                }
+            }
+            return Tuple.Create(passed, constraintValues);
+        }
+
+        public static Tuple<bool, List<bool>, List<List<List<double>>>> EvaluatePlan(ScriptContext context, HNPlan plan, List<List<Structure>> matchingStructures, List<List<Structure>> optimizedStructures)
+        {
+            //This function iterates over all the constraints and checks if they are met or not. It saves all the doses/volumes corresponding to each constraint in List<List<double>> constraintValues. Each ROI must have each constraint satisfied for each
+            //matching structure for the ROI to be "passed". The pass/fail status of each ROI is saved in list<bool> ROI_results. Then the final bool Passed is true if all constraints are met when at least one matching structure exists. Saliva glands
+            //must be grouped to see whether they pass as a whole or not. 
+            List<bool> ROI_results = new List<bool>();
+            List<List<List<double>>> constraintValues = new List<List<List<double>>>();
+            for (int i = 0; i < plan.ROIs.Count; i++)
+            {
+                if (matchingStructures[i].Count > 0)
+                {
+
+                    Tuple<bool, List<List<double>>> checkData = CheckConstraints(context, plan.ROIs[i], optimizedStructures[i]);
+                    ROI_results.Add(checkData.Item1);
+                    constraintValues.Add(checkData.Item2);
+
+                }
+                else
+                {
+                    ROI_results.Add(true);
+                    constraintValues.Add(new List<List<double>>());
+                }
+            }
+            //Now need to check if the plan passed or not: 
+            bool planPassed = VerifyPlan(ROI_results, constraintValues);
+            return Tuple.Create(planPassed, ROI_results, constraintValues);
+        }
+        public static bool VerifyPlan(List<bool> ROI_Results, List<List<List<double>>> constraintValues)
+        {
+            //Every constraint besides saliva glands must be passed:
+            for (int i =0; i < 16; i++)
+            {
+                if (ROI_Results[i] == false)
+                {
+                    return false; //plan failed
+                }
+            }
+            for (int i = 10; i < ROI_Results.Count; i++)
+            {
+                if (ROI_Results[i] == false)
+                {
+                    return false; //fail plan
+                }
+            }
+            //For the saliva glands, the plan passes if one parotid is below 20Gy or both are below 25Gy.
+            if ((constraintValues[16][0][0] > 2500) && (constraintValues[17][0][0] > 2500)) //index 16, 17 is right, left parotid
+            {
+                return false; //fail plan
+            }else if (!(constraintValues[16][0][0] < 2000) || (constraintValues[17][0][0] > 2500)) //index 16, 17 is right, left parotid
+            {
+                return false; //fail plan
+            }else if ((constraintValues[16][0][0] > 2500) || !(constraintValues[17][0][0] < 2000)) //index 16, 17 is right, left parotid
+            {
+                return false; //fail plan
+            }
+
+            return true;
+        }
+
         public static void RunReport(ScriptContext context, HNPlan hnplan, string path, List<List<Structure>> matchingStructures, List<List<Structure>> optimizedStructures, List<List<string>> updateLog, List<Tuple<ROI, int, int, int, int>> DVH_ReportStructures)
         {
             //Need to go one by one and check constraints. 
 
-            //First need to check what DICOM structures correspond to which constraint structures.
+           
             Patient patient = context.Patient;
             StructureSet ss = context.StructureSet;
             
-            //Now need to check the constrains on these structures.
-            List<string> ReportStrings = new List<string>(); //report for each constraint.
-            List<List<List<bool?>>> constraintsMetBools = new List<List<List<bool?>>>();  //List of ROIs > matching structures > constraints (triple list) nullable bool for third option when constraint can't be interpreted properly
+            //Now need to check the constraints on these structures.
+            List<string> ReportStrings = new List<string>(); //report for each constraint.           
             for (int i = 0; i < hnplan.ROIs.Count; i++)
             {
                 if (matchingStructures[i].Count > 0)
                 {
 
-                    string report = CheckConstraints(context, hnplan.ROIs[i], matchingStructures[i]);
+                    string report = CheckConstraints_Report(context, hnplan.ROIs[i], matchingStructures[i]);
                     ReportStrings.Add(report);
                 }
                 else
                 {
                     ReportStrings.Add("");
-                    constraintsMetBools.Add(new List<List<bool?>>());
+                    
                 }
                 
             }
@@ -549,7 +836,15 @@ namespace Plan_n_Check.Calculate
            
             
             var pdf = PdfGenerator.GeneratePdf(outputFile, PdfSharp.PageSize.Letter);
-            pdf.Save(path);
+            try
+            {
+                pdf.Save(path);
+            }
+            catch
+            {
+                System.Windows.MessageBox.Show("Failed to save report");
+            }
+            
                 
             
         }

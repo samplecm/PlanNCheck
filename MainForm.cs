@@ -1359,5 +1359,224 @@ namespace Plan_n_Check
 
         }
 
+        private void Button_ParamOptStart_Click(object sender, EventArgs e)
+            //This function produces a csv containing information of which optimization parameters are best for different plan outcome priorities. 
+        {
+            //first need to open a save dialog to choose where to save the csv 
+            String path = GetOptParamsCSVPath();
+            if (String.IsNullOrEmpty(path))
+            {
+                System.Windows.MessageBox.Show("Invalid path chosen");
+                return;
+            }
+            this.TotalTime.Start();
+            //Parotid Seg:
+            if (CheckBox_ChopParotid.Checked)
+            {
+                this.Features.Add(Tuple.Create(true, new double[1] { Convert.ToDouble(this.PriorityRatio_TextBox.Text) }, ""));
+            }
+            else
+            {
+                this.Features.Add(Tuple.Create(false, new double[1] { Convert.ToDouble(this.PriorityRatio_TextBox.Text) }, ""));
+            }
+
+            /*The ROIs that we will be iterating priorities on are:
+             * 
+             * PTV 70 (80, 100, 120)
+             * 
+             * (Group):
+             * PTV 63 (80, 100, 120)
+             * PTV 56 (80, 100, 120)
+             * 
+             * (Group):
+             * Spinal/Spinal PRV (90, 105, 120)
+             * Brainstem/ Spinal PRV (90, 105, 120)
+             */
+            //
+            List<int> PTV70Priorities = new List<int>() { 100 };
+            List<int> PTVOtherPriorities = new List<int>() { 100 };
+            List<int> nervousPriorities = new List<int>() { 100 };
+            //List<int> PTV70Priorities = new List<int>() { 80, 100, 120 };
+            //List<int> PTVOtherPriorities = new List<int>() { 80, 100, 120 };
+            //List<int> nervousPriorities = new List<int>() { 90, 105, 120 };
+            int numIterations = PTV70Priorities.Count * PTVOtherPriorities.Count * nervousPriorities.Count;
+
+            //Create a list of tuples containing the planning data
+            List<Tuple<bool, List<bool>, List<List<List<double>>>>> CombinedPlanData = new List<Tuple<bool, List<bool>, List<List<List<double>>>>>();
+            for (int ptv70_idx = 0; ptv70_idx < PTV70Priorities.Count; ptv70_idx++)
+            {
+                for (int ptvOther_idx = 0; ptvOther_idx < PTVOtherPriorities.Count; ptvOther_idx++)
+                {
+                    for (int nervous_idx = 0; nervous_idx < nervousPriorities.Count; nervous_idx++)
+                    {
+
+                        //create a plan 
+                        HNPlan plan = new HNPlan(7000, 35);
+                                            
+                       //Set the priorities
+                        for (int i = 0; i < 4; i++)//set nervous priorities
+                        {
+                            for (int j = 0; j < plan.ROIs[i].Constraints.Count; j++)
+                            {
+                                plan.ROIs[i].Constraints[j].Priority = nervousPriorities[nervous_idx];
+                            }    
+                        }
+
+                        for (int i = 0; i < 2; i++)//set ptV70 priority
+                        {
+                            plan.ROIs[4].Constraints[i].Priority = PTV70Priorities[ptv70_idx];
+                        }
+
+                        for (int i = 5; i < 7; i++)//set the ptv other priorities
+                        {
+                            for (int j = 0; j < 2; j++)
+                            {
+                                plan.ROIs[i].Constraints[j].Priority = PTVOtherPriorities[ptv70_idx];
+                            }
+                        }
+
+                        this.OptimTime.Start();
+                        var structureLists = VMS.TPS.Script.StartOptimizer(this.context, plan, this.MatchingStructures, 1, this.Features); //still doing 1 opt iteration for each plan to increase quality
+                        List<List<Structure>> optimizedStructures = structureLists.Item1;
+                        List<List<Structure>> matchingStructures = structureLists.Item2;
+                        List<List<string>> updateLog = structureLists.Item3;
+
+                        Tuple<bool, List<bool>, List<List<List<double>>>> planData = Check.EvaluatePlan(this.context, plan, this.MatchingStructures, optimizedStructures);
+                        CombinedPlanData.Add(planData);                       
+                
+                    }
+                }
+            }
+            //Now need to construct the CSV file. 
+            List<string> csvString = new List<string>();
+            //First row contains plan info
+            csvString.Add("LAST NAME," + this.context.Patient.LastName);
+            csvString.Add("FIRST NAME," + this.context.Patient.FirstName);
+            csvString.Add("PLAN TYPE," + this.context.PlanSetup.PlanType.ToString());
+            csvString.Add("SEX," + this.context.Patient.Sex);
+            csvString.Add("AGE," + this.context.Patient.DateOfBirth.Value.Year.ToString());
+            //Get the PTV sizes: 
+            double volume = 0;
+            for (int i = 0; i < this.MatchingStructures[4].Count; i++)//PTV70
+            {
+                volume += this.MatchingStructures[4][i].Volume;
+            }
+            csvString.Add("PTV 70 TOTAL VOLUME," + volume.ToString());
+
+            volume = 0;
+            for (int i = 0; i < this.MatchingStructures[5].Count; i++)//PTV63
+            {
+                volume += this.MatchingStructures[5][i].Volume;
+            }
+            csvString.Add("PTV 63 TOTAL VOLUME," + volume.ToString());
+
+            volume = 0;
+            for (int i = 0; i < this.MatchingStructures[6].Count; i++)//PTV56
+            {
+                volume += this.MatchingStructures[6][i].Volume;
+            }
+            csvString.Add("PTV 56 TOTAL VOLUME," + volume.ToString());
+
+
+            //Now make a header for each ROI
+            csvString.Add("");
+            csvString.Add("");
+            csvString.Add("PLAN#, PASSED, BRAINSTEM, BRAINSTEM PRV, SPINAL CORD, SPINAL CORD PRV, PTV 70, PTV 63, PTV 56, BRAIN, CHIASM, CHIASM PRV, RIGHT OPTIC NERVE, LEFT OPTIC NERVE, OPTIC NERVE PRV, R GLOBE, L GLOBE, R PAROTID, L PAROTID, R SUB, L SUB, R LENS, L LENS, ORAL CAVITY, LARYNX, LIPS, MANDIBLE, BODY");
+
+            string csvLine = "";
+            for (int iter = 0; iter < numIterations; iter++)
+            {
+                csvLine = "";
+                csvLine += (iter + 1).ToString() + ",";
+                csvLine += CombinedPlanData[iter].Item1 + ",";
+                for (int roi_idx = 0; roi_idx < 26; roi_idx++) //go through all ROIs
+                {
+                    if (CombinedPlanData[iter].Item3[roi_idx].Count == 0)
+                    {
+                        csvLine += ",";
+                    }else
+                    {
+                        double value = 0;
+                        for (int match = 0; match < CombinedPlanData[iter].Item3[roi_idx].Count; match++)
+                        {
+                            //Get the average value for the 1st constraint applied to the ROI
+                            value += CombinedPlanData[iter].Item3[roi_idx][match][0];
+                        }
+                        value /= CombinedPlanData[iter].Item3[roi_idx].Count;
+
+                        csvLine += value.ToString() + ",";
+                    }
+                    
+                }
+                csvString.Add(csvLine);
+                csvLine = ",,";
+                //Now do another row for any ROIs that have a second constraint
+                for (int roi_idx = 0; roi_idx < 26; roi_idx++) //go through all ROIs
+                {
+                    if (CombinedPlanData[iter].Item3[roi_idx].Count == 0)
+                    {
+                        csvLine += ",";
+                    }
+                    else if (CombinedPlanData[iter].Item3[roi_idx][0].Count == 1)
+                    {
+                        csvLine += ",";
+                    }else                       
+                    {
+                        double value = 0;
+                        for (int match = 0; match < CombinedPlanData[iter].Item3[roi_idx].Count; match++)
+                        {
+                            
+                                //Get the average value for the 1st constraint applied to the ROI
+                                value += CombinedPlanData[iter].Item3[roi_idx][match][1];
+                            
+                            
+                        }
+                        value /= CombinedPlanData[iter].Item3[roi_idx].Count;
+
+                        csvLine += value.ToString() + ",";
+                    }
+
+                }
+                csvString.Add(csvLine);
+            }
+            using (TextWriter sw = new StreamWriter(path))
+            {
+                for (int i =0; i < csvString.Count; i++)
+                {
+                    sw.WriteLine(csvString[i]);
+                }
+                
+            }
+
+            this.TotalTime.Stop();
+            double totalMins = this.TotalTime.Elapsed.TotalMinutes;
+            double totalSeconds = this.TotalTime.Elapsed.TotalSeconds;
+
+            System.Windows.MessageBox.Show("Total time elapsed: " + totalSeconds.ToString() + " seconds");
+
+
+        }
+        private string GetOptParamsCSVPath()
+        {
+            var sfd = new SaveFileDialog
+            {
+                Title = "Choose Save Location",
+                Filter = "CSV Files (*.csv)|*.csv",
+                FileName = "OptimalParameters_" + this.context.Patient.Name
+            };
+
+            DialogResult dialogResult = sfd.ShowDialog();
+
+            if (dialogResult == DialogResult.OK)
+            {
+                textBox1.Text = sfd.FileName;
+                return sfd.FileName;
+            }
+            else
+            {
+                return null;
+            }
+
+        }
     }
 }
