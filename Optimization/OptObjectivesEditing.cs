@@ -51,15 +51,20 @@ namespace Plan_n_Check.Optimization
                     {
                         if (!hnPlan.ROIs[i].Critical)
                         {
-                            optimizedStructures[i].Add(CheckOverlap_OptiMaker(matchingStructures[i][match], ref ss, false));
+                            Structure opti = CheckOverlap_OptiMaker(matchingStructures[i][match], ref ss, false);
+                            optimizedStructures[i].Add(opti);
+
                         }
                         else
                         {
-                            optimizedStructures[i].Add(CheckOverlap_OptiMaker(matchingStructures[i][match], ref ss, true));
+                            Structure opti = CheckOverlap_OptiMaker(matchingStructures[i][match], ref ss, true);                            
+                            optimizedStructures[i].Add(opti);
+                            
                         }
-
-
-
+                    }
+                    if (optimizedStructures[i][match].Volume < 0.5)
+                    {
+                        continue;
                     }
 
 
@@ -98,7 +103,7 @@ namespace Plan_n_Check.Optimization
                             {
                                 if (subscript.ToLower() == "mean")
                                 {
-                                    double dose = value * 0.9; //take 90 percent of mean constraint dose to start
+                                    double dose = value * 0.9; //take 90 percent of dose constraint dose to start
                                     OptimizationObjective objective = plan.OptimizationSetup.AddMeanDoseObjective(optimizedStructures[i][match],
                                         new DoseValue(dose, "cGy"), hnPlan.ROIs[i].Constraints[j].Priority);
                                     //update subsegment constraints if organ is subsegmented
@@ -119,8 +124,13 @@ namespace Plan_n_Check.Optimization
 
                                 }
                                 else if (subscript.ToLower() == "max")
-                                {
+                                {   
                                     double dose = value * 0.9; //take 90 percent of constraint dose to start
+
+                                    if (hnPlan.ROIs[i].IsPTV) //if ptv, go halfway between the max dose and prescription dose 
+                                    {
+                                        dose = (value + (double)hnPlan.ROIs[i].PTVDose) * 0.5;
+                                    }
                                     OptimizationObjective objective = plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
                                         new DoseValue(dose, "cGy"), 0, hnPlan.ROIs[i].Constraints[j].Priority);
                                     if (hnPlan.ROIs[i].HasSubsegments)
@@ -207,6 +217,11 @@ namespace Plan_n_Check.Optimization
             {
                 return structure;
             }
+            else if (isCritical)
+            {
+                return structure;
+            }
+
             int nameLen = Math.Min(structure.Name.Length, 7);
             string name = "PC_opti_" + structure.Name.Substring(0, nameLen);
 
@@ -240,13 +255,9 @@ namespace Plan_n_Check.Optimization
                 }
             }
             //Check if it changed (if it did overlap, need to make a new opti structure)
-            if ((opti.Volume == 0) || (isCritical))
-            {
-                ss.RemoveStructure(opti);
-                return structure;
-            }
+            
             //So this is an imperfect function and the volumes will be different no matter what... so make sure they are different by more than 5%
-            else if ((structure.Volume - opti.Volume) / structure.Volume > 0.05)
+            if ((structure.Volume - opti.Volume) / structure.Volume > 0.05)
             {
                 return opti;
             }

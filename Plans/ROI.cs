@@ -17,6 +17,8 @@ namespace Plan_n_Check.Plans
             this.Type = "";
             this.Critical = false;
             this.HasSubsegments = false;
+            this.IsPTV = false;
+            this.PTVDose = null;
         } 
 
 
@@ -25,6 +27,8 @@ namespace Plan_n_Check.Plans
         public List<Constraint> Constraints { get; set;}
         public string Type { get; set; }
         public bool HasSubsegments { get; set; }
+        public bool IsPTV { get; set; }
+        public int? PTVDose { get; set; }
 
     }
 }

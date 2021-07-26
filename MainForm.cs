@@ -188,11 +188,22 @@ namespace Plan_n_Check
                 {
                     this.Features.Add(Tuple.Create(false, new double[1] { Convert.ToDouble(this.PriorityRatio_TextBox.Text) }, ""));
                 }
+                //check if want jaw tracking
+                bool jawTracking;
+                if (this.checkBoxJawTracking.Checked)
+                {
+                    jawTracking = true;
+                }
+                else
+                { 
+                    jawTracking = false; 
+                }
+
                 
                 this.StartErrorLabel.Text = "In progress";
                 this.StartErrorLabel.Visible = true;
                 this.OptimTime.Start();
-                var structureLists = VMS.TPS.Script.StartOptimizer(this.context, this.HnPlan, this.MatchingStructures, iterations, this.Features);
+                var structureLists = VMS.TPS.Script.StartOptimizer(this.context, this.HnPlan, this.MatchingStructures, iterations, this.Features, jawTracking);
                 List<List<Structure>> optimizedStructures = structureLists.Item1;
                 List<List<Structure>> matchingStructures = structureLists.Item2;
                 List<List<string>> updateLog = structureLists.Item3;
@@ -261,6 +272,7 @@ namespace Plan_n_Check
                 }
                 //Also check for special prescription PTVs (not 56, 63, or 70 for HNPlan) and find maximum PTV prescription, which if less than the prescription dose
                 //will be used to adjust all PTV maximum dose constraints, and maximum body constraint.
+                //First get max ptv does for upper ptv constraint
                 int ptvType;
                 int maxPTV_Dose = 0;
                 foreach (Structure structure in context.StructureSet.Structures)
@@ -272,16 +284,28 @@ namespace Plan_n_Check
                         {
                             maxPTV_Dose = ptvType;
                         }
+                    }
+                }
+
+                
+                foreach (Structure structure in context.StructureSet.Structures)
+                {
+                    if (structure.Name.ToLower().Contains("ptv"))
+                    {
+                        ptvType = StringOperations.FindPTVNumber(structure.Name.ToLower());
+                        
                         //Check if standard prescription dose type;
                         bool isStandard = this.HnPlan.PTV_Types.IndexOf(ptvType) != -1;
                         if ((!isStandard)&&(ptvType != 0))
                         {
                             //Make a new constraint
-                            string Name = "PTV" + maxPTV_Dose.ToString();
+                            string Name = "PTV" + ptvType.ToString();
                             ROI newPTV = new ROI();
                             newPTV.Name = Name;
+                            newPTV.IsPTV = true;
+                            newPTV.PTVDose = ptvType * 100;
                             newPTV.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110, new List<int> {80, 120}));
-                            newPTV.Constraints.Add(new Constraint("D", "max", "<", ptvType * 100, "abs", 100, new List<int> { 80, 120 }));
+                            newPTV.Constraints.Add(new Constraint("D", "max", "<", 1.1* maxPTV_Dose * 100, "abs", 100, new List<int> { 80, 120 }));
                             this.HnPlan.ROIs.Add(newPTV);
                             this.MatchingStructures.Add(new List<Structure>() { structure }); //Constraints will be updated according to this
                         }
@@ -743,7 +767,6 @@ namespace Plan_n_Check
             }
             else
             {
-                int iterations = Convert.ToInt32(this.IterationsTextBox.Text);
                 //Check which special optimization features to include
 
                 //Parotid Seg:
@@ -1360,7 +1383,7 @@ namespace Plan_n_Check
         }
 
         private void Button_ParamOptStart_Click(object sender, EventArgs e)
-            //This function produces a csv containing information of which optimization parameters are best for different plan outcome priorities. 
+        //This function produces a csv containing information of which optimization parameters are best for different plan outcome priorities. 
         {
             //first need to open a save dialog to choose where to save the csv 
             String path = GetOptParamsCSVPath();
@@ -1403,23 +1426,26 @@ namespace Plan_n_Check
 
             //Create a list of tuples containing the planning data
             List<Tuple<bool, List<bool>, List<List<List<double>>>>> CombinedPlanData = new List<Tuple<bool, List<bool>, List<List<List<double>>>>>();
+
+            List<Tuple<int, Dictionary<string, double>>> passedPlans = new List<Tuple<int, Dictionary<string, double>>>(); //to hold passed plans, with their plan number, and dictionary containing ROI dose measures used for choosing best plan
+            int currentIter = 1;
             for (int ptv70_idx = 0; ptv70_idx < PTV70Priorities.Count; ptv70_idx++)
             {
                 for (int ptvOther_idx = 0; ptvOther_idx < PTVOtherPriorities.Count; ptvOther_idx++)
                 {
                     for (int nervous_idx = 0; nervous_idx < nervousPriorities.Count; nervous_idx++)
                     {
-
+                        currentIter++;
                         //create a plan 
                         HNPlan plan = new HNPlan(7000, 35);
-                                            
-                       //Set the priorities
+
+                        //Set the priorities
                         for (int i = 0; i < 4; i++)//set nervous priorities
                         {
                             for (int j = 0; j < plan.ROIs[i].Constraints.Count; j++)
                             {
                                 plan.ROIs[i].Constraints[j].Priority = nervousPriorities[nervous_idx];
-                            }    
+                            }
                         }
 
                         for (int i = 0; i < 2; i++)//set ptV70 priority
@@ -1434,16 +1460,25 @@ namespace Plan_n_Check
                                 plan.ROIs[i].Constraints[j].Priority = PTVOtherPriorities[ptv70_idx];
                             }
                         }
-
+                        bool jawTracking;
+                        if (this.checkBoxJawTracking.Checked)
+                        {
+                            jawTracking = true;
+                        }
+                        else
+                        {
+                            jawTracking = false;
+                        }
                         this.OptimTime.Start();
-                        var structureLists = VMS.TPS.Script.StartOptimizer(this.context, plan, this.MatchingStructures, 1, this.Features); //still doing 1 opt iteration for each plan to increase quality
+                        var structureLists = VMS.TPS.Script.StartOptimizer(this.context, plan, this.MatchingStructures, 1, this.Features, jawTracking); //still doing 1 opt iteration for each plan to increase quality
                         List<List<Structure>> optimizedStructures = structureLists.Item1;
                         List<List<Structure>> matchingStructures = structureLists.Item2;
                         List<List<string>> updateLog = structureLists.Item3;
 
                         Tuple<bool, List<bool>, List<List<List<double>>>> planData = Check.EvaluatePlan(this.context, plan, this.MatchingStructures, optimizedStructures);
-                        CombinedPlanData.Add(planData);                       
-                
+
+                        CombinedPlanData.Add(planData);
+
                     }
                 }
             }
@@ -1484,6 +1519,8 @@ namespace Plan_n_Check
             csvString.Add("PLAN#, PASSED, BRAINSTEM, BRAINSTEM PRV, SPINAL CORD, SPINAL CORD PRV, PTV 70, PTV 63, PTV 56, BRAIN, CHIASM, CHIASM PRV, RIGHT OPTIC NERVE, LEFT OPTIC NERVE, OPTIC NERVE PRV, R GLOBE, L GLOBE, R PAROTID, L PAROTID, R SUB, L SUB, R LENS, L LENS, ORAL CAVITY, LARYNX, LIPS, MANDIBLE, BODY");
 
             string csvLine = "";
+            List<Dictionary<string, double>> DoseDictionaries = new List<Dictionary<string, double>>();
+
             for (int iter = 0; iter < numIterations; iter++)
             {
                 csvLine = "";
@@ -1494,7 +1531,7 @@ namespace Plan_n_Check
                     if (CombinedPlanData[iter].Item3[roi_idx].Count == 0)
                     {
                         csvLine += ",";
-                    }else
+                    } else
                     {
                         double value = 0;
                         for (int match = 0; match < CombinedPlanData[iter].Item3[roi_idx].Count; match++)
@@ -1506,7 +1543,7 @@ namespace Plan_n_Check
 
                         csvLine += value.ToString() + ",";
                     }
-                    
+
                 }
                 csvString.Add(csvLine);
                 csvLine = ",,";
@@ -1520,31 +1557,675 @@ namespace Plan_n_Check
                     else if (CombinedPlanData[iter].Item3[roi_idx][0].Count == 1)
                     {
                         csvLine += ",";
-                    }else                       
+                    } else
                     {
                         double value = 0;
+                        double totalVolume = 0;
                         for (int match = 0; match < CombinedPlanData[iter].Item3[roi_idx].Count; match++)
                         {
-                            
-                                //Get the average value for the 1st constraint applied to the ROI
-                                value += CombinedPlanData[iter].Item3[roi_idx][match][1];
-                            
-                            
+
+                            //Get the volume-weighted average value for the 1st constraint applied to the ROI
+                            value += CombinedPlanData[iter].Item3[roi_idx][match][1] * MatchingStructures[roi_idx][match].Volume;
+                            totalVolume += MatchingStructures[roi_idx][match].Volume;
+
+
+
                         }
-                        value /= CombinedPlanData[iter].Item3[roi_idx].Count;
+                        value /= totalVolume;
 
                         csvLine += value.ToString() + ",";
                     }
 
                 }
                 csvString.Add(csvLine);
+                //Now need to add a final row indicating which plan was best for different measures. Get the different objectives now, including volume-weighted averages if there is more than one matching dicom structure for an roi
+                Dictionary<string, double> doseVals = new Dictionary<string, double>();
+                double temp;
+                double totalVol;
+                //PTV70 V95 weighed avg
+                if (CombinedPlanData[iter].Item3[4].Count > 0)
+                {
+                    temp = 0;
+                    totalVol = 0;
+                    for (int match = 0; match < CombinedPlanData[iter].Item3[4].Count; match++)
+                    {
+                        temp += CombinedPlanData[iter].Item3[4][match][0] * MatchingStructures[4][match].Volume;
+                        totalVol += MatchingStructures[4][match].Volume;
+                    }
+                    temp /= totalVol;
+                    doseVals.Add("PTV70_V95", temp);
+
+                }
+                else
+                {
+                    doseVals.Add("PTV70_V95", 11111);
+                }
+                //PTV63 V95 weighed avg
+                if (CombinedPlanData[iter].Item3[5].Count > 0)
+                {
+                    temp = 0;
+                    totalVol = 0;
+                    for (int match = 0; match < CombinedPlanData[iter].Item3[5].Count; match++)
+                    {
+                        temp += CombinedPlanData[iter].Item3[5][match][0] * MatchingStructures[5][match].Volume;
+                        totalVol += MatchingStructures[5][match].Volume;
+                    }
+                    temp /= totalVol;
+                    doseVals.Add("PTV63_V95", temp);
+
+                }
+                else
+                {
+                    doseVals.Add("PTV63_V95", 11111);
+                }
+                //PTV56 V95 weighed avg
+                if (CombinedPlanData[iter].Item3[6].Count > 0)
+                {
+                    temp = 0;
+                    totalVol = 0;
+                    for (int match = 0; match < CombinedPlanData[iter].Item3[6].Count; match++)
+                    {
+                        temp += CombinedPlanData[iter].Item3[6][match][0] * MatchingStructures[6][match].Volume;
+                        totalVol += MatchingStructures[6][match].Volume;
+                    }
+                    temp /= totalVol;
+                    doseVals.Add("PTV56_V95", temp);
+                }
+                else
+                {
+                    doseVals.Add("PTV56_V95", 11111);
+                }
+                //Brainstem Dmax:
+                if (CombinedPlanData[iter].Item3[0].Count > 0)
+                {
+                    temp = 0;
+                    totalVol = 0;
+                    for (int match = 0; match < CombinedPlanData[iter].Item3[0].Count; match++)
+                    {
+                        temp += CombinedPlanData[iter].Item3[0][match][0] * MatchingStructures[0][match].Volume;
+                        totalVol += MatchingStructures[0][match].Volume;
+                    }
+                    temp /= totalVol;
+                    doseVals.Add("Brainstem_Dmax", temp);
+                }
+                else
+                {
+                    doseVals.Add("Brainstem_Dmax", 11111);
+                }
+                //Spinal dmax:
+                if (CombinedPlanData[iter].Item3[0].Count > 0)
+                {
+                    temp = 0;
+                    totalVol = 0;
+                    for (int match = 0; match < CombinedPlanData[iter].Item3[2].Count; match++)
+                    {
+                        temp += CombinedPlanData[iter].Item3[2][match][0] * MatchingStructures[2][match].Volume;
+                        totalVol += MatchingStructures[2][match].Volume;
+                    }
+                    temp /= totalVol;
+                    doseVals.Add("Cord_Dmax", temp);
+                }
+                else
+                {
+                    doseVals.Add("Cord_Dmax", 11111);
+                }
+                //Dmax to the optic nerves:
+                //R optic Dmax:
+                if (CombinedPlanData[iter].Item3[10].Count > 0)
+                {
+                    temp = 0;
+                    totalVol = 0;
+                    for (int match = 0; match < CombinedPlanData[iter].Item3[10].Count; match++)
+                    {
+                        temp += CombinedPlanData[iter].Item3[10][match][0] * MatchingStructures[10][match].Volume;
+                        totalVol += MatchingStructures[10][match].Volume;
+                    }
+                    temp /= totalVol;
+                    doseVals.Add("Right_Optic_Dmax", temp);
+                }
+                else
+                {
+                    doseVals.Add("Right_Optic_Dmax", 11111);
+                }
+                //Left optic Dmax
+                if (CombinedPlanData[iter].Item3[11].Count > 0)
+                {
+                    temp = 0;
+                    totalVol = 0;
+                    for (int match = 0; match < CombinedPlanData[iter].Item3[11].Count; match++)
+                    {
+                        temp += CombinedPlanData[iter].Item3[11][match][0] * MatchingStructures[11][match].Volume;
+                        totalVol += MatchingStructures[11][match].Volume;
+                    }
+                    temp /= totalVol;
+                    doseVals.Add("Left_Optic_Dmax", temp);
+                }
+                else
+                {
+                    doseVals.Add("Left_Optic_Dmax", 11111);
+                }
+                // R parotid Dmean
+                if (CombinedPlanData[iter].Item3[16].Count > 0)
+                {
+                    temp = 0;
+                    totalVol = 0;
+                    for (int match = 0; match < CombinedPlanData[iter].Item3[16].Count; match++)
+                    {
+                        temp += CombinedPlanData[iter].Item3[16][match][0] * MatchingStructures[16][match].Volume;
+                        totalVol += MatchingStructures[16][match].Volume;
+                    }
+                    temp /= totalVol;
+                    doseVals.Add("Right_Paro_Dmean", temp);
+                }
+                else
+                {
+                    doseVals.Add("Right_Paro_Dmean", 11111);
+                }
+                // L parotid Dmean
+                if (CombinedPlanData[iter].Item3[17].Count > 0)
+                {
+                    temp = 0;
+                    totalVol = 0;
+                    for (int match = 0; match < CombinedPlanData[iter].Item3[17].Count; match++)
+                    {
+                        temp += CombinedPlanData[iter].Item3[17][match][0] * MatchingStructures[17][match].Volume;
+                        totalVol += MatchingStructures[17][match].Volume;
+                    }
+                    temp /= totalVol;
+                    doseVals.Add("Left_Paro_Dmean", temp);
+                }
+                else
+                {
+                    doseVals.Add("Left_Paro_Dmean", 11111);
+                }
+                // R sub Dmean
+                if (CombinedPlanData[iter].Item3[18].Count > 0)
+                {
+                    temp = 0;
+                    totalVol = 0;
+                    for (int match = 0; match < CombinedPlanData[iter].Item3[18].Count; match++)
+                    {
+                        temp += CombinedPlanData[iter].Item3[18][match][0] * MatchingStructures[18][match].Volume;
+                        totalVol += MatchingStructures[18][match].Volume;
+                    }
+                    temp /= totalVol;
+                    doseVals.Add("Right_Sub_Dmean", temp);
+                }
+                else
+                {
+                    doseVals.Add("Right_Sub_Dmean", 11111);
+                }
+                // L parotid Dmean
+                if (CombinedPlanData[iter].Item3[19].Count > 0)
+                {
+                    temp = 0;
+                    totalVol = 0;
+                    for (int match = 0; match < CombinedPlanData[iter].Item3[19].Count; match++)
+                    {
+                        temp += CombinedPlanData[iter].Item3[19][match][0] * MatchingStructures[19][match].Volume;
+                        totalVol += MatchingStructures[19][match].Volume;
+                    }
+                    temp /= totalVol;
+                    doseVals.Add("Left_Sub_Dmean", temp);
+                }
+                else
+                {
+                    doseVals.Add("Left_Sub_Dmean", 11111);
+                }
+                //Oral cav dmean
+                if (CombinedPlanData[iter].Item3[22].Count > 0)
+                {
+                    temp = 0;
+                    totalVol = 0;
+                    for (int match = 0; match < CombinedPlanData[iter].Item3[22].Count; match++)
+                    {
+                        temp += CombinedPlanData[iter].Item3[22][match][0] * MatchingStructures[22][match].Volume;
+                        totalVol += MatchingStructures[22][match].Volume;
+                    }
+                    temp /= totalVol;
+                    doseVals.Add("OC_Dmean", temp);
+                }
+                else
+                {
+                    doseVals.Add("OC_Dmean", 11111);
+                }
+                //laryn Dmean
+                if (CombinedPlanData[iter].Item3[23].Count > 0)
+                {
+                    temp = 0;
+                    totalVol = 0;
+                    for (int match = 0; match < CombinedPlanData[iter].Item3[23].Count; match++)
+                    {
+                        temp += CombinedPlanData[iter].Item3[23][match][0] * MatchingStructures[23][match].Volume;
+                        totalVol += MatchingStructures[23][match].Volume;
+                    }
+                    temp /= totalVol;
+                    doseVals.Add("Larynx_Dmean", temp);
+                }
+                else
+                {
+                    doseVals.Add("Larynx_Dmean", 11111);
+                }
+                DoseDictionaries.Add(doseVals);
             }
+            //Now for the final rows we can go through the list of dose dictionaries for each plan and determine which plan worked the best for various objectives.
+            csvString.Add("");
+            csvString.Add("Best Plans");
+            //Best plan for highest PTV70 V95:
+            double max = -10000;
+            double min = 10000;
+            int currentIdx = 0;
+            bool noPlans = true;
+            if (DoseDictionaries[0]["PTV70_V95"] == 11111)
+            {
+                csvString.Add("Highest PTV70 V95, N/A");
+            }
+            else
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((DoseDictionaries[i]["PTV70_V95"] > max) && (CombinedPlanData[i].Item1 == true)) //has to be a passing plan
+                    {
+                        currentIdx = i;
+                        max = DoseDictionaries[i]["PTV70_V95"];
+                        noPlans = false;
+                    }
+                }
+                if (noPlans)
+                {
+                    csvString.Add("Highest PTV70 V95, None Passed");
+                }
+                else
+                {
+                    csvString.Add("Highest PTV70 V95," + (currentIdx + 1).ToString());
+                }
+
+                max = -10000;
+                currentIdx = 0;
+                
+            }
+
+
+
+            //Best for highest PTV63
+            noPlans = true;
+            if (DoseDictionaries[0]["PTV63_V95"] == 11111)
+            {
+                csvString.Add("Highest PTV63 V95, N/A");
+            }
+            else
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((DoseDictionaries[i]["PTV63_V95"] > max) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        max = DoseDictionaries[i]["PTV63_V95"];
+                        noPlans = false;
+                    }
+                }
+                if (noPlans)
+                {
+                    csvString.Add("Highest PTV63 None Passed");
+                }
+                else
+                {
+                    csvString.Add("Highest PTV63 V95," + (currentIdx + 1).ToString());
+                }
+                max = -10000;
+                currentIdx = 0;
+            }
+
+
+            //Best for highest PTV56
+            noPlans = true;
+            if (DoseDictionaries[0]["PTV56_V95"] == 11111)
+            {
+                csvString.Add("Highest PTV56 V95, N/A");
+            }
+            else
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((DoseDictionaries[i]["PTV56_V95"] > max) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        max = DoseDictionaries[i]["PTV56_V95"];
+                        noPlans = true;
+                    }
+                }
+                if (noPlans)
+                {
+                    csvString.Add("Highest PTV56 V95, None Passed");
+                }
+                else
+                {
+                    csvString.Add("Highest PTV56 V95," + (currentIdx + 1).ToString());
+                }
+                max = -10000;
+                currentIdx = 0;
+            }
+
+            //Best for lowest Brainstem dmax:
+            noPlans = true;
+            if (DoseDictionaries[0]["Brainstem_Dmax"] == 11111)
+            {
+                csvString.Add("Lowest Brainstem Dmax, N/A");
+            }
+            else
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((DoseDictionaries[i]["Brainstem_Dmax"] < min) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        min = DoseDictionaries[i]["Brainstem_Dmax"];
+                        noPlans = false;
+                    }
+                }
+                if (noPlans)
+                {
+                    csvString.Add("Lowest Brainstem Dmax, None Passed");
+                }
+                else
+                {
+                    csvString.Add("Lowest Brainstem Dmax," + (currentIdx + 1).ToString());
+                }
+                min = 10000;
+                currentIdx = 0;
+            }
+            //Best for lowest cord dmax:
+            noPlans = true;
+            if (DoseDictionaries[0]["Cord_Dmax"] == 11111)
+            { 
+                csvString.Add("Lowest Cord Dmax, N/A");
+            }
+            else
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((DoseDictionaries[i]["Cord_Dmax"] < min) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        min = DoseDictionaries[i]["Cord_Dmax"];
+                        noPlans = false;
+                    }
+                }
+                if (noPlans)
+                {
+                    csvString.Add("Lowest Cord Dmax, None Passed");
+                }
+                else
+                {
+                    csvString.Add("Lowest Cord Dmax," + (currentIdx + 1).ToString());
+                }
+                min = 10000;
+                currentIdx = 0;
+            }
+            //Best for lowest optic nerve dmax:
+            noPlans = true;
+            if ((DoseDictionaries[0]["Right_Optic_Dmax"] == 11111)|| (DoseDictionaries[0]["Left_Optic_Dmax"] == 11111))
+            {
+                csvString.Add("Lowest optic nerve Dmax, N/A");
+            }
+            else
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((Math.Max(DoseDictionaries[i]["Right_Optic_Dmax"], DoseDictionaries[i]["Left_Optic_Dmax"]) < min) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        min = Math.Max(DoseDictionaries[i]["Right_Optic_Dmax"], DoseDictionaries[i]["Left_Optic_Dmax"]);
+                        noPlans = true;
+                    }
+                }
+                if (noPlans)
+                {
+                    csvString.Add("Lowest optic nerve Dmax, None Passed");
+                }
+                else
+                {
+                    csvString.Add("Lowest optic nerve Dmax," + (currentIdx + 1).ToString());
+                }
+                min = 10000;
+                currentIdx = 0;
+            }
+            //Now to minimize one parotid most: 
+            noPlans = true;
+            if ((DoseDictionaries[0]["Right_Paro_Dmean"] == 11111) && (DoseDictionaries[0]["Left_Paro_Dmean"] == 11111))
+            {
+                csvString.Add("Minimize one parotid, N/A");
+            }
+            else if (DoseDictionaries[0]["Right_Paro_Dmean"] == 11111)
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((DoseDictionaries[i]["Left_Paro_Dmean"] < min) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        min = DoseDictionaries[i]["Left_Paro_Dmean"];
+                        noPlans = false;
+                    }
+                }
+
+            }
+            else if (DoseDictionaries[0]["Left_Paro_Dmean"] == 11111)
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((DoseDictionaries[i]["Right_Paro_Dmean"] < min) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        min = DoseDictionaries[i]["Right_Paro_Dmean"];
+                        noPlans = false;
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((Math.Min(DoseDictionaries[i]["Right_Paro_Dmean"], DoseDictionaries[i]["Left_Paro_Dmean"]) < min) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        min = Math.Min(DoseDictionaries[i]["Right_Paro_Dmean"], DoseDictionaries[i]["Left_Paro_Dmean"]);
+                        noPlans = false;
+                    }
+                }
+            }
+            if (noPlans)
+            {
+                csvString.Add("Minimize one parotid, None Passed");
+            }
+            else
+            {
+                csvString.Add("Minimize one parotid," + (currentIdx + 1).ToString());
+                min = 10000;
+                currentIdx = 0;
+            }
+
+            //Now to minimize both parotids: 
+            noPlans = true;
+            if ((DoseDictionaries[0]["Right_Paro_Dmean"] == 11111) && (DoseDictionaries[0]["Left_Paro_Dmean"] == 11111))
+            {
+                csvString.Add("Minimize both parotids, N/A");
+            }
+            else
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((Math.Max(DoseDictionaries[i]["Right_Paro_Dmean"], DoseDictionaries[i]["Left_Paro_Dmean"]) < min) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        min = Math.Max(DoseDictionaries[i]["Right_Paro_Dmean"], DoseDictionaries[i]["Left_Paro_Dmean"]);
+                        noPlans = false;
+                    }
+                }
+                if (noPlans)
+                {
+                    csvString.Add("Minimize both parotids, None Passed");
+                }
+                else
+                {
+                    csvString.Add("Minimize both parotids," + (currentIdx + 1).ToString());
+                }
+                min = 10000;
+                currentIdx = 0;
+            }
+
+            //Now to minimize one sub most: 
+            noPlans = true;
+            if ((DoseDictionaries[0]["Right_Sub_Dmean"] == 11111) && (DoseDictionaries[0]["Left_Sub_Dmean"] == 11111))
+            {
+                csvString.Add("Minimize one Submandibular, N/A");
+            }
+            else if (DoseDictionaries[0]["Right_Sub_Dmean"] == 11111)
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((DoseDictionaries[i]["Left_Sub_Dmean"] < min) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        min = DoseDictionaries[i]["Left_Sub_Dmean"];
+                        noPlans = false;
+                    }
+                }
+
+            }
+            else if (DoseDictionaries[0]["Left_Sub_Dmean"] == 11111)
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((DoseDictionaries[i]["Right_Sub_Dmean"] < min) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        min = DoseDictionaries[i]["Right_Sub_Dmean"];
+                        noPlans = false;
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((Math.Min(DoseDictionaries[i]["Right_Sub_Dmean"], DoseDictionaries[i]["Left_Sub_Dmean"]) < min) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        min = Math.Min(DoseDictionaries[i]["Right_Sub_Dmean"], DoseDictionaries[i]["Left_Sub_Dmean"]);
+                        noPlans = false;
+                    }
+                }
+            }
+            if (noPlans)
+            {
+                csvString.Add("Minimize one submandibular, None Passed");
+            }
+            else
+            {
+                csvString.Add("Minimize one submandibular," + (currentIdx + 1).ToString());
+            }
+            min = 10000;
+            currentIdx = 0;
+
+            //Now to minimize both subs: 
+            noPlans = true;
+            if ((DoseDictionaries[0]["Right_Sub_Dmean"] == 11111) && (DoseDictionaries[0]["Left_Sub_Dmean"] == 11111))
+            {
+                csvString.Add("Minimize both Submandibulars, N/A");
+            }else
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((Math.Max(DoseDictionaries[i]["Right_Sub_Dmean"], DoseDictionaries[i]["Left_Sub_Dmean"]) < min) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        min = Math.Max(DoseDictionaries[i]["Right_Sub_Dmean"], DoseDictionaries[i]["Left_Sub_Dmean"]);
+                        noPlans = false;
+                    }
+                }
+                if (noPlans)
+                {
+                    csvString.Add("Minimize both Submandibulars, None Passed");
+                }
+                else
+                {
+                    csvString.Add("Minimize both Submandibulars," + (currentIdx + 1).ToString());
+                    min = 10000;
+                    currentIdx = 0;
+                }
+            }
+
+
+            //Best for lowest OC dmean:
+            noPlans = true;
+            if (DoseDictionaries[0]["OC_Dmean"] == 11111)
+            {
+                csvString.Add("Lowest OC Dmean, N/A");
+            }
+            else
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((DoseDictionaries[i]["OC_Dmean"] < min) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        min = DoseDictionaries[i]["OC_Dmean"];
+                        noPlans = false;
+                    }
+                }
+                if (noPlans)
+                {
+                    csvString.Add("Lowest OC Dmean, None Passed");
+                }
+                else
+                {
+                    csvString.Add("Lowest OC Dmean," + (currentIdx + 1).ToString());
+                }
+                min = 10000;
+                currentIdx = 0;
+            }
+
+            //Best for lowest larynx dmean:
+            noPlans = true;
+            if (DoseDictionaries[0]["Larynx_Dmean"] == 11111)
+            {
+                csvString.Add("Lowest Larynx Dmean, N/A");
+            }
+            else
+            {
+                for (int i = 0; i < DoseDictionaries.Count; i++)
+                {
+                    if ((DoseDictionaries[i]["Larynx_Dmean"] < min) && (CombinedPlanData[i].Item1 == true))
+                    {
+                        currentIdx = i;
+                        min = DoseDictionaries[i]["Larynx_Dmean"];
+                        noPlans = false;
+                    }
+                }
+                if (noPlans)
+                {
+                    csvString.Add("Lowest Larynx Dmean, None Passed");
+                }
+                else
+                {
+                    csvString.Add("Lowest Larynx Dmean," + (currentIdx + 1).ToString());
+                }
+                min = 10000;
+                currentIdx = 0;
+
+            }
+
+
+
+
             using (TextWriter sw = new StreamWriter(path))
             {
                 for (int i =0; i < csvString.Count; i++)
                 {
                     sw.WriteLine(csvString[i]);
                 }
+
+            
                 
             }
 

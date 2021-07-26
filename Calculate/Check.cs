@@ -31,8 +31,16 @@ namespace Plan_n_Check.Calculate
         public static string CheckConstraints_Report(ScriptContext context, ROI ROI, List<Structure> dicomStructure, bool isParotid = false)
             //This returns the HTML string for the full check report, as well as a list of boolean values corresponding to whether or not constraints were met. The list will be in the same order as the list of dicom structures supplied. 
         {
+            if (dicomStructure.Count == 0)
+            {
+                for (int i = 0; i < ROI.Constraints.Count; i++)
+                {
+                    ROI.Constraints[i].Status.Add(null);
+                }
+                return "";
+            }
 
-            string returnString = "<p>";
+                string returnString = "<p>";
             //Go through all plan types and check all constraints for report. 
             PlanSetup p = context.PlanSetup;
             p.DoseValuePresentation = DoseValuePresentation.Absolute;
@@ -190,6 +198,7 @@ namespace Plan_n_Check.Calculate
                                     if ((ROI.Name.ToLower().Contains("paro"))&&(dose < 2500))
                                     {
                                         returnString += "D = " + string.Format("{0:0.0}", dose) + "cGy. Possibly acceptable. <br>";
+                                        ROI.Constraints[i].Status.Add(true);
                                     }
                                     else
                                     {
@@ -624,27 +633,104 @@ namespace Plan_n_Check.Calculate
         public static void RunReport(ScriptContext context, HNPlan hnplan, string path, List<List<Structure>> matchingStructures, List<List<Structure>> optimizedStructures, List<List<string>> updateLog, List<Tuple<ROI, int, int, int, int>> DVH_ReportStructures)
         {
             //Need to go one by one and check constraints. 
-
+           
            
             Patient patient = context.Patient;
             StructureSet ss = context.StructureSet;
-            
+            double MUs_Field1 = 0;
+            double MUs_Field2 = 0;
+            double totalMUs;
+            int totalDose = Convert.ToInt32(context.PlanSetup.TotalDose.Dose);
+            //First check if beams already exist
+            foreach (Beam beam in context.PlanSetup.Beams)
+            {
+                if (beam.Id == "PC_vmat1")
+                {
+                    MUs_Field1 = beam.Meterset.Value;
+
+                }
+                if (beam.Id == "PC_vmat2")
+                {
+                    MUs_Field2 = beam.Meterset.Value;
+
+                }
+            }
+            totalMUs = MUs_Field1 + MUs_Field2;
+
+            //Need to check the jaws if jaw tracking on
+            List<Tuple<double, double>> field1_jawSeparations = new List<Tuple<double, double>>() ; //holds the x and y jaw separations at each control point 
+            List<Tuple<double, double>> field2_jawSeparations = new List<Tuple<double, double>>();
+            foreach (Beam beam in context.PlanSetup.Beams)
+            {
+                if (context.PlanSetup.OptimizationSetup.UseJawTracking == true)
+                {
+                    if (beam.Id == "PC_vmat1")
+                    {
+                        foreach (ControlPoint cp in beam.ControlPoints)
+                        {
+                            double x1 = cp.JawPositions.X1;
+                            double x2 = cp.JawPositions.X2;
+                            double y1 = cp.JawPositions.Y1;
+                            double y2 = cp.JawPositions.Y2;
+
+                            field1_jawSeparations.Add(Tuple.Create(x2 - x1, y2 - y1));
+                        }
+
+                    }
+                    else if (beam.Id == "PC_vmat2")
+                    {
+                        foreach (ControlPoint cp in beam.ControlPoints)
+                        {
+                            double x1 = cp.JawPositions.X1;
+                            double x2 = cp.JawPositions.X2;
+                            double y1 = cp.JawPositions.Y1;
+                            double y2 = cp.JawPositions.Y2;
+
+                            field2_jawSeparations.Add(Tuple.Create(x2 - x1, y2 - y1));
+                        }
+                    }
+
+                }
+                
+            }
+            JawAlerts jawAlerts_Field1 = new JawAlerts();
+            JawAlerts jawAlerts_Field2 = new JawAlerts();
+            int controlPoint = 1;
+            foreach(Tuple<double, double> tup in field1_jawSeparations)
+            {
+                if (tup.Item1 < 20)
+                {
+                    jawAlerts_Field1.addAlert(Tuple.Create(controlPoint, "x", tup.Item1));
+                }
+                else if (tup.Item2 < 20)
+                {
+                    jawAlerts_Field1.addAlert(Tuple.Create(controlPoint, "y", tup.Item2));
+                }
+                controlPoint++;
+            }
+            controlPoint = 1;
+            foreach (Tuple<double, double> tup in field2_jawSeparations)
+            {
+                if (tup.Item1 < 20)
+                {
+                    jawAlerts_Field2.addAlert(Tuple.Create(controlPoint, "x", tup.Item1));
+                }
+                else if (tup.Item2 < 20)
+                {
+                    jawAlerts_Field2.addAlert(Tuple.Create(controlPoint, "y", tup.Item2));
+                }
+                controlPoint++;
+            }
+
+
+
             //Now need to check the constraints on these structures.
             List<string> ReportStrings = new List<string>(); //report for each constraint.           
             for (int i = 0; i < hnplan.ROIs.Count; i++)
             {
-                if (matchingStructures[i].Count > 0)
-                {
-
-                    string report = CheckConstraints_Report(context, hnplan.ROIs[i], matchingStructures[i]);
-                    ReportStrings.Add(report);
-                }
-                else
-                {
-                    ReportStrings.Add("");
-                    
-                }
-                
+                string report = CheckConstraints_Report(context, hnplan.ROIs[i], matchingStructures[i]);
+                ReportStrings.Add(report);
+                       
             }
             //Get the current date and time:
             var culture = new CultureInfo("en-US");
@@ -679,6 +765,10 @@ namespace Plan_n_Check.Calculate
             outputFile += "<p><h4>Patient:</h4>";
             outputFile += "Last name: " + patient.LastName.ToString() + "<br>";
             outputFile += "First name: " + patient.FirstName.ToString() + "<br>";
+            outputFile += "Total Dose: " + totalDose.ToString() + " cGy<br>";
+            outputFile += "Total Monitor Units: " + totalMUs.ToString() + "<br>";
+            outputFile += "Field 1 Monitor Units: " + MUs_Field1.ToString() + "<br>";
+            outputFile += "Field 2 Monitor Units: " + MUs_Field2.ToString() + "<br>";
             outputFile += "<hr>";
              
             //Now have a checkbox summary table for constraints: 
@@ -739,9 +829,70 @@ namespace Plan_n_Check.Calculate
                 }
 
             }
-
-
             outputFile += "</table>";
+
+            if (jawAlerts_Field1.Alerts.Count + jawAlerts_Field2.Alerts.Count > 0)
+            {
+                //Now add another table for jaw alerts: 
+
+                outputFile += "<h4>Jaw Alerts</h4><table><tr>";
+                outputFile += "<th>Field</th>";
+                outputFile += "<th>Control Point</th>";
+                outputFile += "<th>Jaw Direction</th>";
+                outputFile += "<th>Extension (mm)</th>";
+                outputFile += "</tr>";
+
+                //field 1
+                for (int alert_idx = 0; alert_idx < jawAlerts_Field1.Alerts.Count; alert_idx++)
+                {
+                    controlPoint = jawAlerts_Field1.Alerts[alert_idx].Item1;
+                    string direction = jawAlerts_Field1.Alerts[alert_idx].Item2;
+                    double separation = jawAlerts_Field1.Alerts[alert_idx].Item3;
+                    outputFile += "<tr>";
+                    if (alert_idx == 0)
+                    {
+                        outputFile += "<td>PC_vmat1</td>";
+                    }
+                    else
+                    {
+                        outputFile += "<td></td>";
+                    }
+                    outputFile += "<td>" + controlPoint.ToString() + "</td>";
+                    outputFile += "<td>" + direction + "</td>";
+                    outputFile += "<td>" + separation.ToString() + "</td>";
+                    outputFile += "</tr>";
+                }
+                //field 2
+                for (int alert_idx = 0; alert_idx < jawAlerts_Field2.Alerts.Count; alert_idx++)
+                {
+                    controlPoint = jawAlerts_Field2.Alerts[alert_idx].Item1;
+                    string direction = jawAlerts_Field2.Alerts[alert_idx].Item2;
+                    double separation = jawAlerts_Field2.Alerts[alert_idx].Item3;
+                    outputFile += "<tr>";
+                    if (alert_idx == 0)
+                    {
+                        outputFile += "<td>PC_vmat2</td>";
+                    }
+                    else
+                    {
+                        outputFile += "<td> </td>";
+                    }
+                    outputFile += "<td>" + controlPoint.ToString() + "</td>";
+                    outputFile += "<td>" + direction + "</td>";
+                    outputFile += "<td>" + separation.ToString() + "</td>";
+                    outputFile += "</tr>";
+                }
+                outputFile += "</table>";
+            }
+            else
+            {
+                outputFile += "<h4>Jaw Alerts</h4>";
+                outputFile += "<p>No jaw issues detected</p>";
+            }
+            
+
+           
+
 
 
             outputFile += "<br><br></p>";
@@ -1019,5 +1170,24 @@ namespace Plan_n_Check.Calculate
 
             return Tuple.Create(overlapRatio, ptvDose);
         }
+    }
+
+    public class JawAlerts
+    {
+        private List<Tuple<int, string, double>> alerts = new List<Tuple<int, string, double>>();
+
+        public List<Tuple<int, string, double>> Alerts
+        {
+            get { return alerts; }
+            set
+            {
+                alerts = value;
+            }
+        }
+        public void addAlert(Tuple<int, string, double> alert)
+        {
+            alerts.Add(alert);
+        }
+
     }
 }

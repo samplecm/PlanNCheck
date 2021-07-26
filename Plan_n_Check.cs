@@ -72,7 +72,7 @@ namespace VMS.TPS
             System.Windows.Forms.Application.Run(mainForm);
             //System.Windows.System.Windows.MessageBox.Show("Hello", "input", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information, System.Windows.MessageBoxResult.OK);
     }
-        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, List<Tuple<bool, double[], string>> features) //Returns list of matching structures
+        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, List<Tuple<bool, double[], string>> features, bool jawTracking) //Returns list of matching structures
         {
          
             // Check for patient plan loaded
@@ -84,8 +84,6 @@ namespace VMS.TPS
             Course course = context.Course;
             Image image3d = context.Image;
 
-
-            ExternalBeamMachineParameters ebmp = new ExternalBeamMachineParameters("VaUnit6TB", "6X", 600, "ARC", null);
            
             //Create two VMAT beams
             BeamMaker(ref plan, ss, plan.TotalDose.Dose);
@@ -116,7 +114,7 @@ namespace VMS.TPS
                 planes = new List<double[]>();
             }
             
-            List<List<string>> updatesLog = Optimize(choppedContours, planes, ref plan, ref ss, hnPlan, context, optimizedStructures,matchingStructures, contraParName, numIterations, features);
+            List<List<string>> updatesLog = Optimize(choppedContours, planes, ref plan, ref ss, hnPlan, context, optimizedStructures,matchingStructures, contraParName, numIterations, features, jawTracking);
             return Tuple.Create(optimizedStructures, matchingStructures, updatesLog);
 
         }
@@ -194,7 +192,7 @@ namespace VMS.TPS
 
         }
         public static List<List<string>> Optimize(List<List<double[,]>> choppedContours, List<double[]>
-            planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, string contraName, int numIterations, List<Tuple<bool, double[], string>> features)
+            planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, string contraName, int numIterations, List<Tuple<bool, double[], string>> features, bool jawtracking)
         //return a list of strings which is the log of constraint updates during optimization. 
         {
             //Only make parotid structures if that feature has been selected
@@ -221,16 +219,30 @@ namespace VMS.TPS
             plan.SetCalculationModel(CalculationType.DVHEstimation, "DVH Estimation Algorithm [15.6.06]");
             plan.SetCalculationModel(CalculationType.PhotonVolumeDose, "AAA_13623");
             plan.OptimizationSetup.AddNormalTissueObjective(100, 3, 95, 50, 0.2);
-            plan.OptimizeVMAT();
+
+            //use jaw tracking
+            if (jawtracking)
+            {
+                try
+                {
+                    plan.OptimizationSetup.UseJawTracking = true;
+                } catch
+                {
+                    System.Windows.MessageBox.Show("Could not use jaw tracking. Proceeding without.");
+                }
+            }
+            
+           // plan.OptimizeVMAT();
             plan.CalculateDose();
 
-            string mlcID;
+            string mlcID = "HML0990"; 
+           
             OptimizationOptionsVMAT oov;
             ;
             List<List<string>> updateLog = new List<List<string>>();
             for (int iter = 0; iter < numIterations; iter++)
             {
-                mlcID = plan.Beams.FirstOrDefault<Beam>().MLC.Id;
+                //mlcID = plan.Beams.FirstOrDefault<Beam>().MLC.Id;
                 oov = new OptimizationOptionsVMAT(1, mlcID);
                 plan.OptimizeVMAT(oov);
                 plan.CalculateDose();
@@ -243,8 +255,6 @@ namespace VMS.TPS
                     Segmentation.MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, features[0].Item2[0]);
                 }
             }
-            //The final iteration does 4 VMAT cycles
-            mlcID = plan.Beams.FirstOrDefault<Beam>().MLC.Id; //both MLCs have same Id
             oov = new OptimizationOptionsVMAT(4, mlcID);
             plan.OptimizeVMAT(oov);
             plan.CalculateDose();
@@ -253,7 +263,7 @@ namespace VMS.TPS
             //Now need to perform a plan check and iteratively adjust constraints based on whether they passed or failed, and whether they passed with flying colours or failed miserably.
             //Going to find the percentage by which the constraint failed or passed, and adjust both the priority and dose constraint based on this. 
            
-
+            //
 
 
         }
@@ -266,11 +276,13 @@ namespace VMS.TPS
             //First check if beams already exist
             foreach (Beam beam in plan.Beams)
             {
-                if (beam.Id == "vmat1")
+                if (beam.Id == "PC_vmat1")
                 {
                     return;
+                    
                 } 
             }
+            
 
             //need to create two arc beams, and make sure they fit to PTVs.
             ExternalBeamMachineParameters ebmp = new ExternalBeamMachineParameters("VaUnit6TB", "6X", 600, "ARC", null);
@@ -318,11 +330,12 @@ namespace VMS.TPS
             //First get the right jaw dimensions: 
             VRect<double> jaws1 = FitJawsToTarget(isocentre, plan, ptvs, 30, 0);
             VRect<double> jaws2 = FitJawsToTarget(isocentre, plan, ptvs, 330, 0);
-            Beam vmat1 = plan.AddArcBeam(ebmp, jaws1, 30, 181, 179, GantryDirection.Clockwise, 0, isocentre);
-            Beam vmat2 = plan.AddArcBeam(ebmp, jaws2, 330, 179, 181, GantryDirection.CounterClockwise, 0, isocentre);
-            vmat1.Id = "vmat1";
-            vmat2.Id = "vmat2";
+            Beam vmat1 = plan.AddArcBeam(ebmp, jaws1, 30, 180.1, 179.9, GantryDirection.Clockwise, 0, isocentre);
+            Beam vmat2 = plan.AddArcBeam(ebmp, jaws2, 330, 179.9, 180.1, GantryDirection.CounterClockwise, 0, isocentre);
+            vmat1.Id = "PC_vmat1";
+            vmat2.Id = "PC_vmat2";
 
+            
 
         }
         public static VRect<double> FitJawsToTarget(VVector isocentre, ExternalPlanSetup plan, List<Structure> ptvs, double collimatorAngleInDeg, double margin)
@@ -362,31 +375,19 @@ namespace VMS.TPS
             //Issues if exceed a field size of 22cm, so need to trim if necessary:
             if (xMax-xMin > 220)
             {
-                //trim the largest one down to meet the size restriction:
-                if (Math.Abs(xMin) > xMax)
-                {
-                    double extraLength = (xMax - xMin) - 220;
-                    xMin += extraLength + 5;
-                }else if (xMax > Math.Abs(xMin))
-                {
-                    double extraLength = (xMax - xMin) - 220;
-                    xMax -= extraLength + 5;
-                }
+
+                double extraLength = (xMax - xMin) - 220;
+                xMin += (extraLength / 2);
+                xMax -= (extraLength / 2);
             }
             if (yMax - yMin > 220)
-            {
-                //trim the largest one down to meet the size restriction:
-                if (Math.Abs(yMin) > yMax)
-                {
-                    double extraLength = (yMax - yMin) - 220;
-                    yMin += extraLength + 5;
-                }
-                else if (yMax > Math.Abs(yMin))
-                {
-                    double extraLength = (yMax - yMin) - 220;
-                    yMax -= extraLength + 5;
-                }
+            {           
+                double extraLength = (yMax - yMin) - 220;
+                yMin += (extraLength/2);
+                yMax -= (extraLength / 2);
+                
             }
+        
             return new VRect<double>(xMin, yMin, xMax, yMax);
         }
 
