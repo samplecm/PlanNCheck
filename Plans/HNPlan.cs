@@ -226,7 +226,7 @@ namespace Plan_n_Check.Plans
             //Body (25)
             ROI Body = new ROI();
             Body.Name = "Body";
-            Body.Constraints.Add(new Constraint("D", "max", "<", 1.1*this.PrescriptionDose, "abs", 100, new List<int> { 80, 120 }));
+            Body.Constraints.Add(new Constraint("D", "max", "<", 1.1*this.PrescriptionDose, "abs", 100, new List<int> { 80, 130 }));
             this.rois.Add(Body);
         }
 

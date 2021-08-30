@@ -28,7 +28,7 @@ namespace Plan_n_Check.Calculate
     public static class Check
     {       
         
-        public static string CheckConstraints_Report(ScriptContext context, ROI ROI, List<Structure> dicomStructure, bool isParotid = false)
+        public static string CheckConstraints_Report(ScriptContext context, ROI ROI, List<Structure> dicomStructure)
             //This returns the HTML string for the full check report, as well as a list of boolean values corresponding to whether or not constraints were met. The list will be in the same order as the list of dicom structures supplied. 
         {
             if (dicomStructure.Count == 0)
@@ -54,6 +54,10 @@ namespace Plan_n_Check.Calculate
             }
             for (int match = 0; match < dicomStructure.Count; match++)
             {
+                if (dicomStructure[match].Volume < 0.5) //if this opti structure has near 0 volume due to entire overlap with target volume
+                {
+                    continue;
+                }
                 returnString += "<h6>Matching Structure " + string.Format("{0}", match + 1) + ": </h6>";
                 //first go one by one through the constraints.
                 for (int i = 0; i < ROI.Constraints.Count; i++)
@@ -361,6 +365,10 @@ namespace Plan_n_Check.Calculate
             }
             for (int match = 0; match < dicomStructure.Count; match++)
             {
+                if (dicomStructure[match].Volume < 0.5) //if opti structure fully overlaps and it was left with 0 volume
+                {
+                    continue;
+                }
                 constraintValues.Add(new List<double>());
                 //first go one by one through the constraints.
                 for (int i = 0; i < ROI.Constraints.Count; i++)
@@ -630,7 +638,8 @@ namespace Plan_n_Check.Calculate
             return true;
         }
 
-        public static void RunReport(ScriptContext context, HNPlan hnplan, string path, List<List<Structure>> matchingStructures, List<List<Structure>> optimizedStructures, List<List<string>> updateLog, List<Tuple<ROI, int, int, int, int>> DVH_ReportStructures)
+        public static void RunReport(ScriptContext context, HNPlan hnplan, string path, List<List<Structure>> matchingStructures, 
+            List<List<Structure>> optimizedStructures, List<List<string>> updateLog, List<Tuple<ROI, int, int, int, int>> DVH_ReportStructures, bool isPassed=false)
         {
             //Need to go one by one and check constraints. 
            
@@ -728,7 +737,7 @@ namespace Plan_n_Check.Calculate
             List<string> ReportStrings = new List<string>(); //report for each constraint.           
             for (int i = 0; i < hnplan.ROIs.Count; i++)
             {
-                string report = CheckConstraints_Report(context, hnplan.ROIs[i], matchingStructures[i]);
+                string report = CheckConstraints_Report(context, hnplan.ROIs[i], optimizedStructures[i]);
                 ReportStrings.Add(report);
                        
             }
@@ -765,10 +774,19 @@ namespace Plan_n_Check.Calculate
             outputFile += "<p><h4>Patient:</h4>";
             outputFile += "Last name: " + patient.LastName.ToString() + "<br>";
             outputFile += "First name: " + patient.FirstName.ToString() + "<br>";
-            outputFile += "Total Dose: " + totalDose.ToString() + " cGy<br>";
-            outputFile += "Total Monitor Units: " + totalMUs.ToString() + "<br>";
-            outputFile += "Field 1 Monitor Units: " + MUs_Field1.ToString() + "<br>";
-            outputFile += "Field 2 Monitor Units: " + MUs_Field2.ToString() + "<br>";
+            outputFile += "Prescription Dose: " + string.Format("{0:0.#}", totalDose) + " cGy<br>";
+            outputFile += "Total Monitor Units: " + string.Format("{0:0.#}", totalMUs) + "<br>";
+            outputFile += "Field 1 Monitor Units: " + string.Format("{0:0.#}", MUs_Field1) + "<br>";
+            outputFile += "Field 2 Monitor Units: " + string.Format("{0:0.#}", MUs_Field2);
+            if (isPassed)
+            {
+                outputFile += greenCheck;
+            }
+            else
+            {
+                outputFile +=  redCheck;
+            }
+            
             outputFile += "<hr>";
              
             //Now have a checkbox summary table for constraints: 

@@ -2074,6 +2074,7 @@ namespace Plan_n_Check
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(734, 591);
+            this.Controls.Add(this.PlotPanel);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.PanelSpecialFeatures);
             this.Controls.Add(this.panel5);
@@ -2092,7 +2093,6 @@ namespace Plan_n_Check
             this.Controls.Add(this.IterationsTextBox);
             this.Controls.Add(this.checkBoxJawTracking);
             this.Controls.Add(this.LatexPanel);
-            this.Controls.Add(this.PlotPanel);
             this.ForeColor = System.Drawing.SystemColors.ControlLight;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));

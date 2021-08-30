@@ -203,13 +203,14 @@ namespace Plan_n_Check
                 this.StartErrorLabel.Text = "In progress";
                 this.StartErrorLabel.Visible = true;
                 this.OptimTime.Start();
-                var structureLists = VMS.TPS.Script.StartOptimizer(this.context, this.HnPlan, this.MatchingStructures, iterations, this.Features, jawTracking);
-                List<List<Structure>> optimizedStructures = structureLists.Item1;
-                List<List<Structure>> matchingStructures = structureLists.Item2;
-                List<List<string>> updateLog = structureLists.Item3;
+                var optimData = VMS.TPS.Script.StartOptimizer(this.context, this.HnPlan, this.MatchingStructures, iterations, this.Features, jawTracking);
+                List<List<Structure>> optimizedStructures = optimData.Item1;
+                List<List<Structure>> matchingStructures = optimData.Item2;
+                List<List<string>> updateLog = optimData.Item3;
+                bool isPassed = optimData.Item4;
                 if (SaveCheck.Checked)
                 {
-                    Check.RunReport(this.context, this.HnPlan, this.SavePath, this.MatchingStructures, optimizedStructures, updateLog, this.DVH_ReportStructures);
+                    Check.RunReport(this.context, this.HnPlan, this.SavePath, this.MatchingStructures, optimizedStructures, updateLog, this.DVH_ReportStructures, isPassed);
                 }
                 this.StartErrorLabel.Visible = false;
                 this.TotalTime.Stop();
@@ -788,7 +789,7 @@ namespace Plan_n_Check
                 List<List<string>> updateLog = structureLists.Item3;
                 if (SaveCheck.Checked)
                 {
-                    Check.RunReport(this.context, this.HnPlan, this.SavePath, this.MatchingStructures, optimizedStructures, updateLog, this.DVH_ReportStructures);
+                    Check.RunReport(this.context, this.HnPlan, this.SavePath, this.MatchingStructures, optimizedStructures, updateLog, this.DVH_ReportStructures , true);
                 }
                 this.StartErrorLabel.Visible = false;
                 this.TotalTime.Stop();
@@ -1199,8 +1200,11 @@ namespace Plan_n_Check
                     plotStructure = structure;
                 }
             }
+        
             var dvh = DVHMaker.CalculateDVH(this.context.PlanSetup, plotStructure);
+            
             var series = DVHMaker.CreateDVHSeries(dvh);
+            
             this.PV.Model.Series.Add(series);
             this.Controls.Add(this.PV);
             this.PlotPanel.Controls.Add(this.PV);
@@ -1526,7 +1530,7 @@ namespace Plan_n_Check
                 csvLine = "";
                 csvLine += (iter + 1).ToString() + ",";
                 csvLine += CombinedPlanData[iter].Item1 + ",";
-                for (int roi_idx = 0; roi_idx < 26; roi_idx++) //go through all ROIs
+                for (int roi_idx = 0; roi_idx < CombinedPlanData[iter].Item3.Count; roi_idx++) //go through all ROIs
                 {
                     if (CombinedPlanData[iter].Item3[roi_idx].Count == 0)
                     {

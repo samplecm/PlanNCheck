@@ -270,10 +270,17 @@ namespace Plan_n_Check.Optimization
         }
 
 
-        public static List<string> UpdateConstraints(ref ExternalPlanSetup plan, ref StructureSet ss, ref HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures)
+        public static List<string> UpdateConstraints(ref ExternalPlanSetup plan, ref StructureSet ss, ref HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, int numCycles)
         {
             List<string> log = new List<string>();
             log.Add("<p>");
+            if (numCycles == 1)
+            {
+                log.Add("Preliminary Optimization Iteration Update Log: <br>");
+            }
+            else {
+                log.Add("Full VMAT Optimization Update: <br>");
+            }
 
 
             //Go through all plan types and check all constraints.

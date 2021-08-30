@@ -72,7 +72,7 @@ namespace VMS.TPS
             System.Windows.Forms.Application.Run(mainForm);
             //System.Windows.System.Windows.MessageBox.Show("Hello", "input", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information, System.Windows.MessageBoxResult.OK);
     }
-        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, List<Tuple<bool, double[], string>> features, bool jawTracking) //Returns list of matching structures
+        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>, bool> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, List<Tuple<bool, double[], string>> features, bool jawTracking) //Returns list of matching structures
         {
          
             // Check for patient plan loaded
@@ -114,8 +114,10 @@ namespace VMS.TPS
                 planes = new List<double[]>();
             }
             
-            List<List<string>> updatesLog = Optimize(choppedContours, planes, ref plan, ref ss, hnPlan, context, optimizedStructures,matchingStructures, contraParName, numIterations, features, jawTracking);
-            return Tuple.Create(optimizedStructures, matchingStructures, updatesLog);
+            Tuple<bool, List<List<string>>> optimData = Optimize(choppedContours, planes, ref plan, ref ss, hnPlan, context, optimizedStructures,matchingStructures, contraParName, numIterations, features, jawTracking);
+            bool isPassed = optimData.Item1;
+            List<List<string>> updatesLog = optimData.Item2;
+            return Tuple.Create(optimizedStructures, matchingStructures, updatesLog, isPassed);
 
         }
         public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>> PrepareCheck(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, List<Tuple<bool, double[], string>> features) //Returns list of matching structures
@@ -191,7 +193,7 @@ namespace VMS.TPS
 
 
         }
-        public static List<List<string>> Optimize(List<List<double[,]>> choppedContours, List<double[]>
+        public static Tuple<bool, List<List<string>>> Optimize(List<List<double[,]>> choppedContours, List<double[]>
             planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, string contraName, int numIterations, List<Tuple<bool, double[], string>> features, bool jawtracking)
         //return a list of strings which is the log of constraint updates during optimization. 
         {
@@ -235,35 +237,50 @@ namespace VMS.TPS
            // plan.OptimizeVMAT();
             plan.CalculateDose();
 
-            string mlcID = "HML0990"; 
-           
+            string mlcID = "HML0990";
+            int numCycles = 1;
             OptimizationOptionsVMAT oov;
             ;
+            bool isPassed = false;
             List<List<string>> updateLog = new List<List<string>>();
             for (int iter = 0; iter < numIterations; iter++)
             {
                 //mlcID = plan.Beams.FirstOrDefault<Beam>().MLC.Id;
-                oov = new OptimizationOptionsVMAT(1, mlcID);
+                oov = new OptimizationOptionsVMAT(numCycles, mlcID);
                 plan.OptimizeVMAT(oov);
                 plan.CalculateDose();
 
                 //Now need to perform a plan check and iteratively adjust constraints based on whether they passed or failed, and whether they passed with flying colours or failed miserably.
                 //Going to find the percentage by which the constraint failed or passed, and adjust both the priority and dose constraint based on this. 
-                updateLog.Add(OptObjectivesEditing.UpdateConstraints(ref plan, ref ss, ref hnPlan, context, optimizedStructures, matchingStructures));
+                updateLog.Add(OptObjectivesEditing.UpdateConstraints(ref plan, ref ss, ref hnPlan, context, optimizedStructures, matchingStructures, numCycles));
                 if (features[0].Item1 == true)
                 {
                     Segmentation.MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, features[0].Item2[0]);
                 }
-            }
-            oov = new OptimizationOptionsVMAT(4, mlcID);
-            plan.OptimizeVMAT(oov);
-            plan.CalculateDose();
 
-            return updateLog;
-            //Now need to perform a plan check and iteratively adjust constraints based on whether they passed or failed, and whether they passed with flying colours or failed miserably.
-            //Going to find the percentage by which the constraint failed or passed, and adjust both the priority and dose constraint based on this. 
-           
-            //
+            }
+            numCycles = 4;
+            oov = new OptimizationOptionsVMAT(numCycles, mlcID);
+            //Now for a maximum of 3 tries, perform 4-cycle vmat optimization followed by constraint updating until a plan is passed
+            for (int i = 0; i < 3; i++)
+            {
+                plan.OptimizeVMAT(oov);
+                plan.CalculateDose();
+                updateLog.Add(OptObjectivesEditing.UpdateConstraints(ref plan, ref ss, ref hnPlan, context, optimizedStructures, matchingStructures, numCycles));
+                if (features[0].Item1 == true)
+                {
+                    Segmentation.MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, features[0].Item2[0]);
+                }
+                isPassed = Check.EvaluatePlan(context, hnPlan, matchingStructures, optimizedStructures).Item1;
+                if (isPassed)
+                {
+                    break;
+                }
+            }
+            
+
+            return Tuple.Create(isPassed, updateLog);
+            
 
 
         }
@@ -274,13 +291,9 @@ namespace VMS.TPS
         public static void BeamMaker(ref ExternalPlanSetup plan, StructureSet ss, double prescriptionDose)
         {
             //First check if beams already exist
-            foreach (Beam beam in plan.Beams)
+            foreach (Beam beam in plan.Beams.ToList())
             {
-                if (beam.Id == "PC_vmat1")
-                {
-                    return;
-                    
-                } 
+                plan.RemoveBeam(beam);
             }
             
 
