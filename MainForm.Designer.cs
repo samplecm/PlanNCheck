@@ -53,26 +53,7 @@ namespace Plan_n_Check
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.label2 = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.checkBox19 = new System.Windows.Forms.CheckBox();
-            this.checkBox18 = new System.Windows.Forms.CheckBox();
-            this.checkBox17 = new System.Windows.Forms.CheckBox();
-            this.checkBox16 = new System.Windows.Forms.CheckBox();
-            this.checkBox15 = new System.Windows.Forms.CheckBox();
-            this.checkBox14 = new System.Windows.Forms.CheckBox();
-            this.checkBox13 = new System.Windows.Forms.CheckBox();
-            this.checkBox12 = new System.Windows.Forms.CheckBox();
-            this.checkBox11 = new System.Windows.Forms.CheckBox();
-            this.checkBox10 = new System.Windows.Forms.CheckBox();
-            this.checkBox9 = new System.Windows.Forms.CheckBox();
-            this.checkBox8 = new System.Windows.Forms.CheckBox();
-            this.checkBox7 = new System.Windows.Forms.CheckBox();
-            this.checkBox6 = new System.Windows.Forms.CheckBox();
-            this.checkBox5 = new System.Windows.Forms.CheckBox();
-            this.checkBox4 = new System.Windows.Forms.CheckBox();
-            this.checkBox3 = new System.Windows.Forms.CheckBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.ComboBox_PlanType = new System.Windows.Forms.ComboBox();
             this.AssigningPanel = new System.Windows.Forms.Panel();
             this.assignedLabel = new System.Windows.Forms.Label();
             this.StructLabel = new System.Windows.Forms.Label();
@@ -89,7 +70,17 @@ namespace Plan_n_Check
             this.label24 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.panel5 = new System.Windows.Forms.Panel();
+            this.Label_Fracs = new System.Windows.Forms.Label();
+            this.ComboBox_TreatmentArea = new System.Windows.Forms.ComboBox();
+            this.Label_TreatmentArea = new System.Windows.Forms.Label();
+            this.ComboBox_TreatmentCenter = new System.Windows.Forms.ComboBox();
+            this.Label_TreatmentCenter = new System.Windows.Forms.Label();
+            this.Label_Fractions = new System.Windows.Forms.Label();
+            this.Label_Presc = new System.Windows.Forms.Label();
+            this.Label_PrescDose = new System.Windows.Forms.Label();
+            this.Label_PlanType = new System.Windows.Forms.Label();
             this.ErrorLabel = new System.Windows.Forms.Label();
+            this.checkBoxJawTracking = new System.Windows.Forms.CheckBox();
             this.ConstraintGridView = new System.Windows.Forms.DataGridView();
             this.Structure = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Type = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -201,9 +192,7 @@ namespace Plan_n_Check
             this.PlotButton = new System.Windows.Forms.Button();
             this.PlotCombobox = new System.Windows.Forms.ComboBox();
             this.PlotDoneButton = new System.Windows.Forms.Button();
-            this.checkBoxJawTracking = new System.Windows.Forms.CheckBox();
             CustomizeButton = new System.Windows.Forms.Button();
-            this.groupBox1.SuspendLayout();
             this.AssigningPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AssignStructGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.conStructGridView)).BeginInit();
@@ -227,7 +216,7 @@ namespace Plan_n_Check
             CustomizeButton.Name = "CustomizeButton";
             CustomizeButton.Size = new System.Drawing.Size(162, 34);
             CustomizeButton.TabIndex = 11;
-            CustomizeButton.Text = "Customize";
+            CustomizeButton.Text = "Continue";
             CustomizeButton.UseVisualStyleBackColor = false;
             CustomizeButton.Click += new System.EventHandler(this.CustomizeButton_Click);
             // 
@@ -244,293 +233,14 @@ namespace Plan_n_Check
             this.label2.Text = "Plan";
             this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
-            // groupBox1
+            // ComboBox_PlanType
             // 
-            this.groupBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.groupBox1.Controls.Add(this.checkBox19);
-            this.groupBox1.Controls.Add(this.checkBox18);
-            this.groupBox1.Controls.Add(this.checkBox17);
-            this.groupBox1.Controls.Add(this.checkBox16);
-            this.groupBox1.Controls.Add(this.checkBox15);
-            this.groupBox1.Controls.Add(this.checkBox14);
-            this.groupBox1.Controls.Add(this.checkBox13);
-            this.groupBox1.Controls.Add(this.checkBox12);
-            this.groupBox1.Controls.Add(this.checkBox11);
-            this.groupBox1.Controls.Add(this.checkBox10);
-            this.groupBox1.Controls.Add(this.checkBox9);
-            this.groupBox1.Controls.Add(this.checkBox8);
-            this.groupBox1.Controls.Add(this.checkBox7);
-            this.groupBox1.Controls.Add(this.checkBox6);
-            this.groupBox1.Controls.Add(this.checkBox5);
-            this.groupBox1.Controls.Add(this.checkBox4);
-            this.groupBox1.Controls.Add(this.checkBox3);
-            this.groupBox1.Controls.Add(this.checkBox2);
-            this.groupBox1.Controls.Add(this.checkBox1);
-            this.groupBox1.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox1.ForeColor = System.Drawing.Color.DarkTurquoise;
-            this.groupBox1.Location = new System.Drawing.Point(43, 34);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(657, 287);
-            this.groupBox1.TabIndex = 0;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
-            // 
-            // checkBox19
-            // 
-            this.checkBox19.AutoSize = true;
-            this.checkBox19.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox19.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox19.Location = new System.Drawing.Point(304, 228);
-            this.checkBox19.Name = "checkBox19";
-            this.checkBox19.Size = new System.Drawing.Size(312, 27);
-            this.checkBox19.TabIndex = 18;
-            this.checkBox19.Text = "Sarcoma Retroperitoneal and Pelvis";
-            this.checkBox19.UseVisualStyleBackColor = true;
-            this.checkBox19.CheckedChanged += new System.EventHandler(this.checkBox19_CheckedChanged);
-            // 
-            // checkBox18
-            // 
-            this.checkBox18.AutoSize = true;
-            this.checkBox18.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox18.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox18.Location = new System.Drawing.Point(304, 202);
-            this.checkBox18.Name = "checkBox18";
-            this.checkBox18.Size = new System.Drawing.Size(138, 27);
-            this.checkBox18.TabIndex = 17;
-            this.checkBox18.Text = "Sarcoma Limb";
-            this.checkBox18.UseVisualStyleBackColor = true;
-            this.checkBox18.CheckedChanged += new System.EventHandler(this.checkBox18_CheckedChanged);
-            // 
-            // checkBox17
-            // 
-            this.checkBox17.AutoSize = true;
-            this.checkBox17.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox17.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox17.Location = new System.Drawing.Point(304, 176);
-            this.checkBox17.Name = "checkBox17";
-            this.checkBox17.Size = new System.Drawing.Size(97, 27);
-            this.checkBox17.TabIndex = 16;
-            this.checkBox17.Text = "Prostate";
-            this.checkBox17.UseVisualStyleBackColor = true;
-            this.checkBox17.CheckedChanged += new System.EventHandler(this.checkBox17_CheckedChanged);
-            // 
-            // checkBox16
-            // 
-            this.checkBox16.AutoSize = true;
-            this.checkBox16.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox16.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox16.Location = new System.Drawing.Point(304, 150);
-            this.checkBox16.Name = "checkBox16";
-            this.checkBox16.Size = new System.Drawing.Size(342, 27);
-            this.checkBox16.TabIndex = 15;
-            this.checkBox16.Text = "P1 Prostate/pelvis (plus P2 LDR Brachy)";
-            this.checkBox16.UseVisualStyleBackColor = true;
-            this.checkBox16.CheckedChanged += new System.EventHandler(this.checkBox16_CheckedChanged);
-            // 
-            // checkBox15
-            // 
-            this.checkBox15.AutoSize = true;
-            this.checkBox15.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox15.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox15.Location = new System.Drawing.Point(304, 124);
-            this.checkBox15.Name = "checkBox15";
-            this.checkBox15.Size = new System.Drawing.Size(252, 27);
-            this.checkBox15.TabIndex = 14;
-            this.checkBox15.Text = "Post-operative prostate bed";
-            this.checkBox15.UseVisualStyleBackColor = true;
-            this.checkBox15.CheckedChanged += new System.EventHandler(this.checkBox15_CheckedChanged);
-            // 
-            // checkBox14
-            // 
-            this.checkBox14.AutoSize = true;
-            this.checkBox14.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox14.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox14.Location = new System.Drawing.Point(304, 98);
-            this.checkBox14.Name = "checkBox14";
-            this.checkBox14.Size = new System.Drawing.Size(96, 27);
-            this.checkBox14.TabIndex = 13;
-            this.checkBox14.Text = "Orator 2";
-            this.checkBox14.UseVisualStyleBackColor = true;
-            this.checkBox14.CheckedChanged += new System.EventHandler(this.checkBox14_CheckedChanged);
-            // 
-            // checkBox13
-            // 
-            this.checkBox13.AutoSize = true;
-            this.checkBox13.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox13.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox13.Location = new System.Drawing.Point(304, 72);
-            this.checkBox13.Name = "checkBox13";
-            this.checkBox13.Size = new System.Drawing.Size(172, 27);
-            this.checkBox13.TabIndex = 12;
-            this.checkBox13.Text = "Lymphoma Thorax";
-            this.checkBox13.UseVisualStyleBackColor = true;
-            this.checkBox13.CheckedChanged += new System.EventHandler(this.checkBox13_CheckedChanged);
-            // 
-            // checkBox12
-            // 
-            this.checkBox12.AutoSize = true;
-            this.checkBox12.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox12.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox12.Location = new System.Drawing.Point(304, 46);
-            this.checkBox12.Name = "checkBox12";
-            this.checkBox12.Size = new System.Drawing.Size(165, 27);
-            this.checkBox12.TabIndex = 11;
-            this.checkBox12.Text = "Lymphoma Pelvis";
-            this.checkBox12.UseVisualStyleBackColor = true;
-            this.checkBox12.CheckedChanged += new System.EventHandler(this.checkBox12_CheckedChanged);
-            // 
-            // checkBox11
-            // 
-            this.checkBox11.AutoSize = true;
-            this.checkBox11.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox11.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox11.Location = new System.Drawing.Point(304, 20);
-            this.checkBox11.Name = "checkBox11";
-            this.checkBox11.Size = new System.Drawing.Size(143, 27);
-            this.checkBox11.TabIndex = 10;
-            this.checkBox11.Text = "Lymphoma H&N";
-            this.checkBox11.UseVisualStyleBackColor = true;
-            this.checkBox11.CheckedChanged += new System.EventHandler(this.checkBox11_CheckedChanged);
-            // 
-            // checkBox10
-            // 
-            this.checkBox10.AutoSize = true;
-            this.checkBox10.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.checkBox10.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox10.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox10.Location = new System.Drawing.Point(19, 254);
-            this.checkBox10.Name = "checkBox10";
-            this.checkBox10.Size = new System.Drawing.Size(66, 27);
-            this.checkBox10.TabIndex = 9;
-            this.checkBox10.Text = "Lung";
-            this.checkBox10.UseVisualStyleBackColor = true;
-            this.checkBox10.CheckedChanged += new System.EventHandler(this.checkBox10_CheckedChanged);
-            // 
-            // checkBox9
-            // 
-            this.checkBox9.AutoSize = true;
-            this.checkBox9.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.checkBox9.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox9.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox9.Location = new System.Drawing.Point(19, 228);
-            this.checkBox9.Name = "checkBox9";
-            this.checkBox9.Size = new System.Drawing.Size(231, 27);
-            this.checkBox9.TabIndex = 8;
-            this.checkBox9.Text = "Hepatocellular carcinoma";
-            this.checkBox9.UseVisualStyleBackColor = true;
-            this.checkBox9.CheckedChanged += new System.EventHandler(this.checkBox9_CheckedChanged);
-            // 
-            // checkBox8
-            // 
-            this.checkBox8.AutoSize = true;
-            this.checkBox8.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.checkBox8.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox8.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox8.Location = new System.Drawing.Point(19, 202);
-            this.checkBox8.Name = "checkBox8";
-            this.checkBox8.Size = new System.Drawing.Size(147, 27);
-            this.checkBox8.TabIndex = 7;
-            this.checkBox8.Text = "Head and Neck";
-            this.checkBox8.UseVisualStyleBackColor = true;
-            this.checkBox8.CheckedChanged += new System.EventHandler(this.checkBox8_CheckedChanged);
-            // 
-            // checkBox7
-            // 
-            this.checkBox7.AutoSize = true;
-            this.checkBox7.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.checkBox7.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox7.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox7.Location = new System.Drawing.Point(19, 176);
-            this.checkBox7.Name = "checkBox7";
-            this.checkBox7.Size = new System.Drawing.Size(79, 27);
-            this.checkBox7.TabIndex = 6;
-            this.checkBox7.Text = "Gynae";
-            this.checkBox7.UseVisualStyleBackColor = true;
-            this.checkBox7.CheckedChanged += new System.EventHandler(this.checkBox7_CheckedChanged);
-            // 
-            // checkBox6
-            // 
-            this.checkBox6.AutoSize = true;
-            this.checkBox6.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.checkBox6.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox6.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox6.Location = new System.Drawing.Point(19, 150);
-            this.checkBox6.Name = "checkBox6";
-            this.checkBox6.Size = new System.Drawing.Size(85, 27);
-            this.checkBox6.TabIndex = 5;
-            this.checkBox6.Text = "Glioma";
-            this.checkBox6.UseVisualStyleBackColor = true;
-            this.checkBox6.CheckedChanged += new System.EventHandler(this.checkBox6_CheckedChanged);
-            // 
-            // checkBox5
-            // 
-            this.checkBox5.AutoSize = true;
-            this.checkBox5.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.checkBox5.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox5.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox5.Location = new System.Drawing.Point(19, 124);
-            this.checkBox5.Name = "checkBox5";
-            this.checkBox5.Size = new System.Drawing.Size(215, 27);
-            this.checkBox5.TabIndex = 4;
-            this.checkBox5.Text = "Thoracic/ GE Esophagus";
-            this.checkBox5.UseVisualStyleBackColor = true;
-            this.checkBox5.CheckedChanged += new System.EventHandler(this.checkBox5_CheckedChanged);
-            // 
-            // checkBox4
-            // 
-            this.checkBox4.AutoSize = true;
-            this.checkBox4.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.checkBox4.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox4.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox4.Location = new System.Drawing.Point(19, 98);
-            this.checkBox4.Name = "checkBox4";
-            this.checkBox4.Size = new System.Drawing.Size(175, 27);
-            this.checkBox4.TabIndex = 3;
-            this.checkBox4.Text = "Breast / Chestwall";
-            this.checkBox4.UseVisualStyleBackColor = true;
-            this.checkBox4.CheckedChanged += new System.EventHandler(this.checkBox4_CheckedChanged);
-            // 
-            // checkBox3
-            // 
-            this.checkBox3.AutoSize = true;
-            this.checkBox3.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.checkBox3.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox3.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox3.Location = new System.Drawing.Point(19, 72);
-            this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(131, 27);
-            this.checkBox3.TabIndex = 2;
-            this.checkBox3.Text = "Brain Glioma";
-            this.checkBox3.UseVisualStyleBackColor = true;
-            this.checkBox3.CheckedChanged += new System.EventHandler(this.checkBox3_CheckedChanged);
-            // 
-            // checkBox2
-            // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.checkBox2.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox2.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox2.Location = new System.Drawing.Point(19, 46);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(168, 27);
-            this.checkBox2.TabIndex = 1;
-            this.checkBox2.Text = "Brain Metastases";
-            this.checkBox2.UseVisualStyleBackColor = true;
-            this.checkBox2.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
-            // 
-            // checkBox1
-            // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.checkBox1.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox1.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBox1.Location = new System.Drawing.Point(19, 20);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(112, 27);
-            this.checkBox1.TabIndex = 0;
-            this.checkBox1.Text = "Anal Canal";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            this.ComboBox_PlanType.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ComboBox_PlanType.FormattingEnabled = true;
+            this.ComboBox_PlanType.Location = new System.Drawing.Point(392, 52);
+            this.ComboBox_PlanType.Name = "ComboBox_PlanType";
+            this.ComboBox_PlanType.Size = new System.Drawing.Size(156, 31);
+            this.ComboBox_PlanType.TabIndex = 14;
             // 
             // AssigningPanel
             // 
@@ -755,13 +465,126 @@ namespace Plan_n_Check
             // panel5
             // 
             this.panel5.BackColor = System.Drawing.Color.White;
+            this.panel5.Controls.Add(this.Label_Fracs);
+            this.panel5.Controls.Add(this.ComboBox_TreatmentArea);
+            this.panel5.Controls.Add(this.Label_TreatmentArea);
+            this.panel5.Controls.Add(this.ComboBox_TreatmentCenter);
+            this.panel5.Controls.Add(this.Label_TreatmentCenter);
+            this.panel5.Controls.Add(this.Label_Fractions);
+            this.panel5.Controls.Add(this.Label_Presc);
+            this.panel5.Controls.Add(this.Label_PrescDose);
+            this.panel5.Controls.Add(this.Label_PlanType);
+            this.panel5.Controls.Add(this.ComboBox_PlanType);
             this.panel5.Controls.Add(CustomizeButton);
-            this.panel5.Controls.Add(this.groupBox1);
             this.panel5.Controls.Add(this.ErrorLabel);
+            this.panel5.Controls.Add(this.checkBoxJawTracking);
             this.panel5.Location = new System.Drawing.Point(0, 65);
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(737, 386);
             this.panel5.TabIndex = 21;
+            // 
+            // Label_Fracs
+            // 
+            this.Label_Fracs.AutoSize = true;
+            this.Label_Fracs.BackColor = System.Drawing.Color.Transparent;
+            this.Label_Fracs.Font = new System.Drawing.Font("Tahoma", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_Fracs.ForeColor = System.Drawing.Color.SteelBlue;
+            this.Label_Fracs.Location = new System.Drawing.Point(388, 132);
+            this.Label_Fracs.Name = "Label_Fracs";
+            this.Label_Fracs.Size = new System.Drawing.Size(45, 23);
+            this.Label_Fracs.TabIndex = 26;
+            this.Label_Fracs.Text = "cGy";
+            // 
+            // ComboBox_TreatmentArea
+            // 
+            this.ComboBox_TreatmentArea.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ComboBox_TreatmentArea.FormattingEnabled = true;
+            this.ComboBox_TreatmentArea.Location = new System.Drawing.Point(394, 237);
+            this.ComboBox_TreatmentArea.Name = "ComboBox_TreatmentArea";
+            this.ComboBox_TreatmentArea.Size = new System.Drawing.Size(128, 31);
+            this.ComboBox_TreatmentArea.TabIndex = 25;
+            // 
+            // Label_TreatmentArea
+            // 
+            this.Label_TreatmentArea.AutoSize = true;
+            this.Label_TreatmentArea.BackColor = System.Drawing.Color.Transparent;
+            this.Label_TreatmentArea.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_TreatmentArea.ForeColor = System.Drawing.Color.SteelBlue;
+            this.Label_TreatmentArea.Location = new System.Drawing.Point(157, 244);
+            this.Label_TreatmentArea.Name = "Label_TreatmentArea";
+            this.Label_TreatmentArea.Size = new System.Drawing.Size(160, 25);
+            this.Label_TreatmentArea.TabIndex = 24;
+            this.Label_TreatmentArea.Text = "Treatment Area";
+            // 
+            // ComboBox_TreatmentCenter
+            // 
+            this.ComboBox_TreatmentCenter.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ComboBox_TreatmentCenter.FormattingEnabled = true;
+            this.ComboBox_TreatmentCenter.Location = new System.Drawing.Point(394, 201);
+            this.ComboBox_TreatmentCenter.Name = "ComboBox_TreatmentCenter";
+            this.ComboBox_TreatmentCenter.Size = new System.Drawing.Size(196, 31);
+            this.ComboBox_TreatmentCenter.TabIndex = 23;
+            this.ComboBox_TreatmentCenter.SelectedIndexChanged += new System.EventHandler(this.ComboBox_TreatmentCenter_SelectedIndexChanged);
+            // 
+            // Label_TreatmentCenter
+            // 
+            this.Label_TreatmentCenter.AutoSize = true;
+            this.Label_TreatmentCenter.BackColor = System.Drawing.Color.Transparent;
+            this.Label_TreatmentCenter.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_TreatmentCenter.ForeColor = System.Drawing.Color.SteelBlue;
+            this.Label_TreatmentCenter.Location = new System.Drawing.Point(138, 200);
+            this.Label_TreatmentCenter.Name = "Label_TreatmentCenter";
+            this.Label_TreatmentCenter.Size = new System.Drawing.Size(179, 25);
+            this.Label_TreatmentCenter.TabIndex = 22;
+            this.Label_TreatmentCenter.Text = "Treatment Center";
+            // 
+            // Label_Fractions
+            // 
+            this.Label_Fractions.AutoSize = true;
+            this.Label_Fractions.BackColor = System.Drawing.Color.Transparent;
+            this.Label_Fractions.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_Fractions.ForeColor = System.Drawing.Color.SteelBlue;
+            this.Label_Fractions.Location = new System.Drawing.Point(216, 132);
+            this.Label_Fractions.Name = "Label_Fractions";
+            this.Label_Fractions.Size = new System.Drawing.Size(101, 25);
+            this.Label_Fractions.TabIndex = 18;
+            this.Label_Fractions.Text = "Fractions";
+            // 
+            // Label_Presc
+            // 
+            this.Label_Presc.AutoSize = true;
+            this.Label_Presc.BackColor = System.Drawing.Color.Transparent;
+            this.Label_Presc.Font = new System.Drawing.Font("Tahoma", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_Presc.ForeColor = System.Drawing.Color.SteelBlue;
+            this.Label_Presc.Location = new System.Drawing.Point(390, 93);
+            this.Label_Presc.Name = "Label_Presc";
+            this.Label_Presc.Size = new System.Drawing.Size(45, 23);
+            this.Label_Presc.TabIndex = 17;
+            this.Label_Presc.Text = "cGy";
+            // 
+            // Label_PrescDose
+            // 
+            this.Label_PrescDose.AutoSize = true;
+            this.Label_PrescDose.BackColor = System.Drawing.Color.Transparent;
+            this.Label_PrescDose.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_PrescDose.ForeColor = System.Drawing.Color.SteelBlue;
+            this.Label_PrescDose.Location = new System.Drawing.Point(135, 93);
+            this.Label_PrescDose.Name = "Label_PrescDose";
+            this.Label_PrescDose.Size = new System.Drawing.Size(182, 25);
+            this.Label_PrescDose.TabIndex = 15;
+            this.Label_PrescDose.Text = "Prescription Dose";
+            // 
+            // Label_PlanType
+            // 
+            this.Label_PlanType.AutoSize = true;
+            this.Label_PlanType.BackColor = System.Drawing.Color.Transparent;
+            this.Label_PlanType.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_PlanType.ForeColor = System.Drawing.Color.SteelBlue;
+            this.Label_PlanType.Location = new System.Drawing.Point(208, 52);
+            this.Label_PlanType.Name = "Label_PlanType";
+            this.Label_PlanType.Size = new System.Drawing.Size(109, 25);
+            this.Label_PlanType.TabIndex = 5;
+            this.Label_PlanType.Text = "Plan Type";
             // 
             // ErrorLabel
             // 
@@ -776,6 +599,18 @@ namespace Plan_n_Check
     "h plan type.";
             this.ErrorLabel.Visible = false;
             this.ErrorLabel.Click += new System.EventHandler(this.ErrorLabel_Click);
+            // 
+            // checkBoxJawTracking
+            // 
+            this.checkBoxJawTracking.AutoSize = true;
+            this.checkBoxJawTracking.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkBoxJawTracking.ForeColor = System.Drawing.Color.SteelBlue;
+            this.checkBoxJawTracking.Location = new System.Drawing.Point(567, 56);
+            this.checkBoxJawTracking.Name = "checkBoxJawTracking";
+            this.checkBoxJawTracking.Size = new System.Drawing.Size(114, 23);
+            this.checkBoxJawTracking.TabIndex = 21;
+            this.checkBoxJawTracking.Text = "Jaw Tracking";
+            this.checkBoxJawTracking.UseVisualStyleBackColor = true;
             // 
             // ConstraintGridView
             // 
@@ -878,7 +713,6 @@ namespace Plan_n_Check
             this.panel1.Size = new System.Drawing.Size(737, 389);
             this.panel1.TabIndex = 12;
             this.panel1.Visible = false;
-            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
             // 
             // checkBox_OAR
             // 
@@ -924,7 +758,7 @@ namespace Plan_n_Check
             this.PlotFormButton.BackColor = System.Drawing.Color.SteelBlue;
             this.PlotFormButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.PlotFormButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.PlotFormButton.Location = new System.Drawing.Point(8, 263);
+            this.PlotFormButton.Location = new System.Drawing.Point(6, 359);
             this.PlotFormButton.Name = "PlotFormButton";
             this.PlotFormButton.Size = new System.Drawing.Size(157, 27);
             this.PlotFormButton.TabIndex = 25;
@@ -989,7 +823,7 @@ namespace Plan_n_Check
             this.LoadFeaturesButton.BackColor = System.Drawing.Color.SteelBlue;
             this.LoadFeaturesButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LoadFeaturesButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.LoadFeaturesButton.Location = new System.Drawing.Point(8, 293);
+            this.LoadFeaturesButton.Location = new System.Drawing.Point(6, 333);
             this.LoadFeaturesButton.Name = "LoadFeaturesButton";
             this.LoadFeaturesButton.Size = new System.Drawing.Size(157, 27);
             this.LoadFeaturesButton.TabIndex = 19;
@@ -1002,11 +836,11 @@ namespace Plan_n_Check
             this.EditAssignedButton.BackColor = System.Drawing.Color.SteelBlue;
             this.EditAssignedButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.EditAssignedButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.EditAssignedButton.Location = new System.Drawing.Point(6, 324);
+            this.EditAssignedButton.Location = new System.Drawing.Point(6, 306);
             this.EditAssignedButton.Name = "EditAssignedButton";
             this.EditAssignedButton.Size = new System.Drawing.Size(159, 27);
             this.EditAssignedButton.TabIndex = 18;
-            this.EditAssignedButton.Text = "Assigned Structures";
+            this.EditAssignedButton.Text = "Structure Matching";
             this.EditAssignedButton.UseVisualStyleBackColor = false;
             this.EditAssignedButton.Click += new System.EventHandler(this.EditAssignedButton_Click);
             // 
@@ -1136,7 +970,7 @@ namespace Plan_n_Check
             this.OkButton.BackColor = System.Drawing.Color.SteelBlue;
             this.OkButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.OkButton.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.OkButton.Location = new System.Drawing.Point(6, 354);
+            this.OkButton.Location = new System.Drawing.Point(6, 277);
             this.OkButton.Name = "OkButton";
             this.OkButton.Size = new System.Drawing.Size(159, 28);
             this.OkButton.TabIndex = 0;
@@ -2037,6 +1871,7 @@ namespace Plan_n_Check
             // 
             // PlotCombobox
             // 
+            this.PlotCombobox.Font = new System.Drawing.Font("Calibri", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.PlotCombobox.FormattingEnabled = true;
             this.PlotCombobox.Location = new System.Drawing.Point(129, 442);
             this.PlotCombobox.Name = "PlotCombobox";
@@ -2056,28 +1891,16 @@ namespace Plan_n_Check
             this.PlotDoneButton.UseVisualStyleBackColor = false;
             this.PlotDoneButton.Click += new System.EventHandler(this.PlotDoneButton_Click);
             // 
-            // checkBoxJawTracking
-            // 
-            this.checkBoxJawTracking.AutoSize = true;
-            this.checkBoxJawTracking.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBoxJawTracking.ForeColor = System.Drawing.Color.SteelBlue;
-            this.checkBoxJawTracking.Location = new System.Drawing.Point(433, 499);
-            this.checkBoxJawTracking.Name = "checkBoxJawTracking";
-            this.checkBoxJawTracking.Size = new System.Drawing.Size(110, 23);
-            this.checkBoxJawTracking.TabIndex = 21;
-            this.checkBoxJawTracking.Text = "Jaw Tracking";
-            this.checkBoxJawTracking.UseVisualStyleBackColor = true;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(734, 591);
-            this.Controls.Add(this.PlotPanel);
-            this.Controls.Add(this.panel1);
-            this.Controls.Add(this.PanelSpecialFeatures);
             this.Controls.Add(this.panel5);
+            this.Controls.Add(this.PanelSpecialFeatures);
+            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.PlotPanel);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.AssigningPanel);
@@ -2091,7 +1914,6 @@ namespace Plan_n_Check
             this.Controls.Add(this.button2);
             this.Controls.Add(this.IterationsLabel);
             this.Controls.Add(this.IterationsTextBox);
-            this.Controls.Add(this.checkBoxJawTracking);
             this.Controls.Add(this.LatexPanel);
             this.ForeColor = System.Drawing.SystemColors.ControlLight;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -2099,8 +1921,6 @@ namespace Plan_n_Check
             this.Name = "MainForm";
             this.Text = "Plan N Check";
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.AssigningPanel.ResumeLayout(false);
             this.AssigningPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AssignStructGridView)).EndInit();
@@ -2128,26 +1948,6 @@ namespace Plan_n_Check
 
         #endregion
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.CheckBox checkBox19;
-        private System.Windows.Forms.CheckBox checkBox18;
-        private System.Windows.Forms.CheckBox checkBox17;
-        private System.Windows.Forms.CheckBox checkBox16;
-        private System.Windows.Forms.CheckBox checkBox15;
-        private System.Windows.Forms.CheckBox checkBox14;
-        private System.Windows.Forms.CheckBox checkBox13;
-        private System.Windows.Forms.CheckBox checkBox12;
-        private System.Windows.Forms.CheckBox checkBox11;
-        private System.Windows.Forms.CheckBox checkBox10;
-        private System.Windows.Forms.CheckBox checkBox9;
-        private System.Windows.Forms.CheckBox checkBox8;
-        private System.Windows.Forms.CheckBox checkBox7;
-        private System.Windows.Forms.CheckBox checkBox6;
-        private System.Windows.Forms.CheckBox checkBox5;
-        private System.Windows.Forms.CheckBox checkBox4;
-        private System.Windows.Forms.CheckBox checkBox3;
-        private System.Windows.Forms.CheckBox checkBox2;
-        private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.DataGridView ConstraintGridView;
         private System.Windows.Forms.Button OkButton;
@@ -2277,5 +2077,15 @@ namespace Plan_n_Check
         private Button Button_ParamOptStart;
         private Label ML_Label;
         private CheckBox checkBoxJawTracking;
+        private ComboBox ComboBox_PlanType;
+        private Label Label_Fractions;
+        private Label Label_Presc;
+        private Label Label_PrescDose;
+        private Label Label_PlanType;
+        private ComboBox ComboBox_TreatmentArea;
+        private Label Label_TreatmentArea;
+        private ComboBox ComboBox_TreatmentCenter;
+        private Label Label_TreatmentCenter;
+        private Label Label_Fracs;
     }
 }

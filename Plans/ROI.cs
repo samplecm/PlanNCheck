@@ -19,6 +19,7 @@ namespace Plan_n_Check.Plans
             this.HasSubsegments = false;
             this.IsPTV = false;
             this.PTVDose = null;
+            this.Weight = 0;
         } 
 
 
@@ -29,6 +30,8 @@ namespace Plan_n_Check.Plans
         public bool HasSubsegments { get; set; }
         public bool IsPTV { get; set; }
         public int? PTVDose { get; set; }
+        public double Score { get; set; }
+        public int Weight { get; set; }
 
     }
 }

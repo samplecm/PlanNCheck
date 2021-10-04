@@ -49,13 +49,17 @@ namespace Plan_n_Check.Calculate
             double prescriptionDose = p.TotalDose.Dose;
             if (p.TotalDose.Unit == DoseValue.DoseUnit.Gy)
             {
-                prescriptionDose *= 100; //Convert to Gy
+                prescriptionDose *= 100; //Convert to cGy
                 
             }
             for (int match = 0; match < dicomStructure.Count; match++)
             {
-                if (dicomStructure[match].Volume < 0.5) //if this opti structure has near 0 volume due to entire overlap with target volume
+                if ((dicomStructure[match].Volume < 0.1)&&(dicomStructure[match].Name.Contains("PC_Opti"))) //if this opti structure has near 0 volume due to entire overlap with target volume
                 {
+                    for (int i = 0; i < ROI.Constraints.Count; i++)
+                    {
+                        ROI.Constraints[i].Status.Add(null);
+                    }
                     continue;
                 }
                 returnString += "<h6>Matching Structure " + string.Format("{0}", match + 1) + ": </h6>";
@@ -112,10 +116,12 @@ namespace Plan_n_Check.Calculate
                             double volume = dicomStructure[match].Volume;
                             if (format.ToLower() == "rel")
                             {
+
                                 sub = volume * sub / 100;
                                 value = value * prescriptionDose / 100;
 
                                 double doseQuant = p.GetDoseAtVolume(dicomStructure[match], sub, vp, dp).Dose;
+                                ROI.Constraints[i].ActualValue = doseQuant / prescriptionDose * 100;
                                 //if (p.GetDoseAtVolume(dicomStructure[match], sub, vp, dp).Unit == DoseValue.DoseUnit.cGy) //convert to gy if necessary
                                 //{
                                 //    doseQuant /= 100;
@@ -184,9 +190,11 @@ namespace Plan_n_Check.Calculate
                             {
                                 dose *= 100;
                             }
+                            ROI.Constraints[i].ActualValue = dose;
                             if (format.ToLower() == "rel")
                             {
                                 value *= prescriptionDose / 100;
+                                ROI.Constraints[i].ActualValue = dose / prescriptionDose * 100;
                             }
                             //Now check the relation
                             if (relation == "<")
@@ -239,7 +247,7 @@ namespace Plan_n_Check.Calculate
                         try
                         {
                             double sub = Convert.ToDouble(subscript); //need to analyze DVH data if a number.
-                            double frac = prescriptionDose; //ad hoc fix for ptv string output
+                            double frac = prescriptionDose; //fix for ptv string output
                             VolumePresentation vp = VolumePresentation.Relative;
                             double volume = dicomStructure[match].Volume;
                             bool isPTV = false; 
@@ -261,8 +269,14 @@ namespace Plan_n_Check.Calculate
                             DoseValue dose = new DoseValue(sub, "cGy");
                             //Need dose in cGy for calculation:
                             double volumeQuant = p.GetVolumeAtDose(dicomStructure[match], dose, vp);
-                            //Now check the inequality: 
-                            if (relation == "<")
+                            ROI.Constraints[i].ActualValue = volumeQuant;
+                            if (format.ToLower() == "abs")
+                            {
+                                ROI.Constraints[i].ActualValue = volumeQuant * volume / 100;
+                            }
+
+                                //Now check the inequality: 
+                                if (relation == "<")
                             {
                                 if (volumeQuant < value)
                                 {
@@ -606,6 +620,39 @@ namespace Plan_n_Check.Calculate
             bool planPassed = VerifyPlan(ROI_results, constraintValues);
             return Tuple.Create(planPassed, ROI_results, constraintValues);
         }
+        public static int ConstraintScore(HNPlan hnPlan, PlanSetup plan)
+        {
+            //score is based on the absolute difference between a dose constraint value and the actual value received in the plan
+            double prescriptionDose = plan.TotalDose.Dose;
+            if (plan.TotalDose.Unit == DoseValue.DoseUnit.Gy)
+            {
+                prescriptionDose *= 100; //Convert to cGy
+
+            }
+            double constraintScore = 0;
+            for (int roi_idx = 0; roi_idx < hnPlan.ROIs.Count; roi_idx ++)
+            {
+                int weight = hnPlan.ROIs[roi_idx].Weight;
+
+                foreach(Constraint con in hnPlan.ROIs[roi_idx].Constraints)
+                {
+                    double value = con.Value;
+                    double actualValue = con.ActualValue;
+
+                    //Based on if volume/dose constraint and relative/absolute, may need to adjust values. 
+                    if (con.Type == "D")
+                    {
+                        if (con.Format.ToLower() == "rel")
+                        {
+                            value *= prescriptionDose;
+                            actualValue *= prescriptionDose;
+                        }
+                    }
+                    constraintScore += (value - actualValue)/100 * weight;
+                }
+            }
+            return Convert.ToInt32(constraintScore);
+        }
         public static bool VerifyPlan(List<bool> ROI_Results, List<List<List<double>>> constraintValues)
         {
             //Every constraint besides saliva glands must be passed:
@@ -746,22 +793,29 @@ namespace Plan_n_Check.Calculate
             DateTime localDate = DateTime.Now;
 
             //Get html code for green, red checkmarks:
-            string greenCheck = @"<div style=""color:Green;""><p>Passed   </p></div>";
-            string redCheck = @"<div style=""color:Red;""><p>Failed   </p></div>";
-            string questionMark = @"<div style=""color:Orange;""><p>Constraint Issue   </p></div>";
+            //string greenCheck = @"<div style=""color:Green;""><p>Passed   </p></div>";
+            //string redCheck = @"<div style=""color:Red;""><p>Failed   </p></div>";
+            string greenCheck = @"<div id=greenstrip><p> </p> </div>";
+            string redCheck = @"<div id=redstrip><p> </p></div>";
+            string questionMark = @" < div style=""color:Orange;""><p>N/A</p></div>";
 
             string outputFile = "<!DOCTYPE html> <html> <body>";
 
             //add table style
             outputFile += "<style>";
+            //outputFile += "hr.green {border: 2px solid green; border-radius: 1px;}";
+            //outputFile += "hr.red {border: 2px solid red; border-radius: 1px;}";
+            
             outputFile += "table {font-family: arial, sans-serif; border-collapse: collapse; width: 100%; page-break-inside: avoid;}";
             outputFile += "td, th { border: 1px solid #dddddd; text-align: left; passing: 8px; page-break-inside: avoid;}";
-            outputFile += "tr:nth-child(even) {background-color: #dddddd; page-break-inside: avoid;}";
+            outputFile += "tr:nth-child(even) {background-color: #dddddd;page-break-inside: avoid;}";
             outputFile += "h2 {page-break-inside: avoid;}";
             outputFile += "h3 {page-break-inside: avoid;}";
             outputFile += "h4 {page-break-inside: avoid;}";
             outputFile += "hr {page-break-inside: avoid;}";
             outputFile += "p {page-break-inside: avoid;}";
+            outputFile += ".PassClass {color: green;}";
+            outputFile += ".FailClass {color: red;}";
             outputFile += "</style>";
 
 
@@ -818,13 +872,15 @@ namespace Plan_n_Check.Calculate
                         outputFile += "<td>";
                         for (int c = constraint_idx; c < hnplan.ROIs[i].Constraints.Count; c++)
                         {
+
+
                             if (hnplan.ROIs[i].Constraints[c].Status[d] == true)
                             {
-                                outputFile += greenCheck;
+                                outputFile += @"<div class=""PassClass""><p>////////////////////////////////////////////////</p></div>";
                             }
                             else if (hnplan.ROIs[i].Constraints[c].Status[d] == false)
                             {
-                                outputFile += redCheck;
+                                outputFile += @"<div class=""FailClass"">////////////////////////////////////////////////</p></div>";
                             }
                             else
                             {

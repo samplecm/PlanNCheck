@@ -59,13 +59,52 @@ namespace Plan_n_Check
             this.TotalTime.Start();
             this.OptimTime = new Stopwatch();
             this.DVH_ReportStructures = new List<Tuple<ROI, int, int, int, int>>();
-            
+
+
+            PrepareFormData();
 
 
             
             
         }
+        private void PrepareFormData()
+        {
+            List<string> planTypes = new List<string>() { "Anal Canal", "Brain Metastases", "Brain Glioma", "Breast/Chest Wall", "Thoracic / GE Esophagus", "Glioma", "Gynae", "Head and Neck", "Hepatocellular Carcinoma", "Lung", "Lymphoma Head and neck", 
+            "Lymphoma Pelvis", "Lymphoma Thorax", "Orator 2", "Post Operative Prostate Bed", "Prostate", "Sarcoma Limb", "Sarcoma Retroperitoneal and Pelvis"};
+            this.ComboBox_PlanType.DataSource = planTypes;
 
+            this.ComboBox_PlanType.SelectedIndex = 7;
+            this.Label_Presc.Text = Convert.ToString(Convert.ToInt32(this.context.PlanSetup.TotalDose.Dose));
+            this.Label_Fracs.Text = Convert.ToString(this.context.PlanSetup.NumberOfFractions);
+
+            List<string> treatmentCenters = new List<string>() {"BC Cancer - Surrey", "BC Cancer - Vancouver"};
+            List<string> treatmentAreas = new List<string>() { "Area 2", "Area 3", "Area 4", "Area 5", "Area 6" };
+            this.ComboBox_TreatmentCenter.DataSource = treatmentCenters;
+            this.ComboBox_TreatmentArea.DataSource = treatmentAreas;
+          
+
+
+
+        }
+        private void ComboBox_TreatmentCenter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            List<string> treatmentCenters = new List<string>() { "BC Cancer - Vancouver", "BC Cancer - Surrey" };
+            List<string> treatmentAreasSurrey = new List<string>() { "Area 2", "Area 3", "Area 4", "Area 5", "Area 6" };
+            List<string> treatmentAreasVancouver = new List<string>() { "Unit 1 TB", "Unit 2 TB", "Unit 4 TB", "Unit 6 TB", "Unit 7 TB"};
+            if (this.ComboBox_TreatmentCenter.SelectedItem.ToString() == "BC Cancer - Vancouver")
+            {
+                this.ComboBox_TreatmentArea.DataSource = treatmentAreasVancouver;
+                this.checkBoxJawTracking.Enabled = false;
+
+
+            }else if (this.ComboBox_TreatmentCenter.SelectedItem.ToString() == "BC Cancer - Surrey")
+            {
+                this.ComboBox_TreatmentArea.DataSource = treatmentAreasSurrey;
+                this.checkBoxJawTracking.Enabled = true;
+            }
+
+     
+        }
         private string GetPath(String name)
         {
             var sfd = new SaveFileDialog
@@ -198,12 +237,15 @@ namespace Plan_n_Check
                 { 
                     jawTracking = false; 
                 }
-
+                
                 
                 this.StartErrorLabel.Text = "In progress";
                 this.StartErrorLabel.Visible = true;
+
+                Tuple<string, string, bool> beamParams = Tuple.Create(this.ComboBox_TreatmentCenter.Text, this.ComboBox_TreatmentArea.Text, jawTracking);
+
                 this.OptimTime.Start();
-                var optimData = VMS.TPS.Script.StartOptimizer(this.context, this.HnPlan, this.MatchingStructures, iterations, this.Features, jawTracking);
+                var optimData = VMS.TPS.Script.StartOptimizer(this.context, this.HnPlan, this.MatchingStructures, iterations, this.Features, beamParams);
                 List<List<Structure>> optimizedStructures = optimData.Item1;
                 List<List<Structure>> matchingStructures = optimData.Item2;
                 List<List<string>> updateLog = optimData.Item3;
@@ -234,111 +276,111 @@ namespace Plan_n_Check
         }
         private void CustomizeButton_Click(object sender, EventArgs e)
         {
-            //First make sure only one checkbox is checked. 
-    
-            int checkCount = 0;
-            foreach (CheckBox checkBox in groupBox1.Controls.OfType<CheckBox>())
-            {
-                if (checkBox.CheckState == CheckState.Checked)
-                {
-                    checkCount++;
-                }
-            }
-            if (checkCount >= 2)
-            {
-                ErrorLabel.Text = "Please select only one plan type. Re-run the program for each plan type required.";
-                ErrorLabel.Visible = true;
 
-            }
-            else if (checkCount == 0)
+            if (this.ComboBox_PlanType.SelectedIndex == -1)
             {
-                ErrorLabel.Text = "Please select a plan to customize first.";
+                ErrorLabel.Text = "Please select a plan type first.";
                 ErrorLabel.Visible = true;
+                return;
             }
-            else //if one plan is checked
+            else if (this.ComboBox_TreatmentArea.SelectedIndex == -1)
             {
-               
-                List<Plan> plans = new List<Plan>();
-                double prescriptionDose = (double)context.PlanSetup.TotalDose.Dose;
-                int numFractions = (int)context.PlanSetup.NumberOfFractions;
-                HNPlan hnPlan = new HNPlan(prescriptionDose, numFractions);
-                plans.Add(hnPlan);
-                this.Plans = plans;
-                this.HnPlan = hnPlan;
-                this.MatchingStructures.Clear();
-                for (int i = 0; i < hnPlan.ROIs.Count; i++)
+                ErrorLabel.Text = "Please select a Treatment Area first.";
+                ErrorLabel.Visible = true;
+                return;
+            }
+            else if (this.ComboBox_TreatmentCenter.SelectedIndex == -1)
+            {
+                ErrorLabel.Text = "Please select a Treatment Center first.";
+                ErrorLabel.Visible = true;
+                return;
+            }
+
+
+            ErrorLabel.Visible = false;   
+            string planType = this.ComboBox_PlanType.Text;
+                
+            List<Plan> plans = new List<Plan>();
+            double prescriptionDose = (double)context.PlanSetup.TotalDose.Dose;
+            int numFractions = (int)context.PlanSetup.NumberOfFractions;
+            HNPlan hnPlan = new HNPlan(prescriptionDose, numFractions);
+            plans.Add(hnPlan);
+            this.Plans = plans;
+            this.HnPlan = hnPlan;
+            this.MatchingStructures.Clear();
+            for (int i = 0; i < hnPlan.ROIs.Count; i++)
+            {
+                List<Structure> assignedStructures = StringOperations.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
+                this.MatchingStructures.Add(assignedStructures);
+            }
+            //Also check for special prescription PTVs (not 56, 63, or 70 for HNPlan) and find maximum PTV prescription, which if less than the prescription dose
+            //will be used to adjust all PTV maximum dose constraints, and maximum body constraint.
+            //First get max ptv does for upper ptv constraint
+            int ptvType;
+            int maxPTV_Dose = 0;
+            foreach (Structure structure in context.StructureSet.Structures)
+            {
+                if (structure.Name.ToLower().Contains("ptv"))
                 {
-                    List<Structure> assignedStructures = StringOperations.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                    this.MatchingStructures.Add(assignedStructures);
-                }
-                //Also check for special prescription PTVs (not 56, 63, or 70 for HNPlan) and find maximum PTV prescription, which if less than the prescription dose
-                //will be used to adjust all PTV maximum dose constraints, and maximum body constraint.
-                //First get max ptv does for upper ptv constraint
-                int ptvType;
-                int maxPTV_Dose = 0;
-                foreach (Structure structure in context.StructureSet.Structures)
-                {
-                    if (structure.Name.ToLower().Contains("ptv"))
+                    ptvType = StringOperations.FindPTVNumber(structure.Name.ToLower());
+                    if (ptvType > maxPTV_Dose)
                     {
-                        ptvType = StringOperations.FindPTVNumber(structure.Name.ToLower());
-                        if (ptvType > maxPTV_Dose)
-                        {
-                            maxPTV_Dose = ptvType;
-                        }
+                        maxPTV_Dose = ptvType;
                     }
                 }
+            }
 
                 
-                foreach (Structure structure in context.StructureSet.Structures)
+            foreach (Structure structure in context.StructureSet.Structures)
+            {
+                if (structure.Name.ToLower().Contains("ptv"))
                 {
-                    if (structure.Name.ToLower().Contains("ptv"))
-                    {
-                        ptvType = StringOperations.FindPTVNumber(structure.Name.ToLower());
+                    ptvType = StringOperations.FindPTVNumber(structure.Name.ToLower());
                         
-                        //Check if standard prescription dose type;
-                        bool isStandard = this.HnPlan.PTV_Types.IndexOf(ptvType) != -1;
-                        if ((!isStandard)&&(ptvType != 0))
-                        {
-                            //Make a new constraint
-                            string Name = "PTV" + ptvType.ToString();
-                            ROI newPTV = new ROI();
-                            newPTV.Name = Name;
-                            newPTV.IsPTV = true;
-                            newPTV.PTVDose = ptvType * 100;
-                            newPTV.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110, new List<int> {80, 120}));
-                            newPTV.Constraints.Add(new Constraint("D", "max", "<", 1.1* maxPTV_Dose * 100, "abs", 100, new List<int> { 80, 120 }));
-                            this.HnPlan.ROIs.Add(newPTV);
-                            this.MatchingStructures.Add(new List<Structure>() { structure }); //Constraints will be updated according to this
-                        }
+                    //Check if standard prescription dose type;
+                    bool isStandard = this.HnPlan.PTV_Types.IndexOf(ptvType) != -1;
+                    if ((!isStandard)&&(ptvType != 0))
+                    {
+                        //Make a new constraint
+                        string Name = "PTV" + ptvType.ToString();
+                        ROI newPTV = new ROI();
+                        newPTV.Name = Name;
+                        newPTV.IsPTV = true;
+                        newPTV.PTVDose = ptvType * 100;
+                        newPTV.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110, new List<int> {80, 120}));
+                        newPTV.Constraints.Add(new Constraint("D", "max", "<", 1.1* maxPTV_Dose * 100, "abs", 100, new List<int> { 80, 120 }));
+                        this.HnPlan.ROIs.Add(newPTV);
+                        this.MatchingStructures.Add(new List<Structure>() { structure }); //Constraints will be updated according to this
                     }
                 }
-                List<string> TypeList = new List<string>();
-                TypeList.Add("D");
-                TypeList.Add("V");
-                this.Combobox_Type.DataSource = TypeList;
-
-                List<string> RelationList = new List<string>();
-                RelationList.Add("<");
-                RelationList.Add(">");
-                this.Combobox_Relation.DataSource = RelationList;
-
-                List<string> FormatList = new List<string>();
-                FormatList.Add("Abs");
-                FormatList.Add("Rel");
-                this.Combobox_Format.DataSource = FormatList;
-
-
-
-
-
-
-                this.panel5.Visible = false;
-                this.panel5.SendToBack();
-                this.panel1.BringToFront();
-                this.ErrorLabel.Visible = false;
-                this.panel1.Visible = true;
-                PopulateGrid();
             }
+            List<string> TypeList = new List<string>();
+            TypeList.Add("D");
+            TypeList.Add("V");
+            this.Combobox_Type.DataSource = TypeList;
+
+            List<string> RelationList = new List<string>();
+            RelationList.Add("<");
+            RelationList.Add(">");
+            this.Combobox_Relation.DataSource = RelationList;
+
+            List<string> FormatList = new List<string>();
+            FormatList.Add("Abs");
+            FormatList.Add("Rel");
+            this.Combobox_Format.DataSource = FormatList;
+
+
+
+
+
+
+            this.panel5.Visible = false;
+            this.panel5.SendToBack();
+            this.panel1.BringToFront();
+            this.ErrorLabel.Visible = false;
+            this.panel1.Visible = true;
+            PopulateGrid();
+            
         
             
 
@@ -357,27 +399,6 @@ namespace Plan_n_Check
                        
         }
 
-        private void checkBox8_CheckedChanged(object sender, EventArgs e)
-        {
-            List<Plan> plans = new List<Plan>();
-            double prescriptionDose = (double)context.PlanSetup.TotalDose.Dose;
-            int numfractions = (int)context.PlanSetup.NumberOfFractions;
-            HNPlan hnPlan = new HNPlan(prescriptionDose, numfractions);
-            plans.Add(hnPlan);
-            this.HnPlan = hnPlan;
-            this.Plans = plans;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
-            {
-                List<Structure> assignedStructures = StringOperations.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                this.MatchingStructures.Add(assignedStructures);
-            }
-        }
-
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
 
         private void button3_Click(object sender, EventArgs e) //add constraint. First click (if dialog result no) brings up constraint parameter boxes, second click (dialog result yes) adds the constraint
         {
@@ -663,96 +684,6 @@ namespace Plan_n_Check
 
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox2_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox3_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox4_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox5_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox6_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox7_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox9_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox10_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox11_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox12_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox13_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox14_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox15_CheckedChanged(object sender, EventArgs e)
-        {
-            
-
-        }
-
-        private void checkBox16_CheckedChanged(object sender, EventArgs e)
-        {
-           
-        }
-
-        private void checkBox17_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox18_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void checkBox19_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
 
         private void button2_Click(object sender, EventArgs e)
         {
@@ -1474,7 +1405,8 @@ namespace Plan_n_Check
                             jawTracking = false;
                         }
                         this.OptimTime.Start();
-                        var structureLists = VMS.TPS.Script.StartOptimizer(this.context, plan, this.MatchingStructures, 1, this.Features, jawTracking); //still doing 1 opt iteration for each plan to increase quality
+                        Tuple<string, string, bool> beamParams = Tuple.Create(this.ComboBox_TreatmentCenter.Text, this.ComboBox_TreatmentArea.Text, jawTracking);
+                        var structureLists = VMS.TPS.Script.StartOptimizer(this.context, plan, this.MatchingStructures, 1, this.Features, beamParams); //still doing 1 opt iteration for each plan to increase quality
                         List<List<Structure>> optimizedStructures = structureLists.Item1;
                         List<List<Structure>> matchingStructures = structureLists.Item2;
                         List<List<string>> updateLog = structureLists.Item3;
@@ -2263,5 +2195,7 @@ namespace Plan_n_Check
             }
 
         }
+
+        
     }
 }

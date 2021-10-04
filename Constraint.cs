@@ -38,6 +38,8 @@ namespace Plan_n_Check
         { get; set; }
         public List<bool?> Status //If constraint is satisfied or not. It is a list because there can be more than 1 matching dicom structure
         { get; set; }
+        public double ActualValue // the actual plan dose amount or volume amount 
+        { get; set; }
         public Constraint(string type, string subscript, string equalityType, double value, string format, int priority, List<int> priorityRange, string status = "ON")
         {
             Type = type;

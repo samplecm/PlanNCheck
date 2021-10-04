@@ -28,6 +28,7 @@ namespace Plan_n_Check.Plans
             Brainstem.Constraints.Add(new Constraint("V", "5000", "<", 0.1, "abs", 100, new List<int> { 80, 120 }));
             Brainstem.Type = "OAR";
             Brainstem.Critical = true;
+            Brainstem.Weight = 100;
             this.rois.Add(Brainstem); //Add to ROI list
 
             //Brainstem PRV: (1)
@@ -36,6 +37,7 @@ namespace Plan_n_Check.Plans
             BrainStemPRV.Constraints.Add(new Constraint("V", "6000", "<", 0.1, "abs", 100, new List<int> { 80, 120 }));
             BrainStemPRV.Type = "OAR";
             BrainStemPRV.Critical = true;
+            BrainStemPRV.Weight = 100;
             this.rois.Add(BrainStemPRV);
 
             //Spinal Cord: (2)
@@ -45,6 +47,7 @@ namespace Plan_n_Check.Plans
             SpinalCord.Constraints.Add(new Constraint("V", "4500", "<", 0.1, "abs", 100, new List<int> { 80, 120 }));
             SpinalCord.Type = "OAR";
             SpinalCord.Critical = true;
+            SpinalCord.Weight = 100;
             this.rois.Add(SpinalCord);
 
             //Spinal Cord PRV: (3)
@@ -53,6 +56,7 @@ namespace Plan_n_Check.Plans
             SpinalCordPRV.Constraints.Add(new Constraint("V", "5200", "<", 0.1, "abs", 100, new List<int> { 80, 120 }));
             SpinalCordPRV.Type = "OAR";
             SpinalCordPRV.Critical = true;
+            SpinalCordPRV.Weight = 100;
             this.rois.Add(SpinalCordPRV);
 
             //PTV70: (4)
@@ -62,6 +66,7 @@ namespace Plan_n_Check.Plans
             PTV70.Constraints.Add(new Constraint("D", "max", "<", 1.1 * this.PrescriptionDose, "abs", 100, new List<int> { 80, 120 }));
             PTV70.IsPTV = true;
             PTV70.PTVDose = 7000;
+            PTV70.Weight = 100;
             this.rois.Add(PTV70);
 
             //PTV63 (5)
@@ -71,6 +76,7 @@ namespace Plan_n_Check.Plans
             PTV63.Constraints.Add(new Constraint("D", "max", "<", 1.1 * this.PrescriptionDose, "abs", 100, new List<int> { 80, 120 }));
             PTV63.IsPTV = true;
             PTV63.PTVDose = 6300;
+            PTV63.Weight = 80;
             this.rois.Add(PTV63);
 
             //PTV56 (6)
@@ -80,6 +86,7 @@ namespace Plan_n_Check.Plans
             PTV56.Constraints.Add(new Constraint("D", "max", "<", 1.1 * this.PrescriptionDose, "abs", 100, new List<int> { 80, 120 }));
             PTV56.IsPTV = true;
             PTV56.PTVDose = 5600;
+            PTV56.Weight = 80;
             this.rois.Add(PTV56);
 
             //Brain (7)
@@ -88,6 +95,7 @@ namespace Plan_n_Check.Plans
             Brain.Constraints.Add(new Constraint("V", "6000", "<", 0.1, "abs", 100, new List<int> { 80, 120 }));
             Brain.Type = "OAR";
             Brain.Critical = true;
+            Brain.Weight = 80;
             this.rois.Add(Brain);
             
 
@@ -96,6 +104,7 @@ namespace Plan_n_Check.Plans
             Chiasm.Name = "Chiasm";
             Chiasm.Constraints.Add(new Constraint("D", "max", "<", 4500, "abs", 20, new List<int> { 0, 30 }));
             Chiasm.Type = "OAR";
+            Chiasm.Weight = 80;
             this.rois.Add(Chiasm);
             
 
@@ -104,6 +113,7 @@ namespace Plan_n_Check.Plans
             ChiasmPRV.Name = "Chiasm PRV";
             ChiasmPRV.Constraints.Add(new Constraint("D", "max", "<", 5000, "abs", 20, new List<int> { 0, 30 }));
             ChiasmPRV.Type = "OAR";
+            ChiasmPRV.Weight = 80;
             this.rois.Add(ChiasmPRV);
             
 
@@ -113,6 +123,7 @@ namespace Plan_n_Check.Plans
             ROpticNerve.Constraints.Add(new Constraint("D", "max", "<", 4500, "abs", 20, new List<int> { 0, 40 }));
             ROpticNerve.Type = "OAR";
             ROpticNerve.Critical = true;
+            ROpticNerve.Weight = 20;
             this.rois.Add(ROpticNerve);
             
 
@@ -122,6 +133,7 @@ namespace Plan_n_Check.Plans
             LOpticNerve.Constraints.Add(new Constraint("D", "max", "<", 4500, "abs", 20, new List<int> { 0, 40 }));
             LOpticNerve.Type = "OAR";
             LOpticNerve.Critical = true;
+            LOpticNerve.Weight = 20;
             this.rois.Add(LOpticNerve);
             
 
@@ -130,6 +142,7 @@ namespace Plan_n_Check.Plans
             OpticNervePRV.Name = "Optic Nerve PRV";
             OpticNervePRV.Constraints.Add(new Constraint("D", "max", "<", 5000, "abs", 20, new List<int> { 0, 40 }));
             OpticNervePRV.Type = "OAR";
+            OpticNervePRV.Weight = 20;
             this.rois.Add(OpticNervePRV);
             
 
@@ -138,6 +151,7 @@ namespace Plan_n_Check.Plans
             RGlobe.Name = "Right Globe";
             RGlobe.Constraints.Add(new Constraint("D", "max", "<", 4500, "abs", 20, new List<int> { 0, 30 }));
             RGlobe.Type = "OAR";
+            RGlobe.Weight = 20;
             this.rois.Add(RGlobe);
             
 
@@ -146,6 +160,7 @@ namespace Plan_n_Check.Plans
             LGlobe.Name = "Left Globe";
             LGlobe.Constraints.Add(new Constraint("D", "max", "<", 4500, "abs", 20, new List<int> { 0, 30 }));
             LGlobe.Type = "OAR";
+            LGlobe.Weight = 20;
             this.rois.Add(LGlobe);
            
 
@@ -154,6 +169,7 @@ namespace Plan_n_Check.Plans
             RParotid.Name = "Right Parotid";
             RParotid.Constraints.Add(new Constraint("D", "mean", "<", 2000, "abs", 50, new List<int> { 0, 70 }));
             RParotid.Type = "OAR";
+            RParotid.Weight = 50;
             this.rois.Add(RParotid);
             
 
@@ -162,6 +178,7 @@ namespace Plan_n_Check.Plans
             LParotid.Name = "Left Parotid";
             LParotid.Constraints.Add(new Constraint("D", "mean", "<", 2000, "abs", 50, new List<int> { 0, 70 }));
             LParotid.Type = "OAR";
+            LParotid.Weight = 50;
             this.rois.Add(LParotid);
             
 
@@ -170,6 +187,7 @@ namespace Plan_n_Check.Plans
             RSubmandibular.Name = "Right Submandibular";
             RSubmandibular.Constraints.Add(new Constraint("D", "mean", "<", 2000, "abs", 30, new List<int> { 0, 50 }));
             RSubmandibular.Type = "OAR";
+            RSubmandibular.Weight = 30;
             this.rois.Add(RSubmandibular);
             
 
@@ -178,6 +196,7 @@ namespace Plan_n_Check.Plans
             LSubmandibular.Name = "Left Submandibular";
             LSubmandibular.Constraints.Add(new Constraint("D", "mean", "<", 2000, "abs", 30, new List<int> { 0, 50 }));
             LSubmandibular.Type = "OAR";
+            LSubmandibular.Weight = 30;
             this.rois.Add(LSubmandibular);
 
 
@@ -186,6 +205,7 @@ namespace Plan_n_Check.Plans
             RLens.Name = "Right Lens";
             RLens.Constraints.Add(new Constraint("D", "max", "<", 1000, "abs", 20, new List<int> { 0, 40 }));
             RLens.Type = "OAR";
+            RLens.Weight = 20;
             this.rois.Add(RLens);
 
             //Left Lens (20)
@@ -193,6 +213,7 @@ namespace Plan_n_Check.Plans
             LLens.Name = "Left Lens";
             LLens.Constraints.Add(new Constraint("D", "max", "<", 1000, "abs", 20, new List<int> { 0, 40 }));
             LLens.Type = "OAR";
+            LLens.Weight = 20;
             this.rois.Add(LLens);
 
             //Oral Cavity (21)
@@ -200,6 +221,7 @@ namespace Plan_n_Check.Plans
             OralCavity.Name = "Oral Cavity";
             OralCavity.Constraints.Add(new Constraint("D", "mean", "<", 5000, "abs", 40, new List<int> { 0, 70 }));
             OralCavity.Type = "OAR";
+            OralCavity.Weight = 50;
             this.rois.Add(OralCavity);
 
             //Laryngo-pharynx (22)
@@ -207,6 +229,7 @@ namespace Plan_n_Check.Plans
             LarPhar.Name = "Laryngo-pharynx";
             LarPhar.Constraints.Add(new Constraint("D", "mean", "<", 4500, "abs", 40, new List<int> { 0, 70 }));
             LarPhar.Type = "OAR";
+            LarPhar.Weight = 50;
             this.rois.Add(LarPhar);
 
             //Lips (23)
@@ -214,6 +237,7 @@ namespace Plan_n_Check.Plans
             Lips.Name = "Lips";
             Lips.Constraints.Add(new Constraint("D", "mean", "<", 2500, "abs", 10, new List<int> { 0, 30 }));
             Lips.Type = "OAR";
+            Lips.Weight = 10;
             this.rois.Add(Lips);
 
             //Mandible (24)
@@ -221,12 +245,14 @@ namespace Plan_n_Check.Plans
             Mandible.Name = "Mandible";
             Mandible.Constraints.Add(new Constraint("D", "max", "<", 7000, "abs", 10, new List<int> { 0, 30 }));
             Mandible.Type = "OAR";
+            Mandible.Weight = 30;
             this.rois.Add(Mandible);
 
             //Body (25)
             ROI Body = new ROI();
             Body.Name = "Body";
             Body.Constraints.Add(new Constraint("D", "max", "<", 1.1*this.PrescriptionDose, "abs", 100, new List<int> { 80, 130 }));
+            Body.Weight = 100;
             this.rois.Add(Body);
         }
 

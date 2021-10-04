@@ -15,6 +15,7 @@ using Plan_n_Check.Plans;
 using Plan_n_Check.Optimization;
 using Plan_n_Check.Calculate;
 using Plan_n_Check.Features;
+using System.Text.RegularExpressions;
 using TheArtOfDev.HtmlRenderer.PdfSharp;
 // TODO: Replace the following version attributes by creating AssemblyInfo.cs. You can do this in the properties of the Visual Studio project.
 [assembly: ESAPIScript(IsWriteable = true)]
@@ -72,7 +73,7 @@ namespace VMS.TPS
             System.Windows.Forms.Application.Run(mainForm);
             //System.Windows.System.Windows.MessageBox.Show("Hello", "input", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information, System.Windows.MessageBoxResult.OK);
     }
-        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>, bool> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, List<Tuple<bool, double[], string>> features, bool jawTracking) //Returns list of matching structures
+        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>, bool> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, List<Tuple<bool, double[], string>> features, Tuple<string, string, bool> beamParams) //Returns list of matching structures
         {
          
             // Check for patient plan loaded
@@ -86,7 +87,7 @@ namespace VMS.TPS
 
            
             //Create two VMAT beams
-            BeamMaker(ref plan, ss, plan.TotalDose.Dose);
+            BeamMaker(ref plan, ss, plan.TotalDose.Dose, beamParams);
             //set prescriptions dose 
             int numFractions = hnPlan.Fractions;
             int dosePerFraction = (int)hnPlan.PrescriptionDose / numFractions;
@@ -113,8 +114,7 @@ namespace VMS.TPS
                 contraParName = "";
                 planes = new List<double[]>();
             }
-            
-            Tuple<bool, List<List<string>>> optimData = Optimize(choppedContours, planes, ref plan, ref ss, hnPlan, context, optimizedStructures,matchingStructures, contraParName, numIterations, features, jawTracking);
+            Tuple<bool, List<List<string>>> optimData = Optimize(choppedContours, planes, ref plan, ref ss, hnPlan, context, optimizedStructures,matchingStructures, contraParName, numIterations, features, beamParams);
             bool isPassed = optimData.Item1;
             List<List<string>> updatesLog = optimData.Item2;
             return Tuple.Create(optimizedStructures, matchingStructures, updatesLog, isPassed);
@@ -194,7 +194,7 @@ namespace VMS.TPS
 
         }
         public static Tuple<bool, List<List<string>>> Optimize(List<List<double[,]>> choppedContours, List<double[]>
-            planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, string contraName, int numIterations, List<Tuple<bool, double[], string>> features, bool jawtracking)
+            planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, string contraName, int numIterations, List<Tuple<bool, double[], string>> features, Tuple<string, string, bool> beamParams)
         //return a list of strings which is the log of constraint updates during optimization. 
         {
             //Only make parotid structures if that feature has been selected
@@ -221,9 +221,9 @@ namespace VMS.TPS
             plan.SetCalculationModel(CalculationType.DVHEstimation, "DVH Estimation Algorithm [15.6.06]");
             plan.SetCalculationModel(CalculationType.PhotonVolumeDose, "AAA_13623");
             plan.OptimizationSetup.AddNormalTissueObjective(100, 3, 95, 50, 0.2);
-
+            bool jawTracking = beamParams.Item3;
             //use jaw tracking
-            if (jawtracking)
+            if (jawTracking)
             {
                 try
                 {
@@ -236,7 +236,62 @@ namespace VMS.TPS
             
            // plan.OptimizeVMAT();
             plan.CalculateDose();
+            string treatmentCenter = beamParams.Item1;
+            string treatmentArea = beamParams.Item2;
+            string mlcId = "";
+            int areaNum = Int32.Parse(Regex.Match(treatmentArea, @"\d+").Value);
+            if (treatmentCenter == "BC Cancer - Surrey")
+            {
+                switch (areaNum)
+                {
+                    case 2:
+                        mlcId = "";
+                        break;
+                    case 3:
+                        mlcId = "";
+                        break;
+                    case 4:
+                        mlcId = "";
+                        break;
+                    case 5:
+                        mlcId = "";
+                        break;
+                    case 6:
+                        mlcId = "";
+                        break;
+                }
 
+
+                
+            }
+            else if (treatmentCenter == "BC Cancer - Vancouver")
+            {
+                switch (areaNum)
+                {
+                    case 1:
+                        mlcId = "1";
+                        break;
+                    case 2:
+                        mlcId = "HHM0767";
+                        break;
+                    case 3:
+                        mlcId = "";
+                        break;
+                    case 4:
+                        mlcId = "";
+                        break;
+                    case 5:
+                        mlcId = "";
+                        break;
+                    case 6:
+                        mlcId = "HML0990";
+                        break;
+                    case 7:
+                        mlcId = "MLC0987";
+                        break;
+
+                }
+            }
             string mlcID = "HML0990";
             int numCycles = 1;
             OptimizationOptionsVMAT oov;
@@ -288,17 +343,32 @@ namespace VMS.TPS
 
         
        
-        public static void BeamMaker(ref ExternalPlanSetup plan, StructureSet ss, double prescriptionDose)
+        public static void BeamMaker(ref ExternalPlanSetup plan, StructureSet ss, double prescriptionDose, Tuple<string, string, bool> beamParams)
         {
             //First check if beams already exist
             foreach (Beam beam in plan.Beams.ToList())
             {
                 plan.RemoveBeam(beam);
             }
+            string treatmentCenter = beamParams.Item1;
+            string treatmentArea = beamParams.Item2;
+            string beamName = "";
+            int doseRate = 600;
+            //Get the right beam name
+            if (treatmentCenter == "BC Cancer - Surrey")
+            {
+                beamName = "fv" + treatmentArea.Replace(" ", "") + "TB";
+                beamName = beamName.ToUpper();
+                doseRate = 400;
+            } else if (treatmentCenter == "BC Cancer - Vancouver")
+            {
+                beamName = "Va" + treatmentArea.Replace(" ", "");
+            }            
             
 
+
             //need to create two arc beams, and make sure they fit to PTVs.
-            ExternalBeamMachineParameters ebmp = new ExternalBeamMachineParameters("VaUnit6TB", "6X", 600, "ARC", null);
+            ExternalBeamMachineParameters ebmp = new ExternalBeamMachineParameters(beamName, "6X", doseRate, "ARC", null);
             //First need to find the isocentre, which will be in the main PTV
 
             //find all the ptvs
