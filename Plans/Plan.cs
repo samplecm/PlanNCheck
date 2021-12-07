@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VMS.TPS.Common.Model.API;
+using VMS.TPS.Common.Model.Types;
+using VMS.TPS;
 
 namespace Plan_n_Check.Plans
 {
@@ -18,6 +21,8 @@ namespace Plan_n_Check.Plans
         public abstract List<int> PTV_Types
         { get; set; }
         public abstract int Fractions
+        { get; set; }
+        public abstract IDictionary<string, ROI> ROI_Dict
         { get; set; }
     }
 }

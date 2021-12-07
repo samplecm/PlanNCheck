@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VMS.TPS.Common.Model.API;
+using VMS.TPS.Common.Model.Types;
+using VMS.TPS;
 
 namespace Plan_n_Check.Plans
 {
     public class HNPlan : Plan
     {
-        List<int> ptv_Types = new List<int>() {56, 63, 70};
+        List<int> ptv_Types = new List<int>() { 56, 63, 70 };
         string name = "Head and Neck";
         List<ROI> rois = new List<ROI>();
+        IDictionary<string, ROI> roi_dict = new Dictionary<string, ROI>();
         double prescriptionDose = 7000; //in cGy
         int fractions = 35;
         public HNPlan(double presDose, int numFractions)
@@ -24,12 +28,13 @@ namespace Plan_n_Check.Plans
             //Brain stem constraint (0)
             ROI Brainstem = new ROI();
             Brainstem.Name = "Brain Stem";
-            Brainstem.Constraints.Add(new Constraint("D", "max", "<", 5400, "abs", 100, new List<int> { 80, 120}));
+            Brainstem.Constraints.Add(new Constraint("D", "max", "<", 5400, "abs", 100, new List<int> { 80, 120 }));
             Brainstem.Constraints.Add(new Constraint("V", "5000", "<", 0.1, "abs", 100, new List<int> { 80, 120 }));
             Brainstem.Type = "OAR";
             Brainstem.Critical = true;
             Brainstem.Weight = 100;
             this.rois.Add(Brainstem); //Add to ROI list
+            this.roi_dict.Add(Brainstem.Name, Brainstem);
 
             //Brainstem PRV: (1)
             ROI BrainStemPRV = new ROI();
@@ -39,6 +44,7 @@ namespace Plan_n_Check.Plans
             BrainStemPRV.Critical = true;
             BrainStemPRV.Weight = 100;
             this.rois.Add(BrainStemPRV);
+            this.roi_dict.Add(BrainStemPRV.Name, BrainStemPRV);
 
             //Spinal Cord: (2)
             ROI SpinalCord = new ROI();
@@ -49,6 +55,7 @@ namespace Plan_n_Check.Plans
             SpinalCord.Critical = true;
             SpinalCord.Weight = 100;
             this.rois.Add(SpinalCord);
+            this.roi_dict.Add(SpinalCord.Name, SpinalCord);
 
             //Spinal Cord PRV: (3)
             ROI SpinalCordPRV = new ROI();
@@ -58,6 +65,7 @@ namespace Plan_n_Check.Plans
             SpinalCordPRV.Critical = true;
             SpinalCordPRV.Weight = 100;
             this.rois.Add(SpinalCordPRV);
+            this.roi_dict.Add(SpinalCordPRV.Name, SpinalCordPRV);
 
             //PTV70: (4)
             ROI PTV70 = new ROI();
@@ -68,6 +76,7 @@ namespace Plan_n_Check.Plans
             PTV70.PTVDose = 7000;
             PTV70.Weight = 100;
             this.rois.Add(PTV70);
+            this.roi_dict.Add(PTV70.Name, PTV70);
 
             //PTV63 (5)
             ROI PTV63 = new ROI();
@@ -78,6 +87,7 @@ namespace Plan_n_Check.Plans
             PTV63.PTVDose = 6300;
             PTV63.Weight = 80;
             this.rois.Add(PTV63);
+            this.roi_dict.Add(PTV63.Name, PTV63);
 
             //PTV56 (6)
             ROI PTV56 = new ROI();
@@ -88,6 +98,7 @@ namespace Plan_n_Check.Plans
             PTV56.PTVDose = 5600;
             PTV56.Weight = 80;
             this.rois.Add(PTV56);
+            this.roi_dict.Add(PTV56.Name, PTV56);
 
             //Brain (7)
             ROI Brain = new ROI();
@@ -97,7 +108,8 @@ namespace Plan_n_Check.Plans
             Brain.Critical = true;
             Brain.Weight = 80;
             this.rois.Add(Brain);
-            
+            this.roi_dict.Add(Brain.Name, Brain);
+
 
             //Chiasm  (8)
             ROI Chiasm = new ROI();
@@ -106,7 +118,8 @@ namespace Plan_n_Check.Plans
             Chiasm.Type = "OAR";
             Chiasm.Weight = 80;
             this.rois.Add(Chiasm);
-            
+            this.roi_dict.Add(Chiasm.Name, Chiasm);
+
 
             //Chiasm PRV (9)
             ROI ChiasmPRV = new ROI();
@@ -115,7 +128,8 @@ namespace Plan_n_Check.Plans
             ChiasmPRV.Type = "OAR";
             ChiasmPRV.Weight = 80;
             this.rois.Add(ChiasmPRV);
-            
+            this.roi_dict.Add(ChiasmPRV.Name, ChiasmPRV);
+
 
             //Right Optic Nerve (10)
             ROI ROpticNerve = new ROI();
@@ -125,7 +139,8 @@ namespace Plan_n_Check.Plans
             ROpticNerve.Critical = true;
             ROpticNerve.Weight = 20;
             this.rois.Add(ROpticNerve);
-            
+            this.roi_dict.Add(ROpticNerve.Name, ROpticNerve);
+
 
             //Left Optic Nerve (11)
             ROI LOpticNerve = new ROI();
@@ -135,7 +150,9 @@ namespace Plan_n_Check.Plans
             LOpticNerve.Critical = true;
             LOpticNerve.Weight = 20;
             this.rois.Add(LOpticNerve);
-            
+            this.roi_dict.Add(LOpticNerve.Name, LOpticNerve);
+
+
 
             //Optic Nerve PRV (12)
             ROI OpticNervePRV = new ROI();
@@ -144,7 +161,8 @@ namespace Plan_n_Check.Plans
             OpticNervePRV.Type = "OAR";
             OpticNervePRV.Weight = 20;
             this.rois.Add(OpticNervePRV);
-            
+            this.roi_dict.Add(OpticNervePRV.Name, OpticNervePRV);
+
 
             //Right Globe (13)
             ROI RGlobe = new ROI();
@@ -153,7 +171,8 @@ namespace Plan_n_Check.Plans
             RGlobe.Type = "OAR";
             RGlobe.Weight = 20;
             this.rois.Add(RGlobe);
-            
+            this.roi_dict.Add(RGlobe.Name, RGlobe);
+
 
             //Left Globe (14)
             ROI LGlobe = new ROI();
@@ -162,7 +181,8 @@ namespace Plan_n_Check.Plans
             LGlobe.Type = "OAR";
             LGlobe.Weight = 20;
             this.rois.Add(LGlobe);
-           
+            this.roi_dict.Add(LGlobe.Name, LGlobe);
+
 
             //Right Parotid (15)
             ROI RParotid = new ROI();
@@ -171,7 +191,8 @@ namespace Plan_n_Check.Plans
             RParotid.Type = "OAR";
             RParotid.Weight = 50;
             this.rois.Add(RParotid);
-            
+            this.roi_dict.Add(RParotid.Name, RParotid);
+
 
             //Left Parotid (16)
             ROI LParotid = new ROI();
@@ -180,7 +201,8 @@ namespace Plan_n_Check.Plans
             LParotid.Type = "OAR";
             LParotid.Weight = 50;
             this.rois.Add(LParotid);
-            
+            this.roi_dict.Add(LParotid.Name, LParotid);
+
 
             //Right Submandibular (17)
             ROI RSubmandibular = new ROI();
@@ -189,7 +211,8 @@ namespace Plan_n_Check.Plans
             RSubmandibular.Type = "OAR";
             RSubmandibular.Weight = 30;
             this.rois.Add(RSubmandibular);
-            
+            this.roi_dict.Add(RSubmandibular.Name, RSubmandibular);
+
 
             //Left Submandibular (18)
             ROI LSubmandibular = new ROI();
@@ -198,7 +221,7 @@ namespace Plan_n_Check.Plans
             LSubmandibular.Type = "OAR";
             LSubmandibular.Weight = 30;
             this.rois.Add(LSubmandibular);
-
+            this.roi_dict.Add(LSubmandibular.Name, LSubmandibular);
 
             //Right Lens (19)
             ROI RLens = new ROI();
@@ -207,6 +230,7 @@ namespace Plan_n_Check.Plans
             RLens.Type = "OAR";
             RLens.Weight = 20;
             this.rois.Add(RLens);
+            this.roi_dict.Add(RLens.Name, RLens);
 
             //Left Lens (20)
             ROI LLens = new ROI();
@@ -215,6 +239,7 @@ namespace Plan_n_Check.Plans
             LLens.Type = "OAR";
             LLens.Weight = 20;
             this.rois.Add(LLens);
+            this.roi_dict.Add(LLens.Name, LLens);
 
             //Oral Cavity (21)
             ROI OralCavity = new ROI();
@@ -223,6 +248,7 @@ namespace Plan_n_Check.Plans
             OralCavity.Type = "OAR";
             OralCavity.Weight = 50;
             this.rois.Add(OralCavity);
+            this.roi_dict.Add(OralCavity.Name, OralCavity);
 
             //Laryngo-pharynx (22)
             ROI LarPhar = new ROI();
@@ -231,6 +257,7 @@ namespace Plan_n_Check.Plans
             LarPhar.Type = "OAR";
             LarPhar.Weight = 50;
             this.rois.Add(LarPhar);
+            this.roi_dict.Add(LarPhar.Name, LarPhar);
 
             //Lips (23)
             ROI Lips = new ROI();
@@ -239,6 +266,7 @@ namespace Plan_n_Check.Plans
             Lips.Type = "OAR";
             Lips.Weight = 10;
             this.rois.Add(Lips);
+            this.roi_dict.Add(Lips.Name, Lips);
 
             //Mandible (24)
             ROI Mandible = new ROI();
@@ -247,13 +275,15 @@ namespace Plan_n_Check.Plans
             Mandible.Type = "OAR";
             Mandible.Weight = 30;
             this.rois.Add(Mandible);
+            this.roi_dict.Add(Mandible.Name, Mandible);
 
             //Body (25)
             ROI Body = new ROI();
             Body.Name = "Body";
-            Body.Constraints.Add(new Constraint("D", "max", "<", 1.1*this.PrescriptionDose, "abs", 100, new List<int> { 80, 130 }));
+            Body.Constraints.Add(new Constraint("D", "max", "<", 1.1 * this.PrescriptionDose, "abs", 100, new List<int> { 80, 130 }));
             Body.Weight = 100;
             this.rois.Add(Body);
+            this.roi_dict.Add(Body.Name, Body);
         }
 
         public override string Name
@@ -281,6 +311,15 @@ namespace Plan_n_Check.Plans
             get { return fractions; }
             set { fractions = value; }
         }
+        
+        public override IDictionary<string, ROI> ROI_Dict
+        {
+            get { return roi_dict; }
+            set { roi_dict = value; }
+        }
+ 
+
+
 
     }
 }

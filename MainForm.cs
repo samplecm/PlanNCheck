@@ -18,6 +18,7 @@ using Plan_n_Check;
 using Plan_n_Check.Plans;
 using Plan_n_Check.Calculate;
 using Plan_n_Check.Features;
+using Plan_n_Check.Dose_Model;
 using OxyPlot.Series;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -311,6 +312,7 @@ namespace Plan_n_Check
             for (int i = 0; i < hnPlan.ROIs.Count; i++)
             {
                 List<Structure> assignedStructures = StringOperations.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
+                hnPlan.ROIs[i].MatchingStructures = new List<Structure>(assignedStructures);
                 this.MatchingStructures.Add(assignedStructures);
             }
             //Also check for special prescription PTVs (not 56, 63, or 70 for HNPlan) and find maximum PTV prescription, which if less than the prescription dose
@@ -330,27 +332,42 @@ namespace Plan_n_Check
                 }
             }
 
-                
+            //Now see if there exist ptvs with prescription doses other than 70, 63, 56 that need to be added.   
+            List<int> ptvTypes = new List<int>();
             foreach (Structure structure in context.StructureSet.Structures)
             {
                 if (structure.Name.ToLower().Contains("ptv"))
                 {
+
                     ptvType = StringOperations.FindPTVNumber(structure.Name.ToLower());
-                        
+                    
                     //Check if standard prescription dose type;
                     bool isStandard = this.HnPlan.PTV_Types.IndexOf(ptvType) != -1;
                     if ((!isStandard)&&(ptvType != 0))
                     {
-                        //Make a new constraint
                         string Name = "PTV" + ptvType.ToString();
-                        ROI newPTV = new ROI();
-                        newPTV.Name = Name;
-                        newPTV.IsPTV = true;
-                        newPTV.PTVDose = ptvType * 100;
-                        newPTV.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110, new List<int> {80, 120}));
-                        newPTV.Constraints.Add(new Constraint("D", "max", "<", 1.1* maxPTV_Dose * 100, "abs", 100, new List<int> { 80, 120 }));
-                        this.HnPlan.ROIs.Add(newPTV);
-                        this.MatchingStructures.Add(new List<Structure>() { structure }); //Constraints will be updated according to this
+
+                        if (ptvTypes.Contains(ptvType) == false)
+                        {
+                            ptvTypes.Add(ptvType);
+                            //Make a new constraint
+                            
+                            ROI newPTV = new ROI();
+                            newPTV.Name = Name;
+                            newPTV.IsPTV = true;
+                            newPTV.PTVDose = ptvType * 100;
+                            newPTV.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110, new List<int> { 80, 120 }));
+                            newPTV.Constraints.Add(new Constraint("D", "max", "<", 1.1 * maxPTV_Dose * 100, "abs", 100, new List<int> { 80, 120 }));
+                            newPTV.MatchingStructures.Add(structure);
+                            this.HnPlan.ROIs.Add(newPTV);
+                            this.HnPlan.ROI_Dict.Add(newPTV.Name, newPTV);
+                            this.MatchingStructures.Add(new List<Structure>() { structure }); //Constraints will be updated according to this
+                        }
+                        else
+                        {
+                            this.HnPlan.ROI_Dict[Name].MatchingStructures.Add(structure);
+                        }
+                        
                     }
                 }
             }
@@ -495,10 +512,13 @@ namespace Plan_n_Check
                         NewROI.Name = StructureTB.Text.ToString();
                         NewROI.Constraints.Add(new Constraint(type, subscript, relation, value, format, priority, priorityRange));
 
-                        this.HnPlan.ROIs.Add(NewROI);
+                        
                         //Need to also add assigned structure for this
                         List<Structure> assignedStructures = StringOperations.AssignStructure(context.StructureSet, NewROI); //find structures that match the constraint structure
+                        NewROI.MatchingStructures = assignedStructures;
+                        this.HnPlan.ROIs.Add(NewROI);
                         this.MatchingStructures.Add(assignedStructures);
+
                     }
 
 
@@ -688,6 +708,8 @@ namespace Plan_n_Check
         private void button2_Click(object sender, EventArgs e)
         {
             //Call method for starting report. 
+            Plan_n_Check.Dose_Model.Model.Predict_Score(this.HnPlan, this.context);
+
             if ((this.SavePath == "") && (this.SaveCheck.Checked))
             {
                 StartErrorLabel.Text = "Please select a save destination.";
@@ -811,10 +833,10 @@ namespace Plan_n_Check
                 this.AssignStructGridView.ForeColor = System.Drawing.Color.Black;
                 DataTable dt = new DataTable();
                 dt.Columns.Add("Assigned Structures");
-                for (int i = 0; i < this.MatchingStructures[e.RowIndex].Count; i++)
+                for (int i = 0; i < this.HnPlan.ROIs[e.RowIndex].MatchingStructures.Count; i++)
                 {
                     DataRow row = dt.NewRow();
-                    row["Assigned Structures"] = this.MatchingStructures[e.RowIndex][i].Name;
+                    row["Assigned Structures"] = this.HnPlan.ROIs[e.RowIndex].MatchingStructures[i].Name;
                     dt.Rows.Add(row);
                 }
                 foreach (DataRow DRow in dt.Rows)
@@ -830,27 +852,29 @@ namespace Plan_n_Check
             int contourIndex = Convert.ToInt32(this.StructureLabel.Text);
             //Now add this to the assigned structures list. 
             bool alreadyAssigned = false;
-            for (int i = 0; i < this.MatchingStructures[contourIndex].Count; i++)
+            for (int i = 0; i < this.HnPlan.ROIs[contourIndex].MatchingStructures.Count; i++)
             {
-                if (this.MatchingStructures[contourIndex][i].Name.ToLower() == this.DicomStructures[DicomComboBox.SelectedIndex].Name.ToLower())
+                if (this.HnPlan.ROIs[contourIndex].MatchingStructures[i].Name.ToLower() == this.DicomStructures[DicomComboBox.SelectedIndex].Name.ToLower())
                 {
+                    System.Windows.MessageBox.Show("Structure has already been assigned for this ROI.");
                     alreadyAssigned = true;
                 }
             }
             if (!alreadyAssigned)
             {
                 this.MatchingStructures[contourIndex].Add(this.DicomStructures[DicomComboBox.SelectedIndex]);
-
+                this.HnPlan.ROIs[contourIndex].MatchingStructures.Add(this.DicomStructures[DicomComboBox.SelectedIndex]);
                 //Now repopulate current list. 
                 this.AssignStructGridView.Rows.Clear();
                 this.StructureLabel.Text = contourIndex.ToString(); //save which structure is selected for editing
                 this.AssignStructGridView.ForeColor = System.Drawing.Color.Black;
                 DataTable dt = new DataTable();
                 dt.Columns.Add("Assigned Structures");
-                for (int i = 0; i < this.MatchingStructures[contourIndex].Count; i++)
+                for (int i = 0; i < this.HnPlan.ROIs[contourIndex].MatchingStructures.Count; i++)
                 {
                     DataRow row = dt.NewRow();
-                    row["Assigned Structures"] = this.MatchingStructures[contourIndex][i].Name;
+                    row["Assigned Structures"] = this.HnPlan.ROIs[contourIndex].MatchingStructures[i].Name;
+                    System.Windows.MessageBox.Show(this.HnPlan.ROIs[contourIndex].MatchingStructures[i].Name);
                     dt.Rows.Add(row);
                 }
                 foreach (DataRow DRow in dt.Rows)
@@ -870,7 +894,9 @@ namespace Plan_n_Check
             if (selectedRowCount == 1)
             {
                 int selectedIndex = AssignStructGridView.SelectedRows[0].Index;
+                System.Windows.MessageBox.Show(selectedIndex.ToString());
                 this.MatchingStructures[contourIndex].RemoveAt(selectedIndex);
+                this.HnPlan.ROIs[contourIndex].MatchingStructures.RemoveAt(selectedIndex);
             }
                 
 
@@ -881,10 +907,10 @@ namespace Plan_n_Check
             this.AssignStructGridView.ForeColor = System.Drawing.Color.Black;
             DataTable dt = new DataTable();
             dt.Columns.Add("Assigned Structures");
-            for (int i = 0; i < this.MatchingStructures[contourIndex].Count; i++)
+            for (int i = 0; i < this.HnPlan.ROIs[contourIndex].MatchingStructures.Count; i++)
             {
                 DataRow row = dt.NewRow();
-                row["Assigned Structures"] = this.MatchingStructures[contourIndex][i].Name;
+                row["Assigned Structures"] = this.HnPlan.ROIs[contourIndex].MatchingStructures[i].Name;
                 dt.Rows.Add(row);
             }
             foreach (DataRow DRow in dt.Rows)

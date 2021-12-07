@@ -20,8 +20,14 @@ namespace Plan_n_Check.Optimization
             List<List<Structure>> optimizedStructures = new List<List<Structure>>();
             if (!checkOptis)
             {
-                optimizedStructures = matchingStructures;
+                optimizedStructures = new List<List<Structure>>(matchingStructures);
+                for (int i = 0; i < hnPlan.ROIs.Count; i++)
+                {
+                    hnPlan.ROIs[i].OptimizationStructures = new List<Structure>(hnPlan.ROIs[i].MatchingStructures);
+                }
+                return optimizedStructures;
             }
+
 
             //Need to set all optimization constraints now. First clear all the current constraints
             foreach (var objective in plan.OptimizationSetup.Objectives.OfType<OptimizationPointObjective>())
@@ -40,6 +46,7 @@ namespace Plan_n_Check.Optimization
             {
                 if (checkOptis)
                 {
+                    hnPlan.ROIs[i].OptimizationStructures = new List<Structure>();
                     optimizedStructures.Add(new List<Structure>());
                 }
 
@@ -53,16 +60,19 @@ namespace Plan_n_Check.Optimization
                         {
                             Structure opti = CheckOverlap_OptiMaker(matchingStructures[i][match], ref ss, false);
                             optimizedStructures[i].Add(opti);
+                            hnPlan.ROIs[i].OptimizationStructures.Add(opti);
 
                         }
                         else
                         {
                             Structure opti = CheckOverlap_OptiMaker(matchingStructures[i][match], ref ss, true);                            
                             optimizedStructures[i].Add(opti);
-                            
+                            hnPlan.ROIs[i].OptimizationStructures.Add(opti);
+
+
                         }
                     }
-                    if (optimizedStructures[i][match].Volume < 0.5)
+                    if (hnPlan.ROIs[i].OptimizationStructures[match].Volume < 0.5)
                     {
                         continue;
                     }
@@ -77,7 +87,7 @@ namespace Plan_n_Check.Optimization
                         string relation = hnPlan.ROIs[i].Constraints[j].EqualityType;
                         double value = hnPlan.ROIs[i].Constraints[j].Value;
                         string format = hnPlan.ROIs[i].Constraints[j].Format;
-                        double volume = optimizedStructures[i][match].Volume;
+                        double volume = hnPlan.ROIs[i].OptimizationStructures[match].Volume;
 
                         OptimizationObjectiveOperator constraintType;
                         if (relation == "<")
@@ -96,7 +106,7 @@ namespace Plan_n_Check.Optimization
                                 volume = Convert.ToInt32(subscript); //need to analyze DVH data if a number.
 
                                 //convert to cGy (90% of maximum for optimization)
-                                plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match],
+                                plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match],
                                     constraintType, new DoseValue(value, "cGy"), volume, hnPlan.ROIs[i].Constraints[j].Priority);
                             }
                             catch //is a mean or max restriction
@@ -104,7 +114,7 @@ namespace Plan_n_Check.Optimization
                                 if (subscript.ToLower() == "mean")
                                 {
                                     double dose = value * 0.9; //take 90 percent of dose constraint dose to start
-                                    OptimizationObjective objective = plan.OptimizationSetup.AddMeanDoseObjective(optimizedStructures[i][match],
+                                    OptimizationObjective objective = plan.OptimizationSetup.AddMeanDoseObjective(hnPlan.ROIs[i].OptimizationStructures[match],
                                         new DoseValue(dose, "cGy"), hnPlan.ROIs[i].Constraints[j].Priority);
                                     //update subsegment constraints if organ is subsegmented
                                     if (hnPlan.ROIs[i].HasSubsegments)
@@ -114,7 +124,7 @@ namespace Plan_n_Check.Optimization
                                         //plan.OptimizationSetup.RemoveObjective(objective); //uncomment if don't also want the whole organ constraint
                                         foreach (Structure structure in ss.Structures)
                                         {
-                                            if ((structure.Name.Contains(optimizedStructures[i][match].Name.Substring(0, 5))) && (structure.Name.ToLower().Contains("subseg")))
+                                            if ((structure.Name.Contains(hnPlan.ROIs[i].OptimizationStructures[match].Name.Substring(0, 5))) && (structure.Name.ToLower().Contains("subseg")))
                                             {
                                                 plan.OptimizationSetup.AddMeanDoseObjective(structure,
                                         new DoseValue(dose, "cGy"), hnPlan.ROIs[i].Constraints[j].Priority);
@@ -131,7 +141,7 @@ namespace Plan_n_Check.Optimization
                                     {
                                         dose = (value + (double)hnPlan.ROIs[i].PTVDose) * 0.5;
                                     }
-                                    OptimizationObjective objective = plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
+                                    OptimizationObjective objective = plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match], constraintType,
                                         new DoseValue(dose, "cGy"), 0, hnPlan.ROIs[i].Constraints[j].Priority);
                                     if (hnPlan.ROIs[i].HasSubsegments)
                                     {
@@ -139,9 +149,9 @@ namespace Plan_n_Check.Optimization
                                         //plan.OptimizationSetup.RemoveObjective(objective); //uncomment if don't also want the whole organ constraint
                                         foreach (Structure structure in ss.Structures)
                                         {
-                                            if ((structure.Name.Contains(optimizedStructures[i][match].Name.Substring(0, 5))) && (structure.Name.Contains("subseg")))
+                                            if ((structure.Name.Contains(hnPlan.ROIs[i].OptimizationStructures[match].Name.Substring(0, 5))) && (structure.Name.Contains("subseg")))
                                             {
-                                                plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
+                                                plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match], constraintType,
                                                 new DoseValue(dose, "cGy"), 0, hnPlan.ROIs[i].Constraints[j].Priority);
                                             }
                                         }
@@ -151,7 +161,7 @@ namespace Plan_n_Check.Optimization
                                 else if (subscript.ToLower() == "min")
                                 {
                                     double dose = value * 1.05; //take 110% percent of constraint dose to start
-                                    OptimizationObjective objective = plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
+                                    OptimizationObjective objective = plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match], constraintType,
                                         new DoseValue(dose, "cGy"), 100, hnPlan.ROIs[i].Constraints[j].Priority);
                                     if (hnPlan.ROIs[i].HasSubsegments)
                                     {
@@ -159,9 +169,9 @@ namespace Plan_n_Check.Optimization
                                         //plan.OptimizationSetup.RemoveObjective(objective); //uncomment if don't also want the whole organ constraint
                                         foreach (Structure structure in ss.Structures)
                                         {
-                                            if ((structure.Name.Contains(optimizedStructures[i][match].Name.Substring(0, 5))) && (structure.Name.Contains("subseg")))
+                                            if ((structure.Name.Contains(hnPlan.ROIs[i].OptimizationStructures[match].Name.Substring(0, 5))) && (structure.Name.Contains("subseg")))
                                             {
-                                                plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
+                                                plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match], constraintType,
                                                 new DoseValue(dose, "cGy"), 100, hnPlan.ROIs[i].Constraints[j].Priority);
                                             }
                                         }
@@ -184,16 +194,16 @@ namespace Plan_n_Check.Optimization
                                     {
                                         volume = 0;
                                     }
-                                    plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
+                                    plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match], constraintType,
                                         new DoseValue(dose * 0.95, "cGy"), volume, hnPlan.ROIs[i].Constraints[j].Priority);
 
                                 }
                                 else  //if relative, will belong to a PTV
                                 {
-                                    double dose = StringOperations.FindPTVNumber(optimizedStructures[i][match].Name.ToLower()) * 100;
+                                    double dose = StringOperations.FindPTVNumber(hnPlan.ROIs[i].OptimizationStructures[match].Name.ToLower()) * 100;
                                     volume = value;
                                     volume = 100; //set to 100 to push the optimizer
-                                    plan.OptimizationSetup.AddPointObjective(optimizedStructures[i][match], constraintType,
+                                    plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match], constraintType,
                                        new DoseValue(dose, "cGy"), volume, hnPlan.ROIs[i].Constraints[j].Priority);
                                 }
                             }

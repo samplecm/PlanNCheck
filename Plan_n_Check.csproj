@@ -102,6 +102,8 @@
     <Compile Include="Calculate\Check.cs" />
     <Compile Include="Calculate\StringOperations.cs" />
     <Compile Include="Constraint.cs" />
+    <Compile Include="Dose_Model\Model.cs" />
+    <Compile Include="Dose_Model\ROI_Distances.cs" />
     <Compile Include="Features\DVHMaker.cs" />
     <Compile Include="Features\Segmentation.cs" />
     <Compile Include="MainForm.cs">
