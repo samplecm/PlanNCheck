@@ -22,14 +22,14 @@ using Plan_n_Check.Dose_Model;
 using OxyPlot.Series;
 using OxyPlot;
 using OxyPlot.Axes;
-
+using Microsoft.ML.OnnxRuntime;
 namespace Plan_n_Check
 {
     public partial class MainForm : Form
     {
         public string SavePath { get; set; }
         public List<Plan> Plans { get; set; }
-        public HNPlan HnPlan { get; set; }
+        public Plan Plan { get; set; }
         public List<List<Structure>> MatchingStructures { get; set; }
         public ScriptContext context { get; set; }
 
@@ -70,7 +70,7 @@ namespace Plan_n_Check
         }
         private void PrepareFormData()
         {
-            List<string> planTypes = new List<string>() { "Anal Canal", "Brain Metastases", "Brain Glioma", "Breast/Chest Wall", "Thoracic / GE Esophagus", "Glioma", "Gynae", "Head and Neck", "Hepatocellular Carcinoma", "Lung", "Lymphoma Head and neck", 
+            List<string> planTypes = new List<string>() { "Anal Canal", "Brain Metastases", "Brain Glioma", "Breast/Chest Wall", "Thoracic / GE Esophagus", "Glioma", "Gynae", "Head and Neck", "Head and Neck - Nasopharynx", "Hepatocellular Carcinoma", "Lung", "Lymphoma Head and neck", 
             "Lymphoma Pelvis", "Lymphoma Thorax", "Orator 2", "Post Operative Prostate Bed", "Prostate", "Sarcoma Limb", "Sarcoma Retroperitoneal and Pelvis"};
             this.ComboBox_PlanType.DataSource = planTypes;
 
@@ -82,11 +82,31 @@ namespace Plan_n_Check
             List<string> treatmentAreas = new List<string>() { "Area 2", "Area 3", "Area 4", "Area 5", "Area 6" };
             this.ComboBox_TreatmentCenter.DataSource = treatmentCenters;
             this.ComboBox_TreatmentArea.DataSource = treatmentAreas;
-          
+
+            //Creat temporary folder for saving runtime data
+            string execution_path = @"\\PHSAhome1.phsabc.ehcnet.ca\csample1\Profile\Desktop\Eclipse Binarys\Projects\Plan_n_Check";
+            
+            //set the temp folder path
+            if (!Directory.Exists(Path.Combine(execution_path, "temp")))
+            {
+                Directory.CreateDirectory(Path.Combine(execution_path, "temp"));
+                
+            }
+            Global_Variables.temp_directory = Path.Combine(execution_path, "temp");
+
+            //set the python model path
+            Global_Variables.dose_model_dir = Path.Combine(execution_path, "Dose_Model");
+            
+
+
+
+
+
 
 
 
         }
+        
         private void ComboBox_TreatmentCenter_SelectedIndexChanged(object sender, EventArgs e)
         {
             List<string> treatmentCenters = new List<string>() { "BC Cancer - Vancouver", "BC Cancer - Surrey" };
@@ -153,7 +173,7 @@ namespace Plan_n_Check
             List<string> listStructures = new List<string>();
             foreach (Structure structure in this.context.StructureSet.Structures)
             {
-                listStructures.Add(structure.Name);
+                listStructures.Add(structure.Id);
 
             }
 
@@ -246,14 +266,15 @@ namespace Plan_n_Check
                 Tuple<string, string, bool> beamParams = Tuple.Create(this.ComboBox_TreatmentCenter.Text, this.ComboBox_TreatmentArea.Text, jawTracking);
 
                 this.OptimTime.Start();
-                var optimData = VMS.TPS.Script.StartOptimizer(this.context, this.HnPlan, this.MatchingStructures, iterations, this.Features, beamParams);
+                //convert  structures to high resolution to avoid errors when some are high some are low
+                
+                var optimData = VMS.TPS.Script.StartOptimizer(this.context, this.Plan, this.MatchingStructures, iterations, this.Features, beamParams);
                 List<List<Structure>> optimizedStructures = optimData.Item1;
-                List<List<Structure>> matchingStructures = optimData.Item2;
                 List<List<string>> updateLog = optimData.Item3;
                 bool isPassed = optimData.Item4;
                 if (SaveCheck.Checked)
                 {
-                    Check.RunReport(this.context, this.HnPlan, this.SavePath, this.MatchingStructures, optimizedStructures, updateLog, this.DVH_ReportStructures, isPassed);
+                    Check.RunReport(this.context, this.Plan, this.SavePath, this.MatchingStructures, optimizedStructures, updateLog, this.DVH_ReportStructures, isPassed);
                 }
                 this.StartErrorLabel.Visible = false;
                 this.TotalTime.Stop();
@@ -304,15 +325,28 @@ namespace Plan_n_Check
             List<Plan> plans = new List<Plan>();
             double prescriptionDose = (double)context.PlanSetup.TotalDose.Dose;
             int numFractions = (int)context.PlanSetup.NumberOfFractions;
-            HNPlan hnPlan = new HNPlan(prescriptionDose, numFractions);
-            plans.Add(hnPlan);
-            this.Plans = plans;
-            this.HnPlan = hnPlan;
-            this.MatchingStructures.Clear();
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)
+            Plan plan;
+            if (planType == "Head and Neck")
             {
-                List<Structure> assignedStructures = StringOperations.AssignStructure(context.StructureSet, hnPlan.ROIs[i]); //find structures that match the constraint structure
-                hnPlan.ROIs[i].MatchingStructures = new List<Structure>(assignedStructures);
+                plan = new HNPlan(prescriptionDose, numFractions);
+            }
+            else if (planType == "Head and Neck - Nasopharynx")
+            {
+                plan = new HN_NP_Plan(prescriptionDose, numFractions);
+            }
+            else
+            {
+                plan = new HNPlan(prescriptionDose, numFractions);
+            }
+
+            plans.Add(plan);
+            this.Plans = plans;
+            this.Plan = plan;
+            this.MatchingStructures.Clear();
+            for (int i = 0; i < plan.ROIs.Count; i++)
+            {
+                List<Structure> assignedStructures = StringOperations.AssignStructure(context.StructureSet, plan.ROIs[i]); //find structures that match the constraint structure
+                plan.ROIs[i].MatchingStructures = new List<Structure>(assignedStructures);
                 this.MatchingStructures.Add(assignedStructures);
             }
             //Also check for special prescription PTVs (not 56, 63, or 70 for HNPlan) and find maximum PTV prescription, which if less than the prescription dose
@@ -322,9 +356,9 @@ namespace Plan_n_Check
             int maxPTV_Dose = 0;
             foreach (Structure structure in context.StructureSet.Structures)
             {
-                if (structure.Name.ToLower().Contains("ptv"))
+                if (structure.Id.ToLower().Contains("ptv"))
                 {
-                    ptvType = StringOperations.FindPTVNumber(structure.Name.ToLower());
+                    ptvType = StringOperations.FindPTVNumber(structure.Id.ToLower());
                     if (ptvType > maxPTV_Dose)
                     {
                         maxPTV_Dose = ptvType;
@@ -336,13 +370,13 @@ namespace Plan_n_Check
             List<int> ptvTypes = new List<int>();
             foreach (Structure structure in context.StructureSet.Structures)
             {
-                if (structure.Name.ToLower().Contains("ptv"))
+                if (structure.Id.ToLower().Contains("ptv"))
                 {
 
-                    ptvType = StringOperations.FindPTVNumber(structure.Name.ToLower());
+                    ptvType = StringOperations.FindPTVNumber(structure.Id.ToLower());
                     
                     //Check if standard prescription dose type;
-                    bool isStandard = this.HnPlan.PTV_Types.IndexOf(ptvType) != -1;
+                    bool isStandard = this.Plan.PTV_Types.IndexOf(ptvType) != -1;
                     if ((!isStandard)&&(ptvType != 0))
                     {
                         string Name = "PTV" + ptvType.ToString();
@@ -359,13 +393,13 @@ namespace Plan_n_Check
                             newPTV.Constraints.Add(new Constraint("V", "95", ">", 98, "rel", 110, new List<int> { 80, 120 }));
                             newPTV.Constraints.Add(new Constraint("D", "max", "<", 1.1 * maxPTV_Dose * 100, "abs", 100, new List<int> { 80, 120 }));
                             newPTV.MatchingStructures.Add(structure);
-                            this.HnPlan.ROIs.Add(newPTV);
-                            this.HnPlan.ROI_Dict.Add(newPTV.Name, newPTV);
+                            this.Plan.ROIs.Add(newPTV);
+                            this.Plan.ROI_Dict.Add(newPTV.Name, newPTV);
                             this.MatchingStructures.Add(new List<Structure>() { structure }); //Constraints will be updated according to this
                         }
                         else
                         {
-                            this.HnPlan.ROI_Dict[Name].MatchingStructures.Add(structure);
+                            this.Plan.ROI_Dict[Name].MatchingStructures.Add(structure);
                         }
                         
                     }
@@ -496,13 +530,13 @@ namespace Plan_n_Check
 
                     //First check if structure exists: 
                     bool structExists = false;
-                    for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
+                    for (int i = 0; i < this.Plan.ROIs.Count; i++)
                     {
-                        if (this.HnPlan.ROIs[i].Name == StructureTB.Text.ToString()) //if structure already exists
+                        if (this.Plan.ROIs[i].Name == StructureTB.Text.ToString()) //if structure already exists
                         {
                             structExists = true;
                             Constraint newConstraint = new Constraint(type, subscript, relation, value, format, priority, priorityRange);
-                            this.HnPlan.ROIs[i].Constraints.Add(newConstraint);
+                            this.Plan.ROIs[i].Constraints.Add(newConstraint);
                             break;
                         }
                     }
@@ -516,7 +550,7 @@ namespace Plan_n_Check
                         //Need to also add assigned structure for this
                         List<Structure> assignedStructures = StringOperations.AssignStructure(context.StructureSet, NewROI); //find structures that match the constraint structure
                         NewROI.MatchingStructures = assignedStructures;
-                        this.HnPlan.ROIs.Add(NewROI);
+                        this.Plan.ROIs.Add(NewROI);
                         this.MatchingStructures.Add(assignedStructures);
 
                     }
@@ -601,20 +635,20 @@ namespace Plan_n_Check
                 int constraint_index = 0;
 
             //Remove each constraint from the list of ROIs/constraints in plan.
-            for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
+            for (int i = 0; i < this.Plan.ROIs.Count; i++)
                 {
                     
 
-                    if (this.HnPlan.ROIs[i].Name == item.Cells[0].Value.ToString()) //if the right structure
+                    if (this.Plan.ROIs[i].Name == item.Cells[0].Value.ToString()) //if the right structure
                     {
 
-                        for (int j = 0; j < this.HnPlan.ROIs[i].Constraints.Count; j++) //Look to get the right constraint
+                        for (int j = 0; j < this.Plan.ROIs[i].Constraints.Count; j++) //Look to get the right constraint
                         {
 
-                            if ((this.HnPlan.ROIs[i].Constraints[j].Type == item.Cells[1].Value.ToString()) && (this.HnPlan.ROIs[i].Constraints[j].Subscript == item.Cells[2].Value.ToString()) && 
-                                (this.HnPlan.ROIs[i].Constraints[j].EqualityType == item.Cells[3].Value.ToString()))
+                            if ((this.Plan.ROIs[i].Constraints[j].Type == item.Cells[1].Value.ToString()) && (this.Plan.ROIs[i].Constraints[j].Subscript == item.Cells[2].Value.ToString()) && 
+                                (this.Plan.ROIs[i].Constraints[j].EqualityType == item.Cells[3].Value.ToString()))
                             {                             
-                                int numConstraints = this.HnPlan.ROIs[i].Constraints.Count;
+                                int numConstraints = this.Plan.ROIs[i].Constraints.Count;
                                 //Remove the constraint
                                 ROI_Index = i;
                                 constraint_index = j;
@@ -630,10 +664,10 @@ namespace Plan_n_Check
                         
                     }
                 }
-                this.HnPlan.ROIs[ROI_Index].Constraints.RemoveAt(constraint_index);
+                this.Plan.ROIs[ROI_Index].Constraints.RemoveAt(constraint_index);
                 if (removeROI == true)
                 {
-                    this.HnPlan.ROIs.RemoveAt(ROI_Index);
+                    this.Plan.ROIs.RemoveAt(ROI_Index);
                     
                 }               
             }
@@ -671,17 +705,17 @@ namespace Plan_n_Check
             dt.Columns.Add("format");
             //Get all the constraints and make a row for each
 
-            for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
+            for (int i = 0; i < this.Plan.ROIs.Count; i++)
             {
-                for (int j = 0; j < this.HnPlan.ROIs[i].Constraints.Count; j++)
+                for (int j = 0; j < this.Plan.ROIs[i].Constraints.Count; j++)
                 {
                     DataRow row = dt.NewRow();
-                    row["Structure"] = this.HnPlan.ROIs[i].Name;
-                    row["Type"] = this.HnPlan.ROIs[i].Constraints[j].Type;
-                    row["Subscript"] = this.HnPlan.ROIs[i].Constraints[j].Subscript;
-                    row["Relation"] = this.HnPlan.ROIs[i].Constraints[j].EqualityType;
-                    row["Value"] = this.HnPlan.ROIs[i].Constraints[j].Value;
-                    row["Format"] = this.HnPlan.ROIs[i].Constraints[j].Format;
+                    row["Structure"] = this.Plan.ROIs[i].Name;
+                    row["Type"] = this.Plan.ROIs[i].Constraints[j].Type;
+                    row["Subscript"] = this.Plan.ROIs[i].Constraints[j].Subscript;
+                    row["Relation"] = this.Plan.ROIs[i].Constraints[j].EqualityType;
+                    row["Value"] = this.Plan.ROIs[i].Constraints[j].Value;
+                    row["Format"] = this.Plan.ROIs[i].Constraints[j].Format;
                     dt.Rows.Add(row);
                 }
             }
@@ -708,7 +742,7 @@ namespace Plan_n_Check
         private void button2_Click(object sender, EventArgs e)
         {
             //Call method for starting report. 
-            Plan_n_Check.Dose_Model.Model.Predict_Score(this.HnPlan, this.context);
+            //Plan_n_Check.Dose_Model.Model.Predict_Score(this.Plan, this.context);
 
             if ((this.SavePath == "") && (this.SaveCheck.Checked))
             {
@@ -736,13 +770,12 @@ namespace Plan_n_Check
                 this.StartErrorLabel.Text = "In progress";
                 this.StartErrorLabel.Visible = true;
                 this.OptimTime.Start();
-                var structureLists = VMS.TPS.Script.PrepareCheck(this.context, this.HnPlan, this.MatchingStructures, this.Features);
+                var structureLists = VMS.TPS.Script.PrepareCheck(this.context, this.Plan, this.MatchingStructures, this.Features);
                 List<List<Structure>> optimizedStructures = structureLists.Item1;
-                List<List<Structure>> matchingStructures = structureLists.Item2;
                 List<List<string>> updateLog = structureLists.Item3;
                 if (SaveCheck.Checked)
                 {
-                    Check.RunReport(this.context, this.HnPlan, this.SavePath, this.MatchingStructures, optimizedStructures, updateLog, this.DVH_ReportStructures , true);
+                    Check.RunReport(this.context, this.Plan, this.SavePath, this.MatchingStructures, optimizedStructures, updateLog, this.DVH_ReportStructures , true);
                 }
                 this.StartErrorLabel.Visible = false;
                 this.TotalTime.Stop();
@@ -774,11 +807,11 @@ namespace Plan_n_Check
             
             //Get all the constraints and make a row for each
 
-            for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
+            for (int i = 0; i < this.Plan.ROIs.Count; i++)
             {
 
                 DataRow row = dt.NewRow();
-                row["Constrained Structure"] = this.HnPlan.ROIs[i].Name;               
+                row["Constrained Structure"] = this.Plan.ROIs[i].Name;               
                 dt.Rows.Add(row);               
             }
 
@@ -798,7 +831,7 @@ namespace Plan_n_Check
             foreach (Structure structure in this.context.StructureSet.Structures)
             {
                 this.DicomStructures.Add(structure);
-                StructureNames.Add(structure.Name);
+                StructureNames.Add(structure.Id);
             }
     
             this.DicomComboBox.DataSource = StructureNames;
@@ -825,7 +858,7 @@ namespace Plan_n_Check
 
         private void conStructGridView_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if ((e.RowIndex != -1)&&(e.RowIndex < this.HnPlan.ROIs.Count)) //if not the header or footer
+            if ((e.RowIndex != -1)&&(e.RowIndex < this.Plan.ROIs.Count)) //if not the header or footer
             { 
                 this.AssignStructGridView.Rows.Clear();
 
@@ -833,10 +866,10 @@ namespace Plan_n_Check
                 this.AssignStructGridView.ForeColor = System.Drawing.Color.Black;
                 DataTable dt = new DataTable();
                 dt.Columns.Add("Assigned Structures");
-                for (int i = 0; i < this.HnPlan.ROIs[e.RowIndex].MatchingStructures.Count; i++)
+                for (int i = 0; i < this.Plan.ROIs[e.RowIndex].MatchingStructures.Count; i++)
                 {
                     DataRow row = dt.NewRow();
-                    row["Assigned Structures"] = this.HnPlan.ROIs[e.RowIndex].MatchingStructures[i].Name;
+                    row["Assigned Structures"] = this.Plan.ROIs[e.RowIndex].MatchingStructures[i].Id;
                     dt.Rows.Add(row);
                 }
                 foreach (DataRow DRow in dt.Rows)
@@ -852,9 +885,9 @@ namespace Plan_n_Check
             int contourIndex = Convert.ToInt32(this.StructureLabel.Text);
             //Now add this to the assigned structures list. 
             bool alreadyAssigned = false;
-            for (int i = 0; i < this.HnPlan.ROIs[contourIndex].MatchingStructures.Count; i++)
+            for (int i = 0; i < this.Plan.ROIs[contourIndex].MatchingStructures.Count; i++)
             {
-                if (this.HnPlan.ROIs[contourIndex].MatchingStructures[i].Name.ToLower() == this.DicomStructures[DicomComboBox.SelectedIndex].Name.ToLower())
+                if (this.Plan.ROIs[contourIndex].MatchingStructures[i].Id.ToLower() == this.DicomStructures[DicomComboBox.SelectedIndex].Id.ToLower())
                 {
                     System.Windows.MessageBox.Show("Structure has already been assigned for this ROI.");
                     alreadyAssigned = true;
@@ -863,18 +896,17 @@ namespace Plan_n_Check
             if (!alreadyAssigned)
             {
                 this.MatchingStructures[contourIndex].Add(this.DicomStructures[DicomComboBox.SelectedIndex]);
-                this.HnPlan.ROIs[contourIndex].MatchingStructures.Add(this.DicomStructures[DicomComboBox.SelectedIndex]);
+                this.Plan.ROIs[contourIndex].MatchingStructures.Add(this.DicomStructures[DicomComboBox.SelectedIndex]);
                 //Now repopulate current list. 
                 this.AssignStructGridView.Rows.Clear();
                 this.StructureLabel.Text = contourIndex.ToString(); //save which structure is selected for editing
                 this.AssignStructGridView.ForeColor = System.Drawing.Color.Black;
                 DataTable dt = new DataTable();
                 dt.Columns.Add("Assigned Structures");
-                for (int i = 0; i < this.HnPlan.ROIs[contourIndex].MatchingStructures.Count; i++)
+                for (int i = 0; i < this.Plan.ROIs[contourIndex].MatchingStructures.Count; i++)
                 {
                     DataRow row = dt.NewRow();
-                    row["Assigned Structures"] = this.HnPlan.ROIs[contourIndex].MatchingStructures[i].Name;
-                    System.Windows.MessageBox.Show(this.HnPlan.ROIs[contourIndex].MatchingStructures[i].Name);
+                    row["Assigned Structures"] = this.Plan.ROIs[contourIndex].MatchingStructures[i].Id;
                     dt.Rows.Add(row);
                 }
                 foreach (DataRow DRow in dt.Rows)
@@ -896,7 +928,7 @@ namespace Plan_n_Check
                 int selectedIndex = AssignStructGridView.SelectedRows[0].Index;
                 System.Windows.MessageBox.Show(selectedIndex.ToString());
                 this.MatchingStructures[contourIndex].RemoveAt(selectedIndex);
-                this.HnPlan.ROIs[contourIndex].MatchingStructures.RemoveAt(selectedIndex);
+                this.Plan.ROIs[contourIndex].MatchingStructures.RemoveAt(selectedIndex);
             }
                 
 
@@ -907,10 +939,10 @@ namespace Plan_n_Check
             this.AssignStructGridView.ForeColor = System.Drawing.Color.Black;
             DataTable dt = new DataTable();
             dt.Columns.Add("Assigned Structures");
-            for (int i = 0; i < this.HnPlan.ROIs[contourIndex].MatchingStructures.Count; i++)
+            for (int i = 0; i < this.Plan.ROIs[contourIndex].MatchingStructures.Count; i++)
             {
                 DataRow row = dt.NewRow();
-                row["Assigned Structures"] = this.HnPlan.ROIs[contourIndex].MatchingStructures[i].Name;
+                row["Assigned Structures"] = this.Plan.ROIs[contourIndex].MatchingStructures[i].Id;
                 dt.Rows.Add(row);
             }
             foreach (DataRow DRow in dt.Rows)
@@ -923,6 +955,7 @@ namespace Plan_n_Check
 
         private void LoadFeaturesButton_Click(object sender, EventArgs e)
         {
+            //Dose_Model.Model.Predict_Score(this.Plan, this.context);
             this.PanelSpecialFeatures.Visible = true;
             this.PanelSpecialFeatures.BringToFront();
             //First see if this is first time that special features panel has been opened:
@@ -934,7 +967,7 @@ namespace Plan_n_Check
                 List<string> organNames = new List<string>();
                 foreach (Structure s in this.context.StructureSet.Structures)
                 {
-                    organNames.Add(s.Name);
+                    organNames.Add(s.Id);
                 }
                 this.OrganSeg_OrgansCombo.DataSource = organNames;
 
@@ -983,9 +1016,9 @@ namespace Plan_n_Check
                 dt.Columns.Add("Dose Bounds");
                 //By default include the PTV DVHs in the report:
 
-                for (int j = 0; j < this.HnPlan.ROIs.Count; j++)
+                for (int j = 0; j < this.Plan.ROIs.Count; j++)
                 {
-                    string name = this.HnPlan.ROIs[j].Name;
+                    string name = this.Plan.ROIs[j].Name;
                     if (name.ToLower().Contains("ptv"))
                     {
                         DataRow row = dt.NewRow();
@@ -1008,9 +1041,9 @@ namespace Plan_n_Check
 
                 //Now make a list of all planning structures and then add to combobox
                 List<string> tempList = new List<string>();
-                for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
+                for (int i = 0; i < this.Plan.ROIs.Count; i++)
                 {
-                    tempList.Add(this.HnPlan.ROIs[i].Name);
+                    tempList.Add(this.Plan.ROIs[i].Name);
 
                 }
                 this.Combobox_dvhReport.DataSource = tempList;
@@ -1025,12 +1058,12 @@ namespace Plan_n_Check
                     break;
                 }
                 string structureName = row.Cells[0].Value.ToString().ToLower();
-                for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
+                for (int i = 0; i < this.Plan.ROIs.Count; i++)
                 {
-                    string tempName = this.HnPlan.ROIs[i].Name.ToLower();
+                    string tempName = this.Plan.ROIs[i].Name.ToLower();
                     if (tempName == structureName)
                     {
-                        this.DVH_ReportStructures.Add(Tuple.Create(this.HnPlan.ROIs[i], 0, 115, 0, 115));
+                        this.DVH_ReportStructures.Add(Tuple.Create(this.Plan.ROIs[i], 0, 115, 0, 115));
                     }
                 }
 
@@ -1153,7 +1186,7 @@ namespace Plan_n_Check
             Structure plotStructure = this.context.StructureSet.Structures.First();
             foreach (Structure structure in this.context.StructureSet.Structures)
             {
-                if (structure.Name == structureName) {
+                if (structure.Id == structureName) {
                     plotStructure = structure;
                 }
             }
@@ -1188,7 +1221,7 @@ namespace Plan_n_Check
             }
             foreach (Structure s in this.context.StructureSet.Structures)
             {
-                if (organName == s.Name)
+                if (organName == s.Id)
                 {
                     organ = s;
                 }
@@ -1196,10 +1229,11 @@ namespace Plan_n_Check
             double[] organSegOptions = new double[] { Convert.ToDouble(this.Axial_Combobox.SelectedItem), Convert.ToDouble(this.Coronal_Combobox.SelectedItem), Convert.ToDouble(this.Sagittal_Combobox.SelectedItem) };
             this.Features.Add(Tuple.Create(true, organSegOptions, organName));
             //Need to update the hnplan structure so it knows that the structure has subsegments:
-            HNPlan hnPlan = this.HnPlan;
-            Segmentation.MakeSubsegmentStructures(organ, organSegOptions, ref plan, ref ss, this.context, applyConstraints, this.MatchingStructures, ref hnPlan);
-            //update the hnplan property of the class
-            this.HnPlan = hnPlan;
+            Plan temp = this.Plan;
+            Segmentation.MakeSubsegmentStructures(organ, organSegOptions, ref plan, ref ss, this.context, applyConstraints, this.MatchingStructures, ref temp);
+            this.Plan = temp;
+
+
 
         }
 
@@ -1209,16 +1243,16 @@ namespace Plan_n_Check
             Structure organ = this.context.StructureSet.Structures.First();
             foreach (Structure s in this.context.StructureSet.Structures)
             {
-                if ((string)this.OrganSeg_OrgansCombo.SelectedItem == s.Name)
+                if ((string)this.OrganSeg_OrgansCombo.SelectedItem == s.Id)
                 {
                     organ = s;
                 }
             }
             foreach (Structure s2 in this.context.StructureSet.Structures.ToList())
             {
-                int min = Math.Min(6, organ.Name.Length-1);
-                string subName = organ.Name.Substring(0, min);
-                if (s2.Name.Contains(subName + "_subseg"))
+                int min = Math.Min(6, organ.Id.Length-1);
+                string subName = organ.Id.Substring(0, min);
+                if (s2.Id.Contains(subName + "_subseg"))
                 {
                     this.context.StructureSet.RemoveStructure(s2);
                     numDeleted++;
@@ -1236,7 +1270,7 @@ namespace Plan_n_Check
           
             foreach (Structure s in this.context.StructureSet.Structures.ToList())
             {
-                if (s.Name.ToLower().Contains("cpg_subseg"))
+                if (s.Id.ToLower().Contains("cpg_subseg"))
                 {
                     this.context.StructureSet.RemoveStructure(s);
                     numDeleted++;
@@ -1326,12 +1360,12 @@ namespace Plan_n_Check
             //    ConstraintGridView.Rows[num].Cells[4].Value = DRow["Value"].ToString();
             //    ConstraintGridView.Rows[num].Cells[5].Value = DRow["Format"].ToString();
             //}
-            for (int i = 0; i < this.HnPlan.ROIs.Count; i++)
+            for (int i = 0; i < this.Plan.ROIs.Count; i++)
             {
-                string tempName = this.HnPlan.ROIs[i].Name.ToLower();
+                string tempName = this.Plan.ROIs[i].Name.ToLower();
                 if (tempName == newDVH)
                 {
-                    this.DVH_ReportStructures.Add(Tuple.Create(this.HnPlan.ROIs[i], doseLowerBound, doseUpperBound, volumeLowerBound, volumeUpperBound));
+                    this.DVH_ReportStructures.Add(Tuple.Create(this.Plan.ROIs[i], doseLowerBound, doseUpperBound, volumeLowerBound, volumeUpperBound));
                 }
             }
             //Reset the bounds

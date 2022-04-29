@@ -14,7 +14,7 @@ namespace Plan_n_Check.Features
     {
 
         public static void MakeParotidStructures(List<List<double[,]>> choppedContours, List<double[]>
-            planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> matchingStructures, string contraName, double priorityRatio)
+            planes, ref ExternalPlanSetup plan_setup, ref StructureSet ss, Plan plan_obj, ScriptContext context, List<List<Structure>> matchingStructures, string contraName, double priorityRatio)
         {
             Image image = context.Image;
             //First off, in case this script is re-run, we need to remove any subsegment structures already made. 
@@ -72,7 +72,7 @@ namespace Plan_n_Check.Features
                         //Before adding this contour, need to convert the coordinates from dicom back to the user coordinate system. 
                         for (int i = 0; i < currentContour.Length; i++)
                         {
-                            currentContour[i] = image.DicomToUser(currentContour[i], plan);
+                            currentContour[i] = image.DicomToUser(currentContour[i], plan_setup);
                         }
                         subsegments[subsegment].AddContourOnImagePlane(currentContour, planeIndex);
                         //Now also need to set an optimization constraint based on the importance, and the constraint set on the whole contralateral parotid.    
@@ -87,8 +87,8 @@ namespace Plan_n_Check.Features
 
 
 
-                    doseConstraint = D50[subsegment];//hnPlan.ROIs[ROI_Index].Constraints[0].Value;
-                    priority = hnPlan.ROIs[ROI_Index].Constraints[0].Priority;
+                    doseConstraint = D50[subsegment];//plan_obj.ROIs[ROI_Index].Constraints[0].Value;
+                    priority = plan_obj.ROIs[ROI_Index].Constraints[0].Priority;
                     priority *= priorityRatio * importanceValues[subsegment];
 
                     if ((priority > 10) && (doseConstraint != 1000))
@@ -96,7 +96,7 @@ namespace Plan_n_Check.Features
                         //Furthermore, want to temper priority and dose constraint. Take weighted average of dose constraint with the ptv it overlaps with
                         doseConstraint = (1 - overlapRatio) * (doseConstraint * 100) + overlapRatio * overlapPTVDose;
                         priority = priority * (1 - overlapRatio);
-                        plan.OptimizationSetup.AddMeanDoseObjective(subsegments[subsegment], new DoseValue(doseConstraint, "cGy"), priority);
+                        plan_setup.OptimizationSetup.AddMeanDoseObjective(subsegments[subsegment], new DoseValue(doseConstraint, "cGy"), priority);
                     }
 
 
@@ -108,7 +108,7 @@ namespace Plan_n_Check.Features
             }
 
         }
-        public static Tuple<List<List<double[,]>>, List<double[]>> OrganChop(Structure organ, int[] numCuts, ref ExternalPlanSetup plan, StructureSet ss, ScriptContext context)
+        public static Tuple<List<List<double[,]>>, List<double[]>> OrganChop(Structure organ, int[] numCuts, StructureSet ss, ScriptContext context)
         {
             /* 
              
@@ -137,12 +137,12 @@ namespace Plan_n_Check.Features
 
 
         }
-        public static void MakeSubsegmentStructures(Structure roi, double[] numCutsDouble, ref ExternalPlanSetup plan, ref StructureSet ss, ScriptContext context, bool applyConstraints, List<List<Structure>> matchingStructures, ref HNPlan hnplan)
+        public static void MakeSubsegmentStructures(Structure roi, double[] numCutsDouble, ref ExternalPlanSetup plan_setup, ref StructureSet ss, ScriptContext context, bool applyConstraints, List<List<Structure>> matchingStructures, ref Plan plan)
         {
             //Convert numCuts to int array
             int[] numCuts = numCutsDouble.Select(d => (int)d).ToArray();
             //Chop up the contours
-            Tuple<List<List<double[,]>>, List<double[]>> choppedTuple = OrganChop(roi, numCuts, ref plan, ss, context);
+            Tuple<List<List<double[,]>>, List<double[]>> choppedTuple = OrganChop(roi, numCuts, ss, context);
             List<List<double[,]>> choppedContours = choppedTuple.Item1;
             List<double[]> planes = choppedTuple.Item2;
             Image image = context.Image;
@@ -164,10 +164,10 @@ namespace Plan_n_Check.Features
                         {
                             ROI_Index = i;
                             //assume its a dose constraint
-                            hnplan.ROIs[i].HasSubsegments = true;
-                            doseConstraint = new DoseValue(hnplan.ROIs[i].Constraints[0].Value, "cGy");
-                            constraintType = hnplan.ROIs[i].Constraints[0].Subscript;
-                            priority = hnplan.ROIs[i].Constraints[0].Priority;
+                            plan.ROIs[i].HasSubsegments = true;
+                            doseConstraint = new DoseValue(plan.ROIs[i].Constraints[0].Value, "cGy");
+                            constraintType = plan.ROIs[i].Constraints[0].Subscript;
+                            priority = plan.ROIs[i].Constraints[0].Priority;
 
                         }
 
@@ -208,7 +208,7 @@ namespace Plan_n_Check.Features
                         //Before adding this contour, need to convert the coordinates from dicom back to the user coordinate system. 
                         for (int i = 0; i < currentContour.Length; i++)
                         {
-                            currentContour[i] = image.DicomToUser(currentContour[i], plan);
+                            currentContour[i] = image.DicomToUser(currentContour[i], plan_setup);
                         }
                         subsegments[subsegment].AddContourOnImagePlane(currentContour, planeIndex);
                         //Now also need to set an optimization constraint based on the importance, and the constraint set on the whole contralateral parotid.    
@@ -225,15 +225,15 @@ namespace Plan_n_Check.Features
                 {
                     if (constraintType.ToLower() == "mean")
                     {
-                        plan.OptimizationSetup.AddMeanDoseObjective(subsegments[subsegment], 0.9 * doseConstraint, priority);
+                        plan_setup.OptimizationSetup.AddMeanDoseObjective(subsegments[subsegment], 0.9 * doseConstraint, priority);
                     }
                     else if (constraintType.ToLower() == "min")
                     {
-                        plan.OptimizationSetup.AddPointObjective(subsegments[subsegment], OptimizationObjectiveOperator.Lower, 1.05 * doseConstraint, 100, priority);
+                        plan_setup.OptimizationSetup.AddPointObjective(subsegments[subsegment], OptimizationObjectiveOperator.Lower, 1.05 * doseConstraint, 100, priority);
                     }
                     else if (constraintType.ToLower() == "max")
                     {
-                        plan.OptimizationSetup.AddPointObjective(subsegments[subsegment], OptimizationObjectiveOperator.Upper, 0.9 * doseConstraint, 0, priority);
+                        plan_setup.OptimizationSetup.AddPointObjective(subsegments[subsegment], OptimizationObjectiveOperator.Upper, 0.9 * doseConstraint, 0, priority);
                     }
                 }
 
@@ -253,7 +253,7 @@ namespace Plan_n_Check.Features
         }
 
 
-        public static Structure FindContraPar(ExternalPlanSetup plan, StructureSet ss, HNPlan hnPlan, List<List<Structure>> matchingStructures, ScriptContext context)
+        public static Structure FindContraPar(ExternalPlanSetup plan_setup, StructureSet ss, Plan plan, List<List<Structure>> matchingStructures, ScriptContext context)
         {
             //find all the ptvs
 
@@ -268,9 +268,9 @@ namespace Plan_n_Check.Features
             //Now find the parotids, by first getting index of parotids in the head and neck plan list, and taking the assigned structure for each,
             List<Structure> parotids = new List<Structure>();
             List<double> overlapRatios = new List<double>();
-            for (int s = 0; s < hnPlan.ROIs.Count; s++)
+            for (int s = 0; s < plan.ROIs.Count; s++)
             {
-                if (hnPlan.ROIs[s].Name.ToLower().Contains("parotid"))
+                if (plan.ROIs[s].Name.ToLower().Contains("parotid"))
                 {
                     try { parotids.Add(matchingStructures[s][0]); }
                     catch
@@ -290,7 +290,7 @@ namespace Plan_n_Check.Features
             double overlap;
             for (int i = 0; i < parotids.Count; i++)//go through all parotids
             {
-                contours.Add(StructureContours(parotids[i], plan, context, ss));
+                contours.Add(StructureContours(parotids[i], plan_setup, context, ss));
                 //get the overlap ratio for the parotid 
                 overlap = Check.RatioOverlapWithPTV(contours[contours.Count - 1], ss).Item1;
                 overlapRatios.Add(overlap);
@@ -336,7 +336,7 @@ namespace Plan_n_Check.Features
         }
 
 
-        public static List<double[,]> StructureContours(Structure structure, ExternalPlanSetup plan, ScriptContext context, StructureSet ss)
+        public static List<double[,]> StructureContours(Structure structure, ExternalPlanSetup plan_setup, ScriptContext context, StructureSet ss)
         {
             //returns list of contours for a structure
             var image = context.Image;
@@ -372,7 +372,7 @@ namespace Plan_n_Check.Features
                 contours.Add(new double[contoursTemp[i].GetLength(0), 3]);
                 for (int j = 0; j < contoursTemp[i].GetLength(0); j++)
                 {
-                    VVector point = image.UserToDicom(contoursTemp[i][j], plan);
+                    VVector point = image.UserToDicom(contoursTemp[i][j], plan_setup);
                     contours[i][j, 0] = (point.x);
                     contours[i][j, 1] = (point.y);
                     contours[i][j, 2] = (point.z);
@@ -434,7 +434,7 @@ namespace Plan_n_Check.Features
             return Tuple.Create(contours, planes);
         }
 
-        public static List<List<double[,]>> GetContoursPTV(StructureSet structureSet, PlanSetup plan1, Image image)
+        public static List<List<double[,]>> GetContoursPTV(StructureSet structureSet, PlanSetup plan_setup, Image image)
         {
 
             List<Structure> ROI = new List<Structure>();    //Saving in a list because I only have read access.
@@ -479,7 +479,7 @@ namespace Plan_n_Check.Features
 
                         for (int j = 0; j < contoursTemp[i].GetLength(0); j++)
                         {
-                            VVector point = image.UserToDicom(contoursTemp[i][j], plan1);
+                            VVector point = image.UserToDicom(contoursTemp[i][j], plan_setup);
                             contours[contourCount][i][j, 0] = (point.x);
                             contours[contourCount][i][j, 1] = (point.y);
                             contours[contourCount][i][j, 2] = (point.z);

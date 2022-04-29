@@ -64,7 +64,7 @@ namespace VMS.TPS
             StructureSet ss = context.StructureSet;
             foreach (Structure structure in ss.Structures.ToList())
             {
-                if (structure.Name.ToLower().Contains("subsegment"))
+                if (structure.Id.ToLower().Contains("subsegment"))
                 {
                     ss.RemoveStructure(structure);
                 }
@@ -73,11 +73,11 @@ namespace VMS.TPS
             System.Windows.Forms.Application.Run(mainForm);
             //System.Windows.System.Windows.MessageBox.Show("Hello", "input", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information, System.Windows.MessageBoxResult.OK);
     }
-        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>, bool> StartOptimizer(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, int numIterations, List<Tuple<bool, double[], string>> features, Tuple<string, string, bool> beamParams) //Returns list of matching structures
+        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>, bool> StartOptimizer(ScriptContext context, Plan plan, List<List<Structure>> matchingStructures, int numIterations, List<Tuple<bool, double[], string>> features, Tuple<string, string, bool> beamParams) //Returns list of matching structures
         {
          
             // Check for patient plan loaded
-            ExternalPlanSetup plan = context.ExternalPlanSetup;
+            ExternalPlanSetup plan_setup = context.ExternalPlanSetup;
             
 
             Patient patient = context.Patient;
@@ -87,23 +87,23 @@ namespace VMS.TPS
 
            
             //Create two VMAT beams
-            BeamMaker(ref plan, ss, plan.TotalDose.Dose, beamParams);
+            BeamMaker(ref plan_setup, ss, plan_setup.TotalDose.Dose, beamParams);
             //set prescriptions dose 
-            int numFractions = hnPlan.Fractions;
-            int dosePerFraction = (int)hnPlan.PrescriptionDose / numFractions;
-            plan.SetPrescription(numFractions, new DoseValue(dosePerFraction, "cGy"), 1);
+            int numFractions = plan.Fractions;
+            int dosePerFraction = (int)plan.PrescriptionDose / numFractions;
+            plan_setup.SetPrescription(numFractions, new DoseValue(dosePerFraction, "cGy"), 1);
 
 
             //matchingStructures is the same length as hnPlan.ROIs.count
             //Now set optimization constraints
-            List<List<Structure>> optimizedStructures = OptObjectivesEditing.SetConstraints(ref plan, hnPlan, matchingStructures, true); //true to check for opti structures, returns new matching list of structures
+            List<List<Structure>> optimizedStructures = OptObjectivesEditing.SetConstraints(ref plan_setup, plan, matchingStructures, true); //true to check for opti structures, returns new matching list of structures
             List<List<double[,]>> choppedContours;
             List<double[]> planes;
             string contraParName;
               
             if (features[0].Item1 == true) //parotid segmentation feature
             {
-                Tuple<List<List<double[,]>>, string, List<double[]>>  choppedAndName = ParotidChop(ref plan, hnPlan, matchingStructures, ss, context);
+                Tuple<List<List<double[,]>>, string, List<double[]>>  choppedAndName = ParotidChop(ref plan_setup, plan, matchingStructures, ss, context);
                 choppedContours = choppedAndName.Item1;
                 contraParName = choppedAndName.Item2;
                 planes = choppedAndName.Item3;
@@ -114,17 +114,17 @@ namespace VMS.TPS
                 contraParName = "";
                 planes = new List<double[]>();
             }
-            Tuple<bool, List<List<string>>> optimData = Optimize(choppedContours, planes, ref plan, ref ss, hnPlan, context, optimizedStructures,matchingStructures, contraParName, numIterations, features, beamParams);
+            Tuple<bool, List<List<string>>> optimData = Optimize(choppedContours, planes, ref plan_setup, ref ss, plan, context, optimizedStructures,matchingStructures, contraParName, numIterations, features, beamParams);
             bool isPassed = optimData.Item1;
             List<List<string>> updatesLog = optimData.Item2;
             return Tuple.Create(optimizedStructures, matchingStructures, updatesLog, isPassed);
 
         }
-        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>> PrepareCheck(ScriptContext context, HNPlan hnPlan, List<List<Structure>> matchingStructures, List<Tuple<bool, double[], string>> features) //Returns list of matching structures
+        public static Tuple<List<List<Structure>>, List<List<Structure>>, List<List<string>>> PrepareCheck(ScriptContext context, Plan plan, List<List<Structure>> matchingStructures, List<Tuple<bool, double[], string>> features) //Returns list of matching structures
         {
 
             // Check for patient plan loaded
-            ExternalPlanSetup plan = context.ExternalPlanSetup;
+            ExternalPlanSetup plan_setup = context.ExternalPlanSetup;
 
 
             Patient patient = context.Patient;
@@ -132,21 +132,21 @@ namespace VMS.TPS
             Course course = context.Course;
             Image image3d = context.Image;
             //Set prescription dose
-            int numFractions = hnPlan.Fractions;
-            int dosePerFraction = (int)hnPlan.PrescriptionDose / numFractions;
-            plan.SetPrescription(numFractions, new DoseValue(dosePerFraction, "cGy"), 1);
+            int numFractions = plan.Fractions;
+            int dosePerFraction = (int)(plan.PrescriptionDose / numFractions);
+            plan_setup.SetPrescription(numFractions, new DoseValue(dosePerFraction, "cGy"), 1);
 
 
             //matchingStructures is the same length as hnPlan.ROIs.count
             //Now set optimization constraints
-            List<List<Structure>> optimizedStructures = OptObjectivesEditing.SetConstraints(ref plan, hnPlan, matchingStructures, true); //true to check for opti structures, returns new matching list of structures
+            List<List<Structure>> optimizedStructures = OptObjectivesEditing.SetConstraints(ref plan_setup, plan, matchingStructures, true); //true to check for opti structures, returns new matching list of structures
             List<List<double[,]>> choppedContours;
             List<double[]> planes;
             string contraParName;
 
             if (features[0].Item1 == true) //parotid segmentation feature
             {
-                Tuple<List<List<double[,]>>, string, List<double[]>> choppedAndName = ParotidChop(ref plan, hnPlan, matchingStructures, ss, context);
+                Tuple<List<List<double[,]>>, string, List<double[]>> choppedAndName = ParotidChop(ref plan_setup, plan, matchingStructures, ss, context);
                 choppedContours = choppedAndName.Item1;
                 contraParName = choppedAndName.Item2;
                 planes = choppedAndName.Item3;
@@ -163,7 +163,7 @@ namespace VMS.TPS
 
         }
 
-        public static Tuple<List<List<double[,]>>, string, List<double[]>> ParotidChop(ref ExternalPlanSetup plan, HNPlan hnPlan, List<List<Structure>> matchingStructures, StructureSet ss, ScriptContext context)
+        public static Tuple<List<List<double[,]>>, string, List<double[]>> ParotidChop(ref ExternalPlanSetup plan_setup, Plan plan, List<List<Structure>> matchingStructures, StructureSet ss, ScriptContext context)
         {
             /* 
              1. Find contralateral parotid (one with least overlap, largest sum of distance from PTVs), get contours
@@ -173,7 +173,7 @@ namespace VMS.TPS
              */
 
             //1.
-            Structure contraPar = Segmentation.FindContraPar(plan, ss, hnPlan, matchingStructures, context);
+            Structure contraPar = Segmentation.FindContraPar(plan_setup, ss, plan, matchingStructures, context);
             //Now get contours for it
             // GetContours function will return the list of contours, as well as a list of all z-planes which contours were taken from, in a tuple
             var tuple = Segmentation.GetContours(contraPar, context);
@@ -194,7 +194,7 @@ namespace VMS.TPS
 
         }
         public static Tuple<bool, List<List<string>>> Optimize(List<List<double[,]>> choppedContours, List<double[]>
-            planes, ref ExternalPlanSetup plan, ref StructureSet ss, HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, string contraName, int numIterations, List<Tuple<bool, double[], string>> features, Tuple<string, string, bool> beamParams)
+            planes, ref ExternalPlanSetup plan_setup, ref StructureSet ss, Plan plan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, string contraName, int numIterations, List<Tuple<bool, double[], string>> features, Tuple<string, string, bool> beamParams)
         //return a list of strings which is the log of constraint updates during optimization. 
         {
             //Only make parotid structures if that feature has been selected
@@ -202,14 +202,14 @@ namespace VMS.TPS
             if (features[0].Item1 == true)
             {
                 double priorityRatio = features[0].Item2[0];
-                Segmentation.MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, priorityRatio);
+                Segmentation.MakeParotidStructures(choppedContours, planes, ref plan_setup, ref ss, plan, context, matchingStructures, contraName, priorityRatio);
             }
             else
             {
                 //remove previously segmented structures if there
                 foreach (Structure structure in ss.Structures.ToList())
                 {
-                    if (structure.Name.ToLower().Contains("cpg_subseg"))
+                    if (structure.Id.ToLower().Contains("cpg_subseg"))
                     {
                         ss.RemoveStructure(structure);
                     }
@@ -217,28 +217,28 @@ namespace VMS.TPS
             }
             
             //Now run the first VMAT optimization. 
-            plan.SetCalculationModel(CalculationType.PhotonVMATOptimization, "PO_13623");
-            plan.SetCalculationModel(CalculationType.DVHEstimation, "DVH Estimation Algorithm [15.6.06]");
-            plan.SetCalculationModel(CalculationType.PhotonVolumeDose, "AAA_13623");
-            plan.OptimizationSetup.AddNormalTissueObjective(100, 3, 95, 50, 0.2);
+            plan_setup.SetCalculationModel(CalculationType.PhotonVMATOptimization, "PO_13623");
+            plan_setup.SetCalculationModel(CalculationType.DVHEstimation, "DVH Estimation Algorithm [15.6.06]");
+            plan_setup.SetCalculationModel(CalculationType.PhotonVolumeDose, "AAA_13623");
+            plan_setup.OptimizationSetup.AddNormalTissueObjective(100, 3, 95, 50, 0.2);
             bool jawTracking = beamParams.Item3;
             //use jaw tracking
             if (jawTracking)
             {
                 try
                 {
-                    plan.OptimizationSetup.UseJawTracking = true;
+                    plan_setup.OptimizationSetup.UseJawTracking = true;
                 } catch
                 {
                     System.Windows.MessageBox.Show("Could not use jaw tracking. Proceeding without.");
                 }
             }
-            
-           // plan.OptimizeVMAT();
-            plan.CalculateDose();
+
+            // plan.OptimizeVMAT();
+            plan_setup.CalculateDose();
             string treatmentCenter = beamParams.Item1;
             string treatmentArea = beamParams.Item2;
-            string mlcId = "";
+            string mlcId = "HML0990";
             int areaNum = Int32.Parse(Regex.Match(treatmentArea, @"\d+").Value);
             if (treatmentCenter == "BC Cancer - Surrey")
             {
@@ -292,7 +292,6 @@ namespace VMS.TPS
 
                 }
             }
-            string mlcID = "HML0990";
             int numCycles = 1;
             OptimizationOptionsVMAT oov;
             ;
@@ -301,32 +300,32 @@ namespace VMS.TPS
             for (int iter = 0; iter < numIterations; iter++)
             {
                 //mlcID = plan.Beams.FirstOrDefault<Beam>().MLC.Id;
-                oov = new OptimizationOptionsVMAT(numCycles, mlcID);
-                plan.OptimizeVMAT(oov);
-                plan.CalculateDose();
+                oov = new OptimizationOptionsVMAT(numCycles, mlcId);
+                plan_setup.OptimizeVMAT(oov);
+                plan_setup.CalculateDose();
 
                 //Now need to perform a plan check and iteratively adjust constraints based on whether they passed or failed, and whether they passed with flying colours or failed miserably.
                 //Going to find the percentage by which the constraint failed or passed, and adjust both the priority and dose constraint based on this. 
-                updateLog.Add(OptObjectivesEditing.UpdateConstraints(ref plan, ref ss, ref hnPlan, context, optimizedStructures, matchingStructures, numCycles));
+                updateLog.Add(OptObjectivesEditing.UpdateConstraints(ref plan_setup, ref ss, ref plan, context, optimizedStructures, matchingStructures, numCycles));
                 if (features[0].Item1 == true)
                 {
-                    Segmentation.MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, features[0].Item2[0]);
+                    Segmentation.MakeParotidStructures(choppedContours, planes, ref plan_setup, ref ss, plan, context, matchingStructures, contraName, features[0].Item2[0]);
                 }
 
             }
             numCycles = 4;
-            oov = new OptimizationOptionsVMAT(numCycles, mlcID);
+            oov = new OptimizationOptionsVMAT(numCycles, mlcId);
             //Now for a maximum of 3 tries, perform 4-cycle vmat optimization followed by constraint updating until a plan is passed
             for (int i = 0; i < 3; i++)
             {
-                plan.OptimizeVMAT(oov);
-                plan.CalculateDose();
-                updateLog.Add(OptObjectivesEditing.UpdateConstraints(ref plan, ref ss, ref hnPlan, context, optimizedStructures, matchingStructures, numCycles));
+                plan_setup.OptimizeVMAT(oov);
+                plan_setup.CalculateDose();
+                updateLog.Add(OptObjectivesEditing.UpdateConstraints(ref plan_setup, ref ss, ref plan, context, optimizedStructures, matchingStructures, numCycles));
                 if (features[0].Item1 == true)
                 {
-                    Segmentation.MakeParotidStructures(choppedContours, planes, ref plan, ref ss, hnPlan, context, matchingStructures, contraName, features[0].Item2[0]);
+                    Segmentation.MakeParotidStructures(choppedContours, planes, ref plan_setup, ref ss, plan, context, matchingStructures, contraName, features[0].Item2[0]);
                 }
-                isPassed = Check.EvaluatePlan(context, hnPlan, matchingStructures, optimizedStructures).Item1;
+                isPassed = Check.EvaluatePlan(context, plan, matchingStructures, optimizedStructures).Item1;
                 if (isPassed)
                 {
                     break;
@@ -343,12 +342,12 @@ namespace VMS.TPS
 
         
        
-        public static void BeamMaker(ref ExternalPlanSetup plan, StructureSet ss, double prescriptionDose, Tuple<string, string, bool> beamParams)
+        public static void BeamMaker(ref ExternalPlanSetup plan_setup, StructureSet ss, double prescriptionDose, Tuple<string, string, bool> beamParams)
         {
             //First check if beams already exist
-            foreach (Beam beam in plan.Beams.ToList())
+            foreach (Beam beam in plan_setup.Beams.ToList())
             {
-                plan.RemoveBeam(beam);
+                plan_setup.RemoveBeam(beam);
             }
             string treatmentCenter = beamParams.Item1;
             string treatmentArea = beamParams.Item2;
@@ -373,55 +372,65 @@ namespace VMS.TPS
 
             //find all the ptvs
             List<Structure> ptvs = new List<Structure>();
-            List<Structure> mainPTVs = new List<Structure>();
+            int structure_count = 0;
             foreach (Structure structure in ss.Structures)
             {
-                if (structure.Name.ToLower().Contains("ptv"))
+                if (structure.Id.ToLower().Contains("ptv"))
                 {
                     ptvs.Add(structure);
-                    if (StringOperations.FindPTVNumber(structure.Name) == prescriptionDose / 100)
-                    //Check if receiving prescription dose
-                    {
-                        mainPTVs.Add(structure);
-                    }
+                    structure_count += 1;
+                    
 
+                }
+            }
+
+            List<Structure> mainPTVs = new List<Structure>();    //temporary initialization
+            int max_ptv = 0;
+            foreach (Structure structure in ptvs)
+            {
+                int ptv_num = StringOperations.FindPTVNumber(structure.Id);
+                if (ptv_num > max_ptv)
+                //Check if receiving prescription dose
+                {
+                    mainPTVs.Clear();
+                    mainPTVs.Add(structure);
+                    max_ptv = ptv_num;
+                }else if (ptv_num == max_ptv)
+                {
+                    mainPTVs.Add(structure);
                 }
             }
             //Check if it's receiving the prescription dose. If so, set isocentre here. If there is more than 
             //One receiving the prescription dose, set at the average between the two.
             VVector isocentre;
-            if (mainPTVs.Count > 0)
+            //System.Windows.MessageBox.Show(structure_count.ToString());
+            double x = 0;
+            double y = 0;
+            double z = 0;
+            //Find average x,y,z
+            for (int i = 0; i < mainPTVs.Count; i++)
             {
-                double x = 0;
-                double y = 0;
-                double z = 0;
-                //Find average x,y,z
-                for (int i = 0; i < mainPTVs.Count; i++)
-                {
-                    x += Math.Round(mainPTVs[i].CenterPoint.x / 10.0f) * 10.0f / mainPTVs.Count;
-                    y += Math.Round(mainPTVs[i].CenterPoint.y / 10.0f) * 10.0f / mainPTVs.Count;
-                    z += Math.Round(mainPTVs[i].CenterPoint.z / 10.0f) * 10.0f / mainPTVs.Count;
-                }
-                isocentre = new VVector(x, y, z);
+                x += Math.Round(mainPTVs[i].CenterPoint.x / 10.0f) * 10.0f / mainPTVs.Count;
+                y += Math.Round(mainPTVs[i].CenterPoint.y / 10.0f) * 10.0f / mainPTVs.Count;
+                z += Math.Round(mainPTVs[i].CenterPoint.z / 10.0f) * 10.0f / mainPTVs.Count;
             }
-            else
-            {
-                isocentre = new VVector(0, 0, 0);
-            }
+            isocentre = new VVector(x, y, z);
+            
+  
             //Create two VMAT beams
 
             //First get the right jaw dimensions: 
-            VRect<double> jaws1 = FitJawsToTarget(isocentre, plan, ptvs, 30, 0);
-            VRect<double> jaws2 = FitJawsToTarget(isocentre, plan, ptvs, 330, 0);
-            Beam vmat1 = plan.AddArcBeam(ebmp, jaws1, 30, 180.1, 179.9, GantryDirection.Clockwise, 0, isocentre);
-            Beam vmat2 = plan.AddArcBeam(ebmp, jaws2, 330, 179.9, 180.1, GantryDirection.CounterClockwise, 0, isocentre);
-            vmat1.Id = "PC_vmat1";
-            vmat2.Id = "PC_vmat2";
+            VRect<double> jaws1 = FitJawsToTarget(isocentre, plan_setup, ptvs, 30, 0);
+            VRect<double> jaws2 = FitJawsToTarget(isocentre, plan_setup, ptvs, 330, 0);
+            Beam vmat1 = plan_setup.AddArcBeam(ebmp, jaws1, 30, 180.1, 179.9, GantryDirection.Clockwise, 0, isocentre);
+            Beam vmat2 = plan_setup.AddArcBeam(ebmp, jaws2, 330, 179.9, 180.1, GantryDirection.CounterClockwise, 0, isocentre);
+            vmat1.Id = beamName + "1";
+            vmat2.Id = beamName + "2";
 
             
 
         }
-        public static VRect<double> FitJawsToTarget(VVector isocentre, ExternalPlanSetup plan, List<Structure> ptvs, double collimatorAngleInDeg, double margin)
+        public static VRect<double> FitJawsToTarget(VVector isocentre, ExternalPlanSetup plan_setup, List<Structure> ptvs, double collimatorAngleInDeg, double margin)
         {
             var collimatorAngleInRad = DegToRad(collimatorAngleInDeg);
             double xMin = isocentre.x;
@@ -434,7 +443,7 @@ namespace VMS.TPS
                 double gantryRotationInRad = DegToRad(gantryRotationInDeg);
 
 
-                var nPlanes = plan.StructureSet.Image.ZSize;
+                var nPlanes = plan_setup.StructureSet.Image.ZSize;
                 //Need to approximate the rotating gantry as finite number of static fields. approximate it as 6 static fields
                 for (int i = 0; i < ptvs.Count; i++)
                 {

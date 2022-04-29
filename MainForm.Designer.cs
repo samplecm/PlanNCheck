@@ -478,7 +478,7 @@ namespace Plan_n_Check
             this.panel5.Controls.Add(CustomizeButton);
             this.panel5.Controls.Add(this.ErrorLabel);
             this.panel5.Controls.Add(this.checkBoxJawTracking);
-            this.panel5.Location = new System.Drawing.Point(0, 65);
+            this.panel5.Location = new System.Drawing.Point(0, 68);
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(737, 386);
             this.panel5.TabIndex = 21;
@@ -1897,11 +1897,9 @@ namespace Plan_n_Check
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(734, 591);
-            this.Controls.Add(this.panel1);
-            this.Controls.Add(this.AssigningPanel);
-            this.Controls.Add(this.PanelSpecialFeatures);
             this.Controls.Add(this.panel5);
             this.Controls.Add(this.panel2);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.LocationLabel);
             this.Controls.Add(this.LabelSaveCheck);
@@ -1913,6 +1911,8 @@ namespace Plan_n_Check
             this.Controls.Add(this.button2);
             this.Controls.Add(this.IterationsLabel);
             this.Controls.Add(this.IterationsTextBox);
+            this.Controls.Add(this.AssigningPanel);
+            this.Controls.Add(this.PanelSpecialFeatures);
             this.Controls.Add(this.PlotPanel);
             this.Controls.Add(this.LatexPanel);
             this.ForeColor = System.Drawing.SystemColors.ControlLight;

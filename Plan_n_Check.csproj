@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="packages\Microsoft.ML.OnnxRuntime.1.6.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.props" Condition="Exists('packages\Microsoft.ML.OnnxRuntime.1.6.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
@@ -35,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CsvHelper, Version=27.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
+      <HintPath>packages\CsvHelper.27.2.1\lib\net45\CsvHelper.dll</HintPath>
+    </Reference>
     <Reference Include="HtmlRenderer, Version=1.5.0.5, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\HtmlRenderer.Core.1.5.0.5\lib\net45\HtmlRenderer.dll</HintPath>
     </Reference>
@@ -42,7 +44,7 @@
       <HintPath>packages\HtmlRenderer.PdfSharp.1.5.0.6\lib\net45\HtmlRenderer.PdfSharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ML.OnnxRuntime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=f27f157f0a5b7bb6, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.ML.OnnxRuntime.Managed.1.6.0\lib\netstandard1.1\Microsoft.ML.OnnxRuntime.dll</HintPath>
+      <HintPath>packages\Microsoft.ML.OnnxRuntime.Managed.1.10.0\lib\netstandard1.1\Microsoft.ML.OnnxRuntime.dll</HintPath>
     </Reference>
     <Reference Include="OxyPlot, Version=2.0.0.0, Culture=neutral, PublicKeyToken=638079a8f0bd61e9, processorArchitecture=MSIL">
       <HintPath>packages\OxyPlot.Core.2.0.0\lib\net45\OxyPlot.dll</HintPath>
@@ -70,12 +72,18 @@
     </Reference>
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Tensors, Version=0.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Numerics.Tensors.0.1.0\lib\netstandard1.1\System.Numerics.Tensors.dll</HintPath>
+    </Reference>
     <Reference Include="System.Printing" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -102,10 +110,12 @@
     <Compile Include="Calculate\Check.cs" />
     <Compile Include="Calculate\StringOperations.cs" />
     <Compile Include="Constraint.cs" />
+    <Compile Include="DataHandling.cs" />
     <Compile Include="Dose_Model\Model.cs" />
     <Compile Include="Dose_Model\ROI_Distances.cs" />
     <Compile Include="Features\DVHMaker.cs" />
     <Compile Include="Features\Segmentation.cs" />
+    <Compile Include="Global_Variables.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -113,6 +123,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Optimization\OptObjectivesEditing.cs" />
+    <Compile Include="Plans\HN_NP_Plan.cs" />
     <Compile Include="Plans\HNPlan.cs" />
     <Compile Include="Plans\Plan.cs" />
     <Compile Include="Plans\ROI.cs" />
@@ -133,6 +144,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="obj\x64\Debug\DesignTimeResolveAssemblyReferences.cache" />
     <None Include="obj\x64\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
     <None Include="obj\x64\Debug\Plan_n_Check.csprojAssemblyReference.cache" />
@@ -142,14 +154,11 @@
     <Folder Include="obj\x64\Debug\TempPE\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="packages\Microsoft.ML.OnnxRuntime.Managed.1.6.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.Managed.targets" Condition="Exists('packages\Microsoft.ML.OnnxRuntime.Managed.1.6.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.Managed.targets')" />
+  <Import Project="packages\Microsoft.ML.OnnxRuntime.Managed.1.10.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.Managed.targets" Condition="Exists('packages\Microsoft.ML.OnnxRuntime.Managed.1.10.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.Managed.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\Microsoft.ML.OnnxRuntime.Managed.1.6.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.Managed.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.ML.OnnxRuntime.Managed.1.6.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.Managed.targets'))" />
-    <Error Condition="!Exists('packages\Microsoft.ML.OnnxRuntime.1.6.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.ML.OnnxRuntime.1.6.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.props'))" />
-    <Error Condition="!Exists('packages\Microsoft.ML.OnnxRuntime.1.6.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.ML.OnnxRuntime.1.6.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.targets'))" />
+    <Error Condition="!Exists('packages\Microsoft.ML.OnnxRuntime.Managed.1.10.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.Managed.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.ML.OnnxRuntime.Managed.1.10.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.Managed.targets'))" />
   </Target>
-  <Import Project="packages\Microsoft.ML.OnnxRuntime.1.6.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.targets" Condition="Exists('packages\Microsoft.ML.OnnxRuntime.1.6.0\build\netstandard1.1\Microsoft.ML.OnnxRuntime.targets')" />
 </Project>

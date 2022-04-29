@@ -54,7 +54,8 @@ namespace Plan_n_Check.Calculate
             }
             for (int match = 0; match < dicomStructure.Count; match++)
             {
-                if ((dicomStructure[match].Volume < 0.1)&&(dicomStructure[match].Name.Contains("PC_Opti"))) //if this opti structure has near 0 volume due to entire overlap with target volume
+
+                if ((dicomStructure[match].Volume < 0.1) && (dicomStructure[match].Id.Contains("PC_Opti"))) //if this opti structure has near 0 volume due to entire overlap with target volume
                 {
                     for (int i = 0; i < ROI.Constraints.Count; i++)
                     {
@@ -62,6 +63,8 @@ namespace Plan_n_Check.Calculate
                     }
                     continue;
                 }
+
+                
                 returnString += "<h6>Matching Structure " + string.Format("{0}", match + 1) + ": </h6>";
                 //first go one by one through the constraints.
                 for (int i = 0; i < ROI.Constraints.Count; i++)
@@ -379,10 +382,16 @@ namespace Plan_n_Check.Calculate
             }
             for (int match = 0; match < dicomStructure.Count; match++)
             {
-                if (dicomStructure[match].Volume < 0.5) //if opti structure fully overlaps and it was left with 0 volume
+                try
                 {
-                    continue;
+                    if (dicomStructure[match].Volume < 0.5) //if opti structure fully overlaps and it was left with 0 volume
+                    {
+                        continue;
+                    }
                 }
+                catch {
+                    continue; 
+                }//disposed "structure! type error 
                 constraintValues.Add(new List<double>());
                 //first go one by one through the constraints.
                 for (int i = 0; i < ROI.Constraints.Count; i++)
@@ -593,7 +602,7 @@ namespace Plan_n_Check.Calculate
             return Tuple.Create(passed, constraintValues);
         }
 
-        public static Tuple<bool, List<bool>, List<List<List<double>>>> EvaluatePlan(ScriptContext context, HNPlan plan, List<List<Structure>> matchingStructures, List<List<Structure>> optimizedStructures)
+        public static Tuple<bool, List<bool>, List<List<List<double>>>> EvaluatePlan(ScriptContext context, Plan plan, List<List<Structure>> matchingStructures, List<List<Structure>> optimizedStructures)
         {
             //This function iterates over all the constraints and checks if they are met or not. It saves all the doses/volumes corresponding to each constraint in List<List<double>> constraintValues. Each ROI must have each constraint satisfied for each
             //matching structure for the ROI to be "passed". The pass/fail status of each ROI is saved in list<bool> ROI_results. Then the final bool Passed is true if all constraints are met when at least one matching structure exists. Saliva glands
@@ -620,7 +629,7 @@ namespace Plan_n_Check.Calculate
             bool planPassed = VerifyPlan(ROI_results, constraintValues);
             return Tuple.Create(planPassed, ROI_results, constraintValues);
         }
-        public static int ConstraintScore(HNPlan hnPlan, PlanSetup plan)
+        public static int ConstraintScore(Plan Plan, PlanSetup plan)
         {
             //score is based on the absolute difference between a dose constraint value and the actual value received in the plan
             double prescriptionDose = plan.TotalDose.Dose;
@@ -630,11 +639,11 @@ namespace Plan_n_Check.Calculate
 
             }
             double constraintScore = 0;
-            for (int roi_idx = 0; roi_idx < hnPlan.ROIs.Count; roi_idx ++)
+            for (int roi_idx = 0; roi_idx < Plan.ROIs.Count; roi_idx ++)
             {
-                int weight = hnPlan.ROIs[roi_idx].Weight;
+                int weight = Plan.ROIs[roi_idx].Weight;
 
-                foreach(Constraint con in hnPlan.ROIs[roi_idx].Constraints)
+                foreach(Constraint con in Plan.ROIs[roi_idx].Constraints)
                 {
                     double value = con.Value;
                     double actualValue = con.ActualValue;
@@ -656,14 +665,14 @@ namespace Plan_n_Check.Calculate
         public static bool VerifyPlan(List<bool> ROI_Results, List<List<List<double>>> constraintValues)
         {
             //Every constraint besides saliva glands must be passed:
-            for (int i =0; i < 16; i++)
-            {
-                if (ROI_Results[i] == false)
-                {
-                    return false; //plan failed
-                }
-            }
-            for (int i = 10; i < ROI_Results.Count; i++)
+            //for (int i =0; i < 16; i++)
+            //{
+            //    if (ROI_Results[i] == false)
+            //    {
+            //        return false; //plan failed
+            //    }
+            //}
+            for (int i = 0; i < ROI_Results.Count; i++)
             {
                 if (ROI_Results[i] == false)
                 {
@@ -671,21 +680,21 @@ namespace Plan_n_Check.Calculate
                 }
             }
             //For the saliva glands, the plan passes if one parotid is below 20Gy or both are below 25Gy.
-            if ((constraintValues[16][0][0] > 2500) && (constraintValues[17][0][0] > 2500)) //index 16, 17 is right, left parotid
-            {
-                return false; //fail plan
-            }else if (!(constraintValues[16][0][0] < 2000) || (constraintValues[17][0][0] > 2500)) //index 16, 17 is right, left parotid
-            {
-                return false; //fail plan
-            }else if ((constraintValues[16][0][0] > 2500) || !(constraintValues[17][0][0] < 2000)) //index 16, 17 is right, left parotid
-            {
-                return false; //fail plan
-            }
+            //if ((constraintValues[16][0][0] > 2500) && (constraintValues[17][0][0] > 2500)) //index 16, 17 is right, left parotid
+            //{
+            //    return false; //fail plan
+            //}else if (!(constraintValues[16][0][0] < 2000) || (constraintValues[17][0][0] > 2500)) //index 16, 17 is right, left parotid
+            //{
+            //    return false; //fail plan
+            //}else if ((constraintValues[16][0][0] > 2500) || !(constraintValues[17][0][0] < 2000)) //index 16, 17 is right, left parotid
+            //{
+            //    return false; //fail plan
+            //}
 
             return true;
         }
 
-        public static void RunReport(ScriptContext context, HNPlan hnplan, string path, List<List<Structure>> matchingStructures, 
+        public static void RunReport(ScriptContext context, Plan Plan, string path, List<List<Structure>> matchingStructures, 
             List<List<Structure>> optimizedStructures, List<List<string>> updateLog, List<Tuple<ROI, int, int, int, int>> DVH_ReportStructures, bool isPassed=false)
         {
             //Need to go one by one and check constraints. 
@@ -782,9 +791,9 @@ namespace Plan_n_Check.Calculate
 
             //Now need to check the constraints on these structures.
             List<string> ReportStrings = new List<string>(); //report for each constraint.           
-            for (int i = 0; i < hnplan.ROIs.Count; i++)
+            for (int i = 0; i < Plan.ROIs.Count; i++)
             {
-                string report = CheckConstraints_Report(context, hnplan.ROIs[i], optimizedStructures[i]);
+                string report = CheckConstraints_Report(context, Plan.ROIs[i], matchingStructures[i]);
                 ReportStrings.Add(report);
                        
             }
@@ -851,10 +860,10 @@ namespace Plan_n_Check.Calculate
             outputFile += "<th>Constraints Status</th>";
             outputFile += "</tr>";
             //Now add a row for each ROI:
-            for (int i =0; i < hnplan.ROIs.Count; i++)
+            for (int i =0; i < Plan.ROIs.Count; i++)
             {
                 outputFile += "<tr>";
-                outputFile += "<td>" + hnplan.ROIs[i].Name + "</td>";
+                outputFile += "<td>" + Plan.ROIs[i].Name + "</td>";
                 int numMatches = matchingStructures[i].Count;
                 int constraint_idx = 0;
                 
@@ -868,17 +877,17 @@ namespace Plan_n_Check.Calculate
                 {
                     for (int d = 0; d < matchingStructures[i].Count; d++)
                     {
-                        outputFile += "<td>" + matchingStructures[i][d].Name + "</td>";
+                        outputFile += "<td>" + matchingStructures[i][d].Id + "</td>";
                         outputFile += "<td>";
-                        for (int c = constraint_idx; c < hnplan.ROIs[i].Constraints.Count; c++)
+                        for (int c = constraint_idx; c < Plan.ROIs[i].Constraints.Count; c++)
                         {
 
 
-                            if (hnplan.ROIs[i].Constraints[c].Status[d] == true)
+                            if (Plan.ROIs[i].Constraints[c].Status[d] == true)
                             {
                                 outputFile += @"<div class=""PassClass""><p>////////////////////////////////////////////////</p></div>";
                             }
-                            else if (hnplan.ROIs[i].Constraints[c].Status[d] == false)
+                            else if (Plan.ROIs[i].Constraints[c].Status[d] == false)
                             {
                                 outputFile += @"<div class=""FailClass"">////////////////////////////////////////////////</p></div>";
                             }
@@ -970,9 +979,9 @@ namespace Plan_n_Check.Calculate
 
 
             outputFile += "<br><br></p>";
-            for (int i = 0; i < hnplan.ROIs.Count; i++)
+            for (int i = 0; i < Plan.ROIs.Count; i++)
             {
-                ROI roi = hnplan.ROIs[i];
+                ROI roi = Plan.ROIs[i];
 
                 outputFile += "<hr><p><h4>" + roi.Name + "</h4>";
                 if (matchingStructures[i].Count == 0)
@@ -982,20 +991,20 @@ namespace Plan_n_Check.Calculate
                 else
                 {
                     outputFile += "<h5>DICOM Structure(s): " + matchingStructures[i].Count + " matching</h5>";
-               
+
                     //    for (int ms = 0; ms < matchingStructures[i].Count; ms++)
                     //{
                     //    outputFile += matchingStructures[i][ms].Name + "<br>";
                     //}
-                
-                for (int j = 0; j < matchingStructures[i].Count; j++)
-                    {
-                        if (matchingStructures[i][j].Name != optimizedStructures[i][j].Name)
-                        {
-                            outputFile += "Optimization Structure " + optimizedStructures[i][j].Name + " created for " + matchingStructures[i][j].Name + "<br>";
-                        }
-                    }
-                outputFile += ReportStrings[i];
+
+                    //for (int j = 0; j < matchingStructures[i].Count; j++)
+                    //{
+                    //    if (matchingStructures[i][j].Id != optimizedStructures[i][j].Id)
+                    //    {
+                    //        outputFile += "Optimization Structure " + optimizedStructures[i][j].Id + " created for " + matchingStructures[i][j].Id + "<br>";
+                    //    }
+                    //}
+                    outputFile += ReportStrings[i];
                 }
                 //Now need to add the DVH plot if wanted:
                 bool includeDVH = false;
@@ -1209,7 +1218,7 @@ namespace Plan_n_Check.Calculate
             List<Structure> ptvs = new List<Structure>();
             foreach (Structure structure in ss.Structures)
             {
-                if (structure.Name.ToLower().Contains("ptv"))
+                if (structure.Id.ToLower().Contains("ptv"))
                 {
                     ptvs.Add(structure);
                 }
@@ -1231,7 +1240,7 @@ namespace Plan_n_Check.Calculate
                             overlapNum++;
                             if (overlapNum < 2)
                             { //only do once
-                                ptvDose = StringOperations.FindPTVNumber(ptvs[ptv].Name) * 100; //Just taking the first ptv found to overlap with it
+                                ptvDose = StringOperations.FindPTVNumber(ptvs[ptv].Id) * 100; //Just taking the first ptv found to overlap with it
                             }
 
                             break;

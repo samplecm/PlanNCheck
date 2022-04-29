@@ -12,82 +12,80 @@ namespace Plan_n_Check.Optimization
 {
     public static class OptObjectivesEditing
     {
-        public static List<List<Structure>> SetConstraints(ref ExternalPlanSetup plan, HNPlan hnPlan, List<List<Structure>> matchingStructures, bool checkOptis = false)
+        public static List<List<Structure>> SetConstraints(ref ExternalPlanSetup plan_setup, Plan plan_obj, List<List<Structure>> matchingStructures, bool checkOptis = false)
         {
-            StructureSet ss = plan.StructureSet;
+            StructureSet ss = plan_setup.StructureSet;
             //Will be checking if opti structures need to be made. If so, they will be created and used for optimization. So we need a new matching list
             //which contains structures (opti or not) that are actually used during optimization.
             List<List<Structure>> optimizedStructures = new List<List<Structure>>();
             if (!checkOptis)
             {
                 optimizedStructures = new List<List<Structure>>(matchingStructures);
-                for (int i = 0; i < hnPlan.ROIs.Count; i++)
+                for (int i = 0; i < plan_obj.ROIs.Count; i++)
                 {
-                    hnPlan.ROIs[i].OptimizationStructures = new List<Structure>(hnPlan.ROIs[i].MatchingStructures);
+                    plan_obj.ROIs[i].OptimizationStructures = new List<Structure>(plan_obj.ROIs[i].MatchingStructures);
                 }
                 return optimizedStructures;
             }
 
 
             //Need to set all optimization constraints now. First clear all the current constraints
-            foreach (var objective in plan.OptimizationSetup.Objectives.OfType<OptimizationPointObjective>())
+            foreach (var objective in plan_setup.OptimizationSetup.Objectives.OfType<OptimizationPointObjective>())
             {
 
-                plan.OptimizationSetup.RemoveObjective(objective);
+                plan_setup.OptimizationSetup.RemoveObjective(objective);
             }
-            foreach (var objective in plan.OptimizationSetup.Objectives.OfType<OptimizationMeanDoseObjective>())
+            foreach (var objective in plan_setup.OptimizationSetup.Objectives.OfType<OptimizationMeanDoseObjective>())
             {
-                plan.OptimizationSetup.RemoveObjective(objective);
+                plan_setup.OptimizationSetup.RemoveObjective(objective);
 
 
             }
             //Now loop over all constraints and set them
-            for (int i = 0; i < hnPlan.ROIs.Count; i++)    //Loop over all structures
+            for (int i = 0; i < plan_obj.ROIs.Count; i++)    //Loop over all structures
             {
-                if (checkOptis)
-                {
-                    hnPlan.ROIs[i].OptimizationStructures = new List<Structure>();
-                    optimizedStructures.Add(new List<Structure>());
-                }
+ 
+                plan_obj.ROIs[i].OptimizationStructures = new List<Structure>(); 
+                optimizedStructures.Add(new List<Structure>());
+                
 
                 for (int match = 0; match < matchingStructures[i].Count; match++)
                 {
 
                     //Here I want to make sure that the matched structure does not overlap with PTVs, and if it does I want to make an opti structure. 
-                    if (checkOptis)
+
+                    
+                    if (!plan_obj.ROIs[i].Critical)
                     {
-                        if (!hnPlan.ROIs[i].Critical)
-                        {
-                            Structure opti = CheckOverlap_OptiMaker(matchingStructures[i][match], ref ss, false);
-                            optimizedStructures[i].Add(opti);
-                            hnPlan.ROIs[i].OptimizationStructures.Add(opti);
+                        Structure opti = CheckOverlap_OptiMaker(matchingStructures[i][match], ss, false);
+                        optimizedStructures[i].Add(opti);
+                        plan_obj.ROIs[i].OptimizationStructures.Add(opti);
 
-                        }
-                        else
-                        {
-                            Structure opti = CheckOverlap_OptiMaker(matchingStructures[i][match], ref ss, true);                            
-                            optimizedStructures[i].Add(opti);
-                            hnPlan.ROIs[i].OptimizationStructures.Add(opti);
-
-
-                        }
                     }
-                    if (hnPlan.ROIs[i].OptimizationStructures[match].Volume < 0.5)
+                    else
+                    {
+                        Structure opti = CheckOverlap_OptiMaker(matchingStructures[i][match], ss, true);                            
+                        optimizedStructures[i].Add(opti);
+                        plan_obj.ROIs[i].OptimizationStructures.Add(opti);
+
+
+                    }
+                    
+                    if (plan_obj.ROIs[i].OptimizationStructures[match].Volume < 0.5)
                     {
                         continue;
                     }
 
 
-                    for (int j = 0; j < hnPlan.ROIs[i].Constraints.Count; j++)    //Loop over all constraints for the current structure
+                    for (int j = 0; j < plan_obj.ROIs[i].Constraints.Count; j++)    //Loop over all constraints for the current structure
                     {
-                        plan.OptimizationSetup.AddNormalTissueObjective(80.0f, 0.0f, 100.0f, 40.0f, 0.05f);
 
-                        string type = hnPlan.ROIs[i].Constraints[j].Type;
-                        string subscript = hnPlan.ROIs[i].Constraints[j].Subscript;
-                        string relation = hnPlan.ROIs[i].Constraints[j].EqualityType;
-                        double value = hnPlan.ROIs[i].Constraints[j].Value;
-                        string format = hnPlan.ROIs[i].Constraints[j].Format;
-                        double volume = hnPlan.ROIs[i].OptimizationStructures[match].Volume;
+                        string type = plan_obj.ROIs[i].Constraints[j].Type;
+                        string subscript = plan_obj.ROIs[i].Constraints[j].Subscript;
+                        string relation = plan_obj.ROIs[i].Constraints[j].EqualityType;
+                        double value = plan_obj.ROIs[i].Constraints[j].Value;
+                        string format = plan_obj.ROIs[i].Constraints[j].Format;
+                        double volume = plan_obj.ROIs[i].OptimizationStructures[match].Volume;
 
                         OptimizationObjectiveOperator constraintType;
                         if (relation == "<")
@@ -106,28 +104,28 @@ namespace Plan_n_Check.Optimization
                                 volume = Convert.ToInt32(subscript); //need to analyze DVH data if a number.
 
                                 //convert to cGy (90% of maximum for optimization)
-                                plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match],
-                                    constraintType, new DoseValue(value, "cGy"), volume, hnPlan.ROIs[i].Constraints[j].Priority);
+                                plan_setup.OptimizationSetup.AddPointObjective(plan_obj.ROIs[i].OptimizationStructures[match],
+                                    constraintType, new DoseValue(value, "cGy"), volume, plan_obj.ROIs[i].Constraints[j].Priority);
                             }
                             catch //is a mean or max restriction
                             {
                                 if (subscript.ToLower() == "mean")
                                 {
                                     double dose = value * 0.9; //take 90 percent of dose constraint dose to start
-                                    OptimizationObjective objective = plan.OptimizationSetup.AddMeanDoseObjective(hnPlan.ROIs[i].OptimizationStructures[match],
-                                        new DoseValue(dose, "cGy"), hnPlan.ROIs[i].Constraints[j].Priority);
+                                    OptimizationObjective objective = plan_setup.OptimizationSetup.AddMeanDoseObjective(plan_obj.ROIs[i].OptimizationStructures[match],
+                                        new DoseValue(dose, "cGy"), plan_obj.ROIs[i].Constraints[j].Priority);
                                     //update subsegment constraints if organ is subsegmented
-                                    if (hnPlan.ROIs[i].HasSubsegments)
+                                    if (plan_obj.ROIs[i].HasSubsegments)
                                     {
                                         //replace whole organ constraint with subsegment constraints
 
                                         //plan.OptimizationSetup.RemoveObjective(objective); //uncomment if don't also want the whole organ constraint
                                         foreach (Structure structure in ss.Structures)
                                         {
-                                            if ((structure.Name.Contains(hnPlan.ROIs[i].OptimizationStructures[match].Name.Substring(0, 5))) && (structure.Name.ToLower().Contains("subseg")))
+                                            if ((structure.Id.Contains(plan_obj.ROIs[i].OptimizationStructures[match].Id.Substring(0, 5))) && (structure.Id.ToLower().Contains("subseg")))
                                             {
-                                                plan.OptimizationSetup.AddMeanDoseObjective(structure,
-                                        new DoseValue(dose, "cGy"), hnPlan.ROIs[i].Constraints[j].Priority);
+                                                plan_setup.OptimizationSetup.AddMeanDoseObjective(structure,
+                                        new DoseValue(dose, "cGy"), plan_obj.ROIs[i].Constraints[j].Priority);
                                             }
                                         }
                                     }
@@ -137,22 +135,22 @@ namespace Plan_n_Check.Optimization
                                 {   
                                     double dose = value * 0.9; //take 90 percent of constraint dose to start
 
-                                    if (hnPlan.ROIs[i].IsPTV) //if ptv, go halfway between the max dose and prescription dose 
+                                    if (plan_obj.ROIs[i].IsPTV) //if ptv, go halfway between the max dose and prescription dose 
                                     {
-                                        dose = (value + (double)hnPlan.ROIs[i].PTVDose) * 0.5;
+                                        dose = (value + (double)plan_obj.ROIs[i].PTVDose) * 0.5;
                                     }
-                                    OptimizationObjective objective = plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match], constraintType,
-                                        new DoseValue(dose, "cGy"), 0, hnPlan.ROIs[i].Constraints[j].Priority);
-                                    if (hnPlan.ROIs[i].HasSubsegments)
+                                    OptimizationObjective objective = plan_setup.OptimizationSetup.AddPointObjective(plan_obj.ROIs[i].OptimizationStructures[match], constraintType,
+                                        new DoseValue(dose, "cGy"), 0, plan_obj.ROIs[i].Constraints[j].Priority);
+                                    if (plan_obj.ROIs[i].HasSubsegments)
                                     {
                                         //replace whole organ constraint with subsegment constraints
                                         //plan.OptimizationSetup.RemoveObjective(objective); //uncomment if don't also want the whole organ constraint
                                         foreach (Structure structure in ss.Structures)
                                         {
-                                            if ((structure.Name.Contains(hnPlan.ROIs[i].OptimizationStructures[match].Name.Substring(0, 5))) && (structure.Name.Contains("subseg")))
+                                            if ((structure.Id.Contains(plan_obj.ROIs[i].OptimizationStructures[match].Id.Substring(0, 5))) && (structure.Id.Contains("subseg")))
                                             {
-                                                plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match], constraintType,
-                                                new DoseValue(dose, "cGy"), 0, hnPlan.ROIs[i].Constraints[j].Priority);
+                                                plan_setup.OptimizationSetup.AddPointObjective(plan_obj.ROIs[i].OptimizationStructures[match], constraintType,
+                                                new DoseValue(dose, "cGy"), 0, plan_obj.ROIs[i].Constraints[j].Priority);
                                             }
                                         }
                                     }
@@ -161,18 +159,18 @@ namespace Plan_n_Check.Optimization
                                 else if (subscript.ToLower() == "min")
                                 {
                                     double dose = value * 1.05; //take 110% percent of constraint dose to start
-                                    OptimizationObjective objective = plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match], constraintType,
-                                        new DoseValue(dose, "cGy"), 100, hnPlan.ROIs[i].Constraints[j].Priority);
-                                    if (hnPlan.ROIs[i].HasSubsegments)
+                                    OptimizationObjective objective = plan_setup.OptimizationSetup.AddPointObjective(plan_obj.ROIs[i].OptimizationStructures[match], constraintType,
+                                        new DoseValue(dose, "cGy"), 100, plan_obj.ROIs[i].Constraints[j].Priority);
+                                    if (plan_obj.ROIs[i].HasSubsegments)
                                     {
                                         //replace whole organ constraint with subsegment constraints
                                         //plan.OptimizationSetup.RemoveObjective(objective); //uncomment if don't also want the whole organ constraint
                                         foreach (Structure structure in ss.Structures)
                                         {
-                                            if ((structure.Name.Contains(hnPlan.ROIs[i].OptimizationStructures[match].Name.Substring(0, 5))) && (structure.Name.Contains("subseg")))
+                                            if ((structure.Id.Contains(plan_obj.ROIs[i].OptimizationStructures[match].Id.Substring(0, 5))) && (structure.Id.Contains("subseg")))
                                             {
-                                                plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match], constraintType,
-                                                new DoseValue(dose, "cGy"), 100, hnPlan.ROIs[i].Constraints[j].Priority);
+                                                plan_setup.OptimizationSetup.AddPointObjective(plan_obj.ROIs[i].OptimizationStructures[match], constraintType,
+                                                new DoseValue(dose, "cGy"), 100, plan_obj.ROIs[i].Constraints[j].Priority);
                                             }
                                         }
                                     }
@@ -194,17 +192,17 @@ namespace Plan_n_Check.Optimization
                                     {
                                         volume = 0;
                                     }
-                                    plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match], constraintType,
-                                        new DoseValue(dose * 0.95, "cGy"), volume, hnPlan.ROIs[i].Constraints[j].Priority);
+                                    plan_setup.OptimizationSetup.AddPointObjective(plan_obj.ROIs[i].OptimizationStructures[match], constraintType,
+                                        new DoseValue(dose * 0.95, "cGy"), volume, plan_obj.ROIs[i].Constraints[j].Priority);
 
                                 }
                                 else  //if relative, will belong to a PTV
                                 {
-                                    double dose = StringOperations.FindPTVNumber(hnPlan.ROIs[i].OptimizationStructures[match].Name.ToLower()) * 100;
+                                    double dose = StringOperations.FindPTVNumber(plan_obj.ROIs[i].OptimizationStructures[match].Id.ToLower()) * 100;
                                     volume = value;
                                     volume = 100; //set to 100 to push the optimizer
-                                    plan.OptimizationSetup.AddPointObjective(hnPlan.ROIs[i].OptimizationStructures[match], constraintType,
-                                       new DoseValue(dose, "cGy"), volume, hnPlan.ROIs[i].Constraints[j].Priority);
+                                    plan_setup.OptimizationSetup.AddPointObjective(plan_obj.ROIs[i].OptimizationStructures[match], constraintType,
+                                       new DoseValue(dose, "cGy"), volume, plan_obj.ROIs[i].Constraints[j].Priority);
                                 }
                             }
                             catch
@@ -220,10 +218,10 @@ namespace Plan_n_Check.Optimization
             }
             return optimizedStructures;
         }
-        public static Structure CheckOverlap_OptiMaker(Structure structure, ref StructureSet ss, bool isCritical)
+        public static Structure CheckOverlap_OptiMaker(Structure structure, StructureSet ss, bool isCritical)
         {
 
-            if (structure.Name.ToLower().Contains("ptv") || structure.Name.ToLower().Contains("body")) //don't check if it is a ptv already or body contours...
+            if (structure.Id.ToLower().Contains("ptv") || structure.Id.ToLower().Contains("body")) //don't check if it is a ptv already or body contours...
             {
                 return structure;
             }
@@ -232,42 +230,72 @@ namespace Plan_n_Check.Optimization
                 return structure;
             }
 
-            int nameLen = Math.Min(structure.Name.Length, 7);
-            string name = "PC_opti_" + structure.Name.Substring(0, nameLen);
+            int nameLen = Math.Min(structure.Id.Length, 7);
+            string name = "PC_opti_" + structure.Id.Substring(0, nameLen);
 
-            Structure opti;
+            
             foreach (Structure struc in ss.Structures.ToList())
             {
-                if (struc.Name == name)
+                if (struc.Id == name)
                 {
                     ss.RemoveStructure(struc);
                 }
             }
+            Structure opti;
             try
             {
-                opti = ss.AddStructure("CONTROL", name);
+                opti= ss.AddStructure("CONTROL", name);
             }
             catch
             {
-                return structure;
+                name = name.Substring(0, 15) + "2";
+                opti = ss.AddStructure("CONTROL", name);
+            }
+           
 
+            if (structure.IsHighResolution) //fix geometry error when resolutions are diff
+            {
+                var mesh = structure.MeshGeometry.Bounds;
+                var mesh_low = _GetSlice(mesh.Z, ss);
+                var mesh_high = _GetSlice(mesh.Z + mesh.SizeZ, ss) + 1;
+                for (int j = mesh_low; j <= mesh_high; j++)
+                {
+                    var contours = structure.GetContoursOnImagePlane(j);
+                    if (contours.Length > 0)
+                    {
+                        opti.AddContourOnImagePlane(contours[0], j);
+                    }
+                }
+            }
+            else
+            {
+                opti.SegmentVolume = structure.Margin(0);
             }
 
-            opti.SegmentVolume = structure.Margin(0);
+            
             //Make an opti structure, but delete it if its exactly the same as the original structure
 
             //Loop through and subtract all PTV volumes:
             foreach (Structure s in ss.Structures)
             {
-                if (s.Name.ToLower().Contains("ptv"))
+                if (s.Id.ToLower().Contains("ptv"))
                 {
+
                     opti.SegmentVolume = opti.Sub(s);
-                }
+
+
+                    
+
+                } 
             }
             //Check if it changed (if it did overlap, need to make a new opti structure)
-            
-            //So this is an imperfect function and the volumes will be different no matter what... so make sure they are different by more than 5%
-            if ((structure.Volume - opti.Volume) / structure.Volume > 0.05)
+            if (opti.Volume == 0)
+            {
+                ss.RemoveStructure(opti);
+                return structure;
+            }
+            //So this is an imperfect function and the volumes will be different no matter what... so make sure they are different by more than 2%
+            if ((structure.Volume - opti.Volume) / structure.Volume > 0.02)
             {
                 return opti;
             }
@@ -279,8 +307,13 @@ namespace Plan_n_Check.Optimization
 
         }
 
+        public static int _GetSlice(double z, StructureSet SS)
+        {
+            var imageRes = SS.Image.ZRes;
 
-        public static List<string> UpdateConstraints(ref ExternalPlanSetup plan, ref StructureSet ss, ref HNPlan hnPlan, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, int numCycles)
+            return Convert.ToInt32((z) - SS.Image.Origin.z / imageRes);
+        }
+        public static List<string> UpdateConstraints(ref ExternalPlanSetup plan, ref StructureSet ss, ref Plan plan_obj, ScriptContext context, List<List<Structure>> optimizedStructures, List<List<Structure>> matchingStructures, int numCycles)
         {
             List<string> log = new List<string>();
             log.Add("<p>");
@@ -298,8 +331,8 @@ namespace Plan_n_Check.Optimization
             PlanSetup p = context.PlanSetup;
             p.DoseValuePresentation = DoseValuePresentation.Absolute;
             double prescriptionDose = p.TotalDose.Dose;
-            List<ROI> ROIs = hnPlan.ROIs;
-            for (int s = 0; s < hnPlan.ROIs.Count; s++) //Gothrough all the different constrained structures
+            List<ROI> ROIs = plan_obj.ROIs;
+            for (int s = 0; s < plan_obj.ROIs.Count; s++) //Gothrough all the different constrained structures
             {
                 for (int match = 0; match < matchingStructures[s].Count; match++)  //FOr each structure in ss that matches the hnplan structure 
                 {
@@ -351,7 +384,7 @@ namespace Plan_n_Check.Optimization
                                             //Make sure the priority is within the priority range:
                                             priority = Math.Min(priorityUpper, priority);
                                             priority = Math.Max(priorityLower, priority);
-                                            hnPlan.ROIs[s].Constraints[i].Priority = priority;
+                                            plan_obj.ROIs[s].Constraints[i].Priority = priority;
                                             log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " SATISFIED. Dose (" + doseQuant.ToString() + "cGy) not within 10Gy of constraint - adjusted priority from " + string.Format("{0}", priority) + " to " + ((int)(priority * 0.8)).ToString() + ".");
                                         }
                                         else
@@ -368,7 +401,7 @@ namespace Plan_n_Check.Optimization
 
                                         newPriority = Math.Min(priorityUpper, newPriority);
                                         newPriority = Math.Max(priorityLower, newPriority);
-                                        hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
+                                        plan_obj.ROIs[s].Constraints[i].Priority = newPriority;
                                         log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " FAILED- Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(newPriority)));
                                     }
                                 }
@@ -389,7 +422,7 @@ namespace Plan_n_Check.Optimization
 
                                         newPriority = Math.Min(priorityUpper, newPriority);
                                         newPriority = Math.Max(priorityLower, newPriority);
-                                        hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
+                                        plan_obj.ROIs[s].Constraints[i].Priority = newPriority;
                                         log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " FAILED. Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
 
                                     }
@@ -444,7 +477,7 @@ namespace Plan_n_Check.Optimization
                                             priority = (int)(priority * 0.8);
                                             priority = Math.Min(priorityUpper, priority);
                                             priority = Math.Max(priorityLower, priority);
-                                            hnPlan.ROIs[s].Constraints[i].Priority = priority;
+                                            plan_obj.ROIs[s].Constraints[i].Priority = priority;
                                         }
                                         else
                                         {
@@ -467,14 +500,14 @@ namespace Plan_n_Check.Optimization
                                         {
                                             newPriority = 0;
                                             log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed by more than 20Gy. Deleting constraint.");
-                                            hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
+                                            plan_obj.ROIs[s].Constraints[i].Priority = newPriority;
                                         }
                                         else
                                         {
                                             log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", (int)(priority * 1.1)));
                                             newPriority = Math.Min(priorityUpper, newPriority);
                                             newPriority = Math.Max(priorityLower, newPriority);
-                                            hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
+                                            plan_obj.ROIs[s].Constraints[i].Priority = newPriority;
                                         }
 
                                     }
@@ -495,7 +528,7 @@ namespace Plan_n_Check.Optimization
                                         newPriority = Math.Min(priorityUpper, newPriority);
                                         newPriority = Math.Max(priorityLower, newPriority);
                                         log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from " + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
-                                        hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
+                                        plan_obj.ROIs[s].Constraints[i].Priority = newPriority;
                                     }
                                 }
                                 else
@@ -549,7 +582,7 @@ namespace Plan_n_Check.Optimization
                                         newPriority = Math.Min(newPriority, priority + 20);
                                         newPriority = Math.Min(priorityUpper, newPriority);
                                         newPriority = Math.Max(priorityLower, newPriority);
-                                        hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
+                                        plan_obj.ROIs[s].Constraints[i].Priority = newPriority;
                                         log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
 
                                     }
@@ -567,7 +600,7 @@ namespace Plan_n_Check.Optimization
                                         int newPriority = Math.Max((int)(priority * percentageOff), priority + 10);
                                         newPriority = Math.Min(priorityUpper, newPriority);
                                         newPriority = Math.Max(priorityLower, newPriority);
-                                        hnPlan.ROIs[s].Constraints[i].Priority = newPriority;
+                                        plan_obj.ROIs[s].Constraints[i].Priority = newPriority;
                                         log.Add(ROIs[s].Name + ": Constraint " + (i + 1).ToString() + " Failed. Updating priority from" + string.Format("{0}", priority) + " to " + string.Format("{0}", newPriority));
                                     }
                                 }
@@ -586,7 +619,7 @@ namespace Plan_n_Check.Optimization
                 log.Add("</p>");
             }
             //Now need to delete and reset all constraints
-            OptObjectivesEditing.SetConstraints(ref plan, hnPlan, optimizedStructures);
+            SetConstraints(ref plan, plan_obj, optimizedStructures);
             return log;
 
         }
